@@ -19,3 +19,16 @@ Win64/
 !Setup/*.bat
 !ThirdParty/FFmpeg/bin/*.dll
 .DS_Store
+
+# Local music/character assets; keep source and reference JSON tracked.
+*.[mM][iI][dD]
+*.[mM][iI][dD][iI]
+*.[wW][aA][vV]
+*.[pP][sS][dD]
+*.[uU][sS][tT]
+*.[vV][sS][qQ]
+*.[vV][sS][qQ][xX]
+*.[mM][uU][sS][iI][cC][xX][mM][lL]
+*.[mM][xX][lL]
+*.[mM][sS][cC][xX]
+*.[mM][sS][cC][zZ]
