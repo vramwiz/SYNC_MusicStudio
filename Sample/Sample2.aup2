@@ -1,0 +1,136 @@
+[project]
+version=2010601
+file=D:\DelphiProg\test\SYNC_Lyrics\Sample\Sample2.aup2
+display.scene=0
+preview.scene=0
+[scene.0]
+scene=0
+name=Root
+video.width=1920
+video.height=1080
+video.rate=30
+video.scale=1
+audio.rate=44100
+cursor.frame=277
+cursor.layer=3
+preview.frame=0
+display.frame=0
+display.layer=0
+display.zoom=7500
+display.order=0
+display.camera=
+display.grid.x=16,-16
+display.grid.y=16,-16
+display.grid.width=200
+display.grid.height=200
+display.grid.step=200.000000
+display.grid.range=10000.000000
+display.tempo.bpm=120.000000
+display.tempo.beat=4
+display.tempo.start=0.000000
+display.tempo.offset=0.000000
+[0]
+layer=0
+frame=0,554
+[0.0]
+effect.name=画像ファイル
+ファイル=C:\Users\vramw\Pictures\nc364781_海の中.jpg
+表示番号=0,0,再生範囲,0
+再生速度=100.00
+ループ再生=0
+連番ファイル=0
+[0.1]
+effect.name=標準描画
+X=0.00
+Y=0.00
+Z=0.00
+Group=1
+中心X=0.00
+中心Y=0.00
+中心Z=0.00
+Group3=1
+X軸回転=0.00
+Y軸回転=0.00
+Z軸回転=0.00
+Group2=1
+拡大率=100.000
+縦横比=0.000
+透明度=0.00
+合成モード=通常
+[1]
+layer=1
+focus=1
+frame=165,554
+[1.0]
+effect.name=フィルタオブジェクト
+[1.1]
+effect.name=SYNC_歌詞テロップ_Filter
+音楽ファイル=D:\DelphiProg\test\SYNC_Lyrics\Sample\sync_test_120bpm_30s.mid
+トラック (-1=全て)=-1
+音楽オフセット (秒)=0.76
+曲同期設定=
+同期演出=通常カラオケ
+表示設定=
+事前表示=2.78
+前 種類=バウンドイン
+前 方向=標準
+前 奥行き=奥から
+前 時間=0.88
+常時 感情表現=0
+常時 速さ=1.00
+同期 種類=背面
+色塗り=なめらか
+通過後=維持
+同期 形=自動
+同期 色=ffff00
+同期 サイズ=100.00
+オフセットX=0
+オフセットY=0
+表示維持=2.40
+後 種類=フェードアウト
+後 方向=標準
+後 奥行き=奥へ
+後 時間=1.08
+歌詞データ=SLD1,1,1,U0wzfEUxMzY0ODBGfDB8NjIsLTgyLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw1OTc1MjA0NzZGNzQ2ODY5NjMyMDU1NDksOTksNDIsMSwxLEZGRkZGRixGRkZGMDAsMCwwLDcsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwwLDgwMDAsMCwwLDEwMDAwLDEwMDAwLDQwMDAsMA==,U0wzfEU3RjkxNEVDfDB8MCwwLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw1OTc1MjA0NzZGNzQ2ODY5NjMyMDU1NDksNjQsMjgsMSwxLEZGRkZGRixGRkZGMDAsMCwwLDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwwLDgwMDAsMCwwLDEwMDAwLDEwMDAwLDQwMDAsMA==,U0wzfEUxMzY0ODBGfDB8MCwxMDgsNTk3NTIwNDc2Rjc0Njg2OTYzMjA1NTQ5LDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw2NCwyOCwxLDEsRkZGRkZGLEZGRkYwMCwwLDAsMCwyNTUsMjU1LDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDE2MCwxNjAsMDAwMDAwLDAwMDAwMCwyNTUsMjU1LDAsODAwMCwwLDAsMTAwMDAsMTAwMDAsNDAwMCww|L,1,1,1,2.78,2.4,0,244,82,172,0,W+aYn+epul0o44G744GX44Ge44KJKeOCkuimi+S4iuOBkuOBpg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,U0wzfEUxMzY0ODBGfDZ8MCwwLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw1OTc1MjA0NzZGNzQ2ODY5NjMyMDU1NDksOTYsNDIsMSwxLEZGRkZGRixGRkZGMDAsMCwwLDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwwLDgwMDAsMCwwLDEwMDAwLDEwMDAwLDQwMDAsMHwwLC01NzEsLTIwNSwxNDUyLDE3MDUsMCxFNkI4QjhFNjk4OEVFNjlDOUQsLDAwMDAwMCwwMDAwMDAsMCwwLDEsMSwwLDAsMCwwLDB8MSwyMTAsLTMwOSwxMTY5LDEzNjgsMCxFNkI4QjhFNjk4OEVFNjlDOUQsLDAwMDAwMCwwMDAwMDAsMCwwLDEsMCwwLDAsMCwwLDB8MiwtMzU0LDEzLDExNjksMTM2OCwwLEU2QjhCOEU2OTg4RUU2OUM5RCwsMDAwMDAwLDAwMDAwMCwwLDAsMSwwLDAsMCwwLDAsMHwzLC0xMjAsMTY2LDExNjksMTM2OCwwLEU2QjhCOEU2OTg4RUU2OUM5RCwsMDAwMDAwLDAwMDAwMCwwLDAsMSwwLDAsMCwwLDAsMHw0LDEyMSwyMjYsMTE2OSwxMzY4LDAsRTZCOEI4RTY5ODhFRTY5QzlELCwwMDAwMDAsMDAwMDAwLDAsMCwxLDAsMCwwLDAsMCwwfDUsMzM1LDEyOSwxMTY5LDEzNjgsMCxFNkI4QjhFNjk4OEVFNjlDOUQsLDAwMDAwMCwwMDAwMDAsMCwwLDEsMCwwLDAsMCwwLDA=,0.76|L,2,2,1,2.78,2.4,119,394,202,322,6,W+WQm10o44GN44G/KeOBruWjsOOCkuaOouOBl+OBpuOCiw==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0.76|L,3,1,1,2.78,2.4,239,507,322,435,14,W+acquadpV0o44G/44KJ44GEKeOBuOe2muOBj+OBk+OBrumBk+OCkg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0.76|L,4,2,1,2.78,2.4,381,687,465,615,22,W+WFiV0o44Gy44GL44KKKeOBruS4reOBp+atjOOBiuOBhg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0.76|L,5,1,1,2.78,2.4,531,814,615,742,29,44G+44GfW+aYjuaXpV0o44GC44GX44GfKeOBk+OBk+OBp+S8muOBiuOBhg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0.76
+表示設定=
+[2]
+layer=2
+frame=15,359
+[2.0]
+effect.name=フィルタオブジェクト
+[2.1]
+effect.name=SYNC_歌詞テロップ_Filter
+音楽ファイル=D:\DelphiProg\test\SYNC_Lyrics\Sample\sync_test_120bpm_30s.mid
+トラック (-1=全て)=-1
+音楽オフセット (秒)=-0.31
+曲同期設定=
+同期演出=通常カラオケ
+表示設定=
+事前表示=0.50
+前 種類=なし
+前 方向=標準
+前 奥行き=奥から
+前 時間=0.30
+常時 感情表現=0
+常時 速さ=1.00
+同期 種類=色変え
+色塗り=なめらか
+通過後=維持
+同期 形=自動
+同期 色=ffff00
+同期 サイズ=100.00
+オフセットX=0
+オフセットY=0
+表示維持=0.50
+後 種類=なし
+後 方向=標準
+後 奥行き=奥へ
+後 時間=0.30
+歌詞データ=SLD1,1,0,,,|L,1,1,1,0.5,0.5,45,164,60,149,0,W+aYn+epul0o44G744GX44Ge44KJKeOCkuimi+S4iuOBkuOBpg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0|L,2,1,1,0.5,0.5,165,314,180,299,6,W+WQm10o44GN44G/KeOBruWjsOOCkuaOouOBl+OBpuOCiw==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0|L,3,1,1,0.5,0.5,285,427,300,412,14,W+acquadpV0o44G/44KJ44GEKeOBuOe2muOBj+OBk+OBrumBk+OCkg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0|L,4,1,1,0.5,0.5,427,607,442,592,22,W+WFiV0o44Gy44GL44KKKeOBruS4reOBp+atjOOBiuOBhg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0|L,5,1,1,0.5,0.5,577,734,592,719,29,44G+44GfW+aYjuaXpV0o44GC44GX44GfKeOBk+OBk+OBp+S8muOBiuOBhg==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPQ==,,0
+表示設定=
+[plugin.0]
+plugin.name=Syncroh2_Extension2
+SpeechSynthesisProjectID={38F4EDDD-721C-48E2-98A0-83D08829684D}
+[plugin.1]
+plugin.name=MMDAnimationStudio
+SpeechSynthesisProjectID={38F4EDDD-721C-48E2-98A0-83D08829684D}

@@ -1,0 +1,694 @@
+unit SYNC_Lyrics_SongLyricsModel;
+
+// Holds the editable whole-song lyrics lines independently from VCL controls.
+
+interface
+
+uses
+  SYNC_Lyrics_LyricParser;
+
+type
+  TLyricsLineSyncState = (lssUnset, lssProvisional, lssConfirmed,
+    lssInconsistent);
+  TLyricsPlacementMode = (lpmLine, lpmFree);
+
+  TLyricsSongLine = record
+    LineID     : Int64; // Stable identity within one song model.
+    SourceText : string; // Editable lyrics text including ruby syntax.
+    PlainText  : string; // Parsed text used by lists and drawing.
+    RubySpans  : TLyricsRubySpans;
+    DisplayLane: Byte; // One-based display lane in the supported range 1..3.
+    SyncState  : TLyricsLineSyncState;
+    StartNoteIndex: Integer; // Zero-based index in the shared eligible music-note sequence.
+    PreDisplaySeconds: Double;
+    HoldSeconds: Double;
+    SyncText   : string;
+    DisplayStartFrame: Int64;
+    DisplayEndFrame: Int64;
+    SyncStartFrame: Int64;
+    SyncEndFrame: Int64;
+    TimingMusicOffsetSeconds: Double;
+    PlacementText: string;
+  end;
+  TLyricsSongLines = TArray<TLyricsSongLine>;
+  TLyricsLanePlacementTexts = array[1..3] of string;
+
+  TLyricsSongModel = class
+  private
+    FLines: TLyricsSongLines;
+    FLanePlacementTexts: TLyricsLanePlacementTexts;
+    FPlacementMode: TLyricsPlacementMode;
+    FNextLineID: Int64;
+    FStartLineID: Int64;
+    function GetLine(Index: Integer): TLyricsSongLine;
+    function GetLineCount: Integer;
+    function GetStartLineIndex: Integer;
+    function GetLanePlacementText(DisplayLane: Integer): string;
+    procedure InitializeLine(var LineData: TLyricsSongLine;
+      const SourceText: string);
+    procedure RecalculateNoteOffsets;
+  public
+    constructor Create;
+    procedure Clear;
+    // Replaces the whole working set; blank source lines are omitted.
+    procedure SetLyricsText(const LyricsText: string);
+    // Keeps unchanged lines and their synchronization/placement data.
+    procedure UpdateLyricsTextPreservingMatches(const LyricsText: string);
+    // Rebuilds the editable whole-song text in current display order.
+    function LyricsText: string;
+    // Persistence uses copies so decoding cannot partially mutate the working model.
+    function CopyLines: TLyricsSongLines;
+    procedure ReplaceLines(const Lines: TLyricsSongLines);
+    // These operations preserve the stable identities of unaffected lines.
+    function TryDeleteLine(Index: Integer): Boolean;
+    function TryInsertLine(Index: Integer; const SourceText: string): Boolean;
+    function TrySetLineText(Index: Integer;
+      const SourceText: string): Boolean;
+    function TrySetStartFrames(Index: Integer; DisplayStartFrame,
+      SyncStartFrame: Int64): Boolean;
+    function TrySetEndFrames(Index: Integer; DisplayEndFrame,
+      SyncEndFrame: Int64): Boolean;
+    function TrySetDisplayLane(Index, DisplayLane: Integer): Boolean;
+    function TrySetPlacementText(Index: Integer;
+      const PlacementText: string): Boolean;
+    function TrySetLanePlacementText(DisplayLane: Integer;
+      const PlacementText: string): Boolean;
+    function CopyLanePlacementTexts: TLyricsLanePlacementTexts;
+    procedure ReplaceLanePlacementTexts(
+      const PlacementTexts: TLyricsLanePlacementTexts);
+    function TryConfirmSync(Index: Integer; PreDisplaySeconds: Double;
+      const SyncText: string): Boolean;
+    function TrySetSync(Index: Integer; PreDisplaySeconds: Double;
+      const SyncText: string): Boolean;
+    function TrySetSyncState(Index: Integer;
+      SyncState: TLyricsLineSyncState): Boolean;
+    // 未編集のWAV行を前後の編集済み境界の間へ配置し直す。
+    procedure RecalculateManualDefaults(AudioDurationSeconds: Double);
+    function TryClearManualSync(Index: Integer): Boolean;
+    function TrySetStartLine(Index: Integer): Boolean;
+    function TrySetStartLineID(LineID: Int64): Boolean;
+    // Rebuilds object-local display ranges from the shared music-note sequence.
+    procedure RecalculateMusicFrameRanges(const MusicFileName: string;
+      Track: Integer; SequenceStartSeconds, MusicOffsetSeconds,
+      DefaultPreDisplaySeconds, DefaultHoldSeconds: Double;
+      Rate, Scale: Integer);
+    // Rebuilds object-local display ranges from absolute audio boundaries.
+    procedure RecalculateManualFrameRanges(MusicOffsetSeconds,
+      DefaultPreDisplaySeconds, DefaultHoldSeconds: Double;
+      Rate, Scale: Integer);
+    property LineCount: Integer read GetLineCount;
+    property StartLineID: Int64 read FStartLineID;
+    property StartLineIndex: Integer read GetStartLineIndex;
+    property PlacementMode: TLyricsPlacementMode read FPlacementMode
+      write FPlacementMode;
+    property LanePlacementTexts[DisplayLane: Integer]: string
+      read GetLanePlacementText;
+    property Lines[Index: Integer]: TLyricsSongLine read GetLine; default;
+  end;
+
+implementation
+
+uses
+  System.Classes,
+  System.Math,
+  System.SysUtils,
+  SYNC_Lyrics_MusicSync,
+  SYNC_Lyrics_SyncFormat;
+
+const
+  DEFAULT_LYRICS_HOLD_SECONDS = 0.5;
+
+constructor TLyricsSongModel.Create;
+begin
+  inherited Create;
+  FNextLineID := 1;
+  FStartLineID := 0;
+end;
+
+procedure TLyricsSongModel.Clear;
+var
+  DisplayLane: Integer;
+begin
+  SetLength(FLines, 0);
+  for DisplayLane := Low(FLanePlacementTexts) to
+    High(FLanePlacementTexts) do
+    FLanePlacementTexts[DisplayLane] := '';
+  FPlacementMode := lpmLine;
+  FNextLineID := 1;
+  FStartLineID := 0;
+end;
+
+function TLyricsSongModel.CopyLanePlacementTexts: TLyricsLanePlacementTexts;
+begin
+  Result := FLanePlacementTexts;
+end;
+
+function TLyricsSongModel.GetLine(Index: Integer): TLyricsSongLine;
+begin
+  if (Index < 0) or (Index >= Length(FLines)) then
+    raise EArgumentOutOfRangeException.Create('Lyrics line index is out of range.');
+  Result := FLines[Index];
+end;
+
+function TLyricsSongModel.GetLineCount: Integer;
+begin
+  Result := Length(FLines);
+end;
+
+function TLyricsSongModel.GetLanePlacementText(DisplayLane: Integer): string;
+begin
+  if (DisplayLane < Low(FLanePlacementTexts)) or
+    (DisplayLane > High(FLanePlacementTexts)) then
+    raise EArgumentOutOfRangeException.Create(
+      'Lyrics display lane is out of range.');
+  Result := FLanePlacementTexts[DisplayLane];
+end;
+
+function TLyricsSongModel.GetStartLineIndex: Integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to High(FLines) do
+    if FLines[I].LineID = FStartLineID then
+      Exit(I);
+end;
+
+function TLyricsSongModel.CopyLines: TLyricsSongLines;
+begin
+  Result := Copy(FLines);
+end;
+
+procedure TLyricsSongModel.InitializeLine(var LineData: TLyricsSongLine;
+  const SourceText: string);
+begin
+  LineData.LineID := FNextLineID;
+  Inc(FNextLineID);
+  LineData.SourceText := SourceText;
+  ParseLyrics(LineData.SourceText, LineData.PlainText,
+    LineData.RubySpans);
+  LineData.DisplayLane := 1;
+  LineData.SyncState := lssUnset;
+  LineData.StartNoteIndex := -1;
+  LineData.PreDisplaySeconds := -1;
+  LineData.HoldSeconds := DEFAULT_LYRICS_HOLD_SECONDS;
+  LineData.SyncText := '';
+  LineData.DisplayStartFrame := -1;
+  LineData.DisplayEndFrame := -1;
+  LineData.SyncStartFrame := -1;
+  LineData.SyncEndFrame := -1;
+  LineData.TimingMusicOffsetSeconds := 0;
+  LineData.PlacementText := '';
+end;
+
+procedure TLyricsSongModel.RecalculateMusicFrameRanges(
+  const MusicFileName: string; Track: Integer; SequenceStartSeconds,
+  MusicOffsetSeconds, DefaultPreDisplaySeconds, DefaultHoldSeconds: Double;
+  Rate, Scale: Integer);
+var
+  DisplayStartSeconds: Double;
+  EffectivePreDisplaySeconds: Double;
+  I: Integer;
+  RequiredNoteCount: Integer;
+  SyncEndSeconds: Double;
+  SyncStartSeconds: Double;
+begin
+  if (Rate <= 0) or (Scale <= 0) then
+    Exit;
+  for I := 0 to High(FLines) do
+  begin
+    RequiredNoteCount := CountMusicSyncRequiredNotes(
+      FLines[I].SyncText,
+      CountLyricsDisplayUnits(FLines[I].SourceText));
+    if not TryResolveMusicSyncTimeRange(MusicFileName, Track,
+      ObjectSecondsToMusicSeconds(SequenceStartSeconds,
+        MusicOffsetSeconds), FLines[I].StartNoteIndex,
+      RequiredNoteCount, SyncStartSeconds, SyncEndSeconds) then
+    begin
+      FLines[I].DisplayStartFrame := -1;
+      FLines[I].DisplayEndFrame := -1;
+      FLines[I].SyncStartFrame := -1;
+      FLines[I].SyncEndFrame := -1;
+      Continue;
+    end;
+    SyncStartSeconds := MusicSecondsToObjectSeconds(
+      SyncStartSeconds, MusicOffsetSeconds);
+    SyncEndSeconds := MusicSecondsToObjectSeconds(
+      SyncEndSeconds, MusicOffsetSeconds);
+    EffectivePreDisplaySeconds := Max(0, DefaultPreDisplaySeconds);
+    FLines[I].PreDisplaySeconds := EffectivePreDisplaySeconds;
+    FLines[I].HoldSeconds := Max(0, DefaultHoldSeconds);
+    DisplayStartSeconds := Max(0,
+      SyncStartSeconds - Max(0, EffectivePreDisplaySeconds));
+    FLines[I].SyncStartFrame := Floor(
+      SyncStartSeconds * Rate / Scale);
+    FLines[I].SyncEndFrame := Max(FLines[I].SyncStartFrame,
+      Ceil(SyncEndSeconds * Rate / Scale) - 1);
+    FLines[I].DisplayStartFrame := Floor(
+      DisplayStartSeconds * Rate / Scale);
+    FLines[I].DisplayEndFrame := Max(FLines[I].DisplayStartFrame,
+      Ceil((SyncEndSeconds + FLines[I].HoldSeconds) *
+        Rate / Scale) - 1);
+    FLines[I].TimingMusicOffsetSeconds := MusicOffsetSeconds;
+  end;
+end;
+
+procedure TLyricsSongModel.RecalculateManualFrameRanges(
+  MusicOffsetSeconds, DefaultPreDisplaySeconds,
+  DefaultHoldSeconds: Double; Rate, Scale: Integer);
+var
+  Data: TSyncTextData;
+  DisplayStartSeconds: Double;
+  I: Integer;
+  SyncEndSeconds: Double;
+  SyncStartSeconds: Double;
+begin
+  if (Rate <= 0) or (Scale <= 0) then
+    Exit;
+  for I := 0 to High(FLines) do
+  begin
+    if not TryParseSyncText(FLines[I].SyncText, Data) or
+      (Data.Mode <> smManual) or
+      (Length(Data.ManualBoundaries) < 2) then
+    begin
+      FLines[I].DisplayStartFrame := -1;
+      FLines[I].DisplayEndFrame := -1;
+      FLines[I].SyncStartFrame := -1;
+      FLines[I].SyncEndFrame := -1;
+      Continue;
+    end;
+    SyncStartSeconds := MusicSecondsToObjectSeconds(
+      Data.ManualBoundaries[0], MusicOffsetSeconds);
+    SyncEndSeconds := MusicSecondsToObjectSeconds(
+      Data.ManualBoundaries[High(Data.ManualBoundaries)],
+      MusicOffsetSeconds);
+    FLines[I].PreDisplaySeconds := Max(0, DefaultPreDisplaySeconds);
+    FLines[I].HoldSeconds := Max(0, DefaultHoldSeconds);
+    DisplayStartSeconds := Max(0,
+      SyncStartSeconds - FLines[I].PreDisplaySeconds);
+    FLines[I].SyncStartFrame := Max(0,
+      Floor(SyncStartSeconds * Rate / Scale));
+    FLines[I].SyncEndFrame := Max(FLines[I].SyncStartFrame,
+      Ceil(SyncEndSeconds * Rate / Scale) - 1);
+    FLines[I].DisplayStartFrame := Floor(
+      DisplayStartSeconds * Rate / Scale);
+    FLines[I].DisplayEndFrame := Max(FLines[I].DisplayStartFrame,
+      Ceil((SyncEndSeconds + FLines[I].HoldSeconds) *
+        Rate / Scale) - 1);
+    FLines[I].TimingMusicOffsetSeconds := MusicOffsetSeconds;
+  end;
+end;
+
+procedure TLyricsSongModel.RecalculateManualDefaults(
+  AudioDurationSeconds: Double);
+var
+  Boundaries: TSyncDoubleArray;
+  Data: TSyncTextData;
+  EndSeconds: Double;
+  I: Integer;
+  J: Integer;
+  K: Integer;
+  RunEndSeconds: Double;
+  RunStartSeconds: Double;
+  StartSeconds: Double;
+  UnitCount: Integer;
+begin
+  if (AudioDurationSeconds <= 0) or (Length(FLines) = 0) then
+    Exit;
+  I := 0;
+  RunStartSeconds := 0;
+  while I < Length(FLines) do
+  begin
+    if FLines[I].SyncState <> lssUnset then
+    begin
+      if TryParseSyncText(FLines[I].SyncText, Data) and
+        (Data.Mode = smManual) and
+        (Length(Data.ManualBoundaries) >= 2) then
+        RunStartSeconds := Data.ManualBoundaries[High(Data.ManualBoundaries)];
+      Inc(I);
+      Continue;
+    end;
+    J := I + 1;
+    while (J < Length(FLines)) and
+      (FLines[J].SyncState = lssUnset) do
+      Inc(J);
+    RunEndSeconds := AudioDurationSeconds;
+    if (J < Length(FLines)) and
+      TryParseSyncText(FLines[J].SyncText, Data) and
+      (Data.Mode = smManual) and
+      (Length(Data.ManualBoundaries) >= 2) then
+      RunEndSeconds := Data.ManualBoundaries[0];
+    RunEndSeconds := Min(AudioDurationSeconds, RunEndSeconds);
+    for K := I to J - 1 do
+    begin
+      UnitCount := CountLyricsDisplayUnits(FLines[K].SourceText);
+      StartSeconds := RunStartSeconds +
+        (RunEndSeconds - RunStartSeconds) * (K - I) / (J - I);
+      EndSeconds := RunStartSeconds +
+        (RunEndSeconds - RunStartSeconds) * (K - I + 1) / (J - I);
+      if (UnitCount <= 0) or
+        (EndSeconds - StartSeconds <= UnitCount * 0.00001) then
+      begin
+        FLines[K].SyncText := '';
+        Continue;
+      end;
+      SetLength(Boundaries, UnitCount + 1);
+      for UnitCount := 0 to High(Boundaries) do
+        Boundaries[UnitCount] := StartSeconds +
+          (EndSeconds - StartSeconds) * UnitCount / High(Boundaries);
+      FLines[K].SyncText := SerializeManualSyncText(Boundaries);
+    end;
+    RunStartSeconds := RunEndSeconds;
+    I := J;
+  end;
+end;
+
+function TLyricsSongModel.LyricsText: string;
+var
+  I: Integer;
+begin
+  Result := '';
+  for I := 0 to High(FLines) do
+  begin
+    if I > 0 then
+      Result := Result + sLineBreak;
+    Result := Result + FLines[I].SourceText;
+  end;
+end;
+
+procedure TLyricsSongModel.RecalculateNoteOffsets;
+var
+  ConsumedNoteCount: Integer;
+  I: Integer;
+  NextNoteIndex: Integer;
+begin
+  NextNoteIndex := 0;
+  for I := 0 to High(FLines) do
+  begin
+    ConsumedNoteCount := CountMusicSyncRequiredNotes(
+      FLines[I].SyncText,
+      CountLyricsDisplayUnits(FLines[I].SourceText));
+    if (FLines[I].StartNoteIndex < 0) or
+      (FLines[I].SyncState <> lssConfirmed) then
+      FLines[I].StartNoteIndex := NextNoteIndex;
+    NextNoteIndex := FLines[I].StartNoteIndex + ConsumedNoteCount;
+  end;
+end;
+
+procedure TLyricsSongModel.ReplaceLines(const Lines: TLyricsSongLines);
+var
+  I: Integer;
+begin
+  FLines := Copy(Lines);
+  FNextLineID := 1;
+  for I := 0 to High(FLines) do
+  begin
+    ParseLyrics(FLines[I].SourceText, FLines[I].PlainText,
+      FLines[I].RubySpans);
+    if FLines[I].LineID >= FNextLineID then
+      FNextLineID := FLines[I].LineID + 1;
+  end;
+  if GetStartLineIndex < 0 then
+    if Length(FLines) > 0 then
+      FStartLineID := FLines[0].LineID
+    else
+      FStartLineID := 0;
+  RecalculateNoteOffsets;
+end;
+
+procedure TLyricsSongModel.ReplaceLanePlacementTexts(
+  const PlacementTexts: TLyricsLanePlacementTexts);
+begin
+  FLanePlacementTexts := PlacementTexts;
+end;
+
+procedure TLyricsSongModel.SetLyricsText(const LyricsText: string);
+var
+  I: Integer;
+  LineIndex: Integer;
+  SourceLines: TStringList;
+begin
+  Clear;
+  SourceLines := TStringList.Create;
+  try
+    SourceLines.Text := LyricsText;
+    for I := 0 to SourceLines.Count - 1 do
+    begin
+      if Trim(SourceLines[I]) = '' then
+        Continue;
+      LineIndex := Length(FLines);
+      SetLength(FLines, LineIndex + 1);
+      InitializeLine(FLines[LineIndex], SourceLines[I]);
+    end;
+  finally
+    SourceLines.Free;
+  end;
+  if Length(FLines) > 0 then
+    FStartLineID := FLines[0].LineID;
+  RecalculateNoteOffsets;
+end;
+
+procedure TLyricsSongModel.UpdateLyricsTextPreservingMatches(
+  const LyricsText: string);
+var
+  I: Integer;
+  MatchIndex: Integer;
+  NewIndex: Integer;
+  NewLines: TLyricsSongLines;
+  OldLines: TLyricsSongLines;
+  OldSearchIndex: Integer;
+  SourceLines: TStringList;
+  StartLineFound: Boolean;
+begin
+  OldLines := Copy(FLines);
+  SetLength(NewLines, 0);
+  OldSearchIndex := 0;
+  SourceLines := TStringList.Create;
+  try
+    SourceLines.Text := LyricsText;
+    for I := 0 to SourceLines.Count - 1 do
+    begin
+      if Trim(SourceLines[I]) = '' then
+        Continue;
+      MatchIndex := OldSearchIndex;
+      while (MatchIndex < Length(OldLines)) and
+        (OldLines[MatchIndex].SourceText <> SourceLines[I]) do
+        Inc(MatchIndex);
+      NewIndex := Length(NewLines);
+      SetLength(NewLines, NewIndex + 1);
+      if MatchIndex < Length(OldLines) then
+      begin
+        NewLines[NewIndex] := OldLines[MatchIndex];
+        OldSearchIndex := MatchIndex + 1;
+      end
+      else
+        InitializeLine(NewLines[NewIndex], SourceLines[I]);
+    end;
+  finally
+    SourceLines.Free;
+  end;
+  FLines := NewLines;
+  StartLineFound := False;
+  for I := 0 to High(FLines) do
+    if FLines[I].LineID = FStartLineID then
+    begin
+      StartLineFound := True;
+      Break;
+    end;
+  if not StartLineFound then
+    if Length(FLines) > 0 then
+      FStartLineID := FLines[0].LineID
+    else
+      FStartLineID := 0;
+  RecalculateNoteOffsets;
+end;
+
+function TLyricsSongModel.TryDeleteLine(Index: Integer): Boolean;
+var
+  DeletedStartLine: Boolean;
+  I: Integer;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines));
+  if not Result then
+    Exit;
+  DeletedStartLine := FLines[Index].LineID = FStartLineID;
+  for I := Index to High(FLines) - 1 do
+    FLines[I] := FLines[I + 1];
+  SetLength(FLines, Length(FLines) - 1);
+  if DeletedStartLine then
+    if Length(FLines) > 0 then
+      FStartLineID := FLines[Min(Index, High(FLines))].LineID
+    else
+      FStartLineID := 0;
+  RecalculateNoteOffsets;
+end;
+
+function TLyricsSongModel.TryInsertLine(Index: Integer;
+  const SourceText: string): Boolean;
+var
+  I: Integer;
+begin
+  Result := (Index >= 0) and (Index <= Length(FLines)) and
+    (Trim(SourceText) <> '');
+  if not Result then
+    Exit;
+  SetLength(FLines, Length(FLines) + 1);
+  for I := High(FLines) downto Index + 1 do
+    FLines[I] := FLines[I - 1];
+  InitializeLine(FLines[Index], SourceText);
+  if FStartLineID = 0 then
+    FStartLineID := FLines[Index].LineID;
+  RecalculateNoteOffsets;
+end;
+
+function TLyricsSongModel.TrySetLineText(Index: Integer;
+  const SourceText: string): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines)) and
+    (Trim(SourceText) <> '');
+  if not Result then
+    Exit;
+  if FLines[Index].SourceText = SourceText then
+    Exit;
+  FLines[Index].SourceText := SourceText;
+  ParseLyrics(FLines[Index].SourceText, FLines[Index].PlainText,
+    FLines[Index].RubySpans);
+  FLines[Index].PlacementText := '';
+  if FLines[Index].SyncState = lssUnset then
+    FLines[Index].SyncText := ''
+  else
+    FLines[Index].SyncState := lssInconsistent;
+  RecalculateNoteOffsets;
+end;
+
+function TLyricsSongModel.TrySetStartFrames(Index: Integer;
+  DisplayStartFrame, SyncStartFrame: Int64): Boolean;
+var
+  TimingChanged: Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines)) and
+    (DisplayStartFrame >= 0) and (SyncStartFrame >= DisplayStartFrame);
+  if not Result then
+    Exit;
+  TimingChanged :=
+    (FLines[Index].DisplayStartFrame <> DisplayStartFrame) or
+    (FLines[Index].SyncStartFrame <> SyncStartFrame);
+  FLines[Index].DisplayStartFrame := DisplayStartFrame;
+  FLines[Index].SyncStartFrame := SyncStartFrame;
+  if TimingChanged and (FLines[Index].SyncState = lssConfirmed) then
+    FLines[Index].SyncState := lssInconsistent;
+end;
+
+function TLyricsSongModel.TrySetEndFrames(Index: Integer;
+  DisplayEndFrame, SyncEndFrame: Int64): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines)) and
+    (DisplayEndFrame >= 0) and (SyncEndFrame >= 0) and
+    ((FLines[Index].DisplayStartFrame < 0) or
+     (DisplayEndFrame >= FLines[Index].DisplayStartFrame)) and
+    ((FLines[Index].SyncStartFrame < 0) or
+     (SyncEndFrame >= FLines[Index].SyncStartFrame));
+  if not Result then
+    Exit;
+  FLines[Index].DisplayEndFrame := DisplayEndFrame;
+  FLines[Index].SyncEndFrame := SyncEndFrame;
+end;
+
+function TLyricsSongModel.TrySetDisplayLane(Index,
+  DisplayLane: Integer): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines)) and
+    (DisplayLane >= 1) and (DisplayLane <= 3);
+  if Result then
+    FLines[Index].DisplayLane := DisplayLane;
+end;
+
+function TLyricsSongModel.TrySetPlacementText(Index: Integer;
+  const PlacementText: string): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines)) and
+    (Pos(#10, PlacementText) = 0) and (Pos(#13, PlacementText) = 0);
+  if Result then
+    FLines[Index].PlacementText := PlacementText;
+end;
+
+function TLyricsSongModel.TrySetLanePlacementText(DisplayLane: Integer;
+  const PlacementText: string): Boolean;
+begin
+  Result := (DisplayLane >= Low(FLanePlacementTexts)) and
+    (DisplayLane <= High(FLanePlacementTexts)) and
+    (Pos(#10, PlacementText) = 0) and (Pos(#13, PlacementText) = 0);
+  if Result then
+    FLanePlacementTexts[DisplayLane] := PlacementText;
+end;
+
+function TLyricsSongModel.TryConfirmSync(Index: Integer;
+  PreDisplaySeconds: Double; const SyncText: string): Boolean;
+begin
+  Result := TrySetSync(Index, PreDisplaySeconds, SyncText);
+  if Result then
+    FLines[Index].SyncState := lssConfirmed;
+end;
+
+function TLyricsSongModel.TrySetSync(Index: Integer;
+  PreDisplaySeconds: Double; const SyncText: string): Boolean;
+var
+  PreviousState: TLyricsLineSyncState;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines));
+  if not Result then
+    Exit;
+  PreviousState := FLines[Index].SyncState;
+  FLines[Index].PreDisplaySeconds := PreDisplaySeconds;
+  FLines[Index].SyncText := SyncText;
+  if PreviousState = lssConfirmed then
+    FLines[Index].SyncState := lssInconsistent
+  else if SyncText = '' then
+    FLines[Index].SyncState := lssUnset
+  else
+    FLines[Index].SyncState := lssProvisional;
+  RecalculateNoteOffsets;
+end;
+
+function TLyricsSongModel.TrySetSyncState(Index: Integer;
+  SyncState: TLyricsLineSyncState): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines));
+  if Result then
+  begin
+    FLines[Index].SyncState := SyncState;
+    RecalculateNoteOffsets;
+  end;
+end;
+
+function TLyricsSongModel.TryClearManualSync(Index: Integer): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines));
+  if not Result then
+    Exit;
+  FLines[Index].SyncText := '';
+  FLines[Index].SyncState := lssUnset;
+  RecalculateNoteOffsets;
+end;
+
+function TLyricsSongModel.TrySetStartLine(Index: Integer): Boolean;
+begin
+  Result := (Index >= 0) and (Index < Length(FLines));
+  if Result then
+    FStartLineID := FLines[Index].LineID;
+end;
+
+function TLyricsSongModel.TrySetStartLineID(LineID: Int64): Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+  for I := 0 to High(FLines) do
+    if FLines[I].LineID = LineID then
+    begin
+      FStartLineID := LineID;
+      Exit(True);
+    end;
+end;
+
+end.
