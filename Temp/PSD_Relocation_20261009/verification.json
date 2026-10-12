@@ -1,0 +1,132 @@
+{
+  "passed": true,
+  "date": "2026-10-09",
+  "psd_count": 11,
+  "filename_format": "人名_属性_楽器名.psd",
+  "psd_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD",
+  "psd_content_unchanged": true,
+  "protected_files_unchanged": 78,
+  "moves": [
+    {
+      "instrument": "keyboard",
+      "character": "東北きりたん",
+      "attribute": "鍵盤",
+      "name_ja": "キーボード",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\東北きりたん_キーボード.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_鍵盤_キーボード.psd",
+      "sha256": "e150f34a928d217177a4bf15ece3e81345d905bd848bca78300d9325369cf86d",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\batch.json"
+    },
+    {
+      "instrument": "guitar",
+      "character": "東北きりたん",
+      "attribute": "撥弦",
+      "name_ja": "エレキギター",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\東北きりたん_エレキギター.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_エレキギター.psd",
+      "sha256": "eae6e27895faf56c22645ae45df568b0eae9f21f6d39d9b781def8fe35f4355f",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\batch.json"
+    },
+    {
+      "instrument": "bass",
+      "character": "東北きりたん",
+      "attribute": "撥弦",
+      "name_ja": "ベース",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\東北きりたん_ベース.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ベース.psd",
+      "sha256": "7eeea61aedee98b962c6e0e16e31b5cd40890efcdc87075a53b19c51e3a0a693",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\batch.json"
+    },
+    {
+      "instrument": "drums",
+      "character": "東北きりたん",
+      "attribute": "打撃",
+      "name_ja": "ドラム",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\東北きりたん_ドラム.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム.psd",
+      "sha256": "ecd110fe69c057aedb5b4d0f4cfc34558c3cc41261c17d42816e1e3b68cc7402",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\batch.json"
+    },
+    {
+      "instrument": "accordion",
+      "character": "東北きりたん",
+      "attribute": "鍵盤",
+      "name_ja": "アコーディオン",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\05_アコーディオン\\東北きりたん_アコーディオン.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_鍵盤_アコーディオン.psd",
+      "sha256": "cd0f03f5dea1053c52db4479f6a2d0563c801f05b3cdc3794f72b01dbd55c8f9",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\05_アコーディオン\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    },
+    {
+      "instrument": "tambourine",
+      "character": "東北きりたん",
+      "attribute": "打撃",
+      "name_ja": "タンバリン",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\06_タンバリン\\東北きりたん_タンバリン.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_タンバリン.psd",
+      "sha256": "b9658e8f394bfc442942f77f47b1ac98ed7e953ad4ed608b9a438cbb66a97d1c",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\06_タンバリン\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    },
+    {
+      "instrument": "violin",
+      "character": "東北きりたん",
+      "attribute": "弓奏",
+      "name_ja": "バイオリン",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\07_バイオリン\\東北きりたん_バイオリン.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_弓奏_バイオリン.psd",
+      "sha256": "77d4bd5512a1e3c6c0f534b7983f8af57b51682d44667e24517db856e4b728e0",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\07_バイオリン\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    },
+    {
+      "instrument": "acoustic_guitar",
+      "character": "東北きりたん",
+      "attribute": "撥弦",
+      "name_ja": "アコースティックギター",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\08_アコースティックギター\\東北きりたん_アコースティックギター.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_アコースティックギター.psd",
+      "sha256": "057f08ea326f8a36c9710974fe877dffdce7cab56959f09a780a0798e081884b",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\08_アコースティックギター\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    },
+    {
+      "instrument": "marimba",
+      "character": "東北きりたん",
+      "attribute": "打撃",
+      "name_ja": "マリンバ_非標準配置",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\東北きりたん_マリンバ_非標準配置.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_マリンバ_非標準配置.psd",
+      "sha256": "e54e15baef75db803c8b09390fe4d94ea85c5b14f371a7a4fdae1cc877b38285",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    },
+    {
+      "instrument": "cello",
+      "character": "東北きりたん",
+      "attribute": "弓奏",
+      "name_ja": "チェロ",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\東北きりたん_チェロ.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_弓奏_チェロ.psd",
+      "sha256": "94b7967860b462e15c650bb13b899591233794947160271b697774d5d1ded347",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    },
+    {
+      "instrument": "normal_marimba",
+      "character": "東北きりたん",
+      "attribute": "打撃",
+      "name_ja": "マリンバ_通常配置",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\05_マリンバ_通常配置\\東北きりたん_マリンバ_通常配置.psd",
+      "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_マリンバ_通常配置.psd",
+      "sha256": "a34d31cfd9785dbec5e342b448b55bcce8c32e6969a642183be822e5a0ca38d4",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\05_マリンバ_通常配置\\PSD変換記録",
+      "batch_file": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\batch.json"
+    }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "documentId": "{30196A49-0F91-48D8-8E3B-B87E5745A357}",
+  "revision": "0",
+  "fileName": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\bass\\assembled.psd",
+  "selectedLayerId": "{B844FA17-C0A1-4696-B821-7B7B33D1EC2E}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{B844FA17-C0A1-4696-B821-7B7B33D1EC2E}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{652F6D6F-74D7-47E1-89A1-24678DA8A789}",
+      "parentId": "{B844FA17-C0A1-4696-B821-7B7B33D1EC2E}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{7D57200F-8391-4893-BECE-4C9168086B06}",
+      "parentId": "{652F6D6F-74D7-47E1-89A1-24678DA8A789}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "100175112671aec9eba8f2ef54d83f54ec6eb9acda02f9bdea0425372914c7af"
+    },
+    {
+      "layerId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "parentId": "{B844FA17-C0A1-4696-B821-7B7B33D1EC2E}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{4786A731-A8D3-437C-B49D-4B04E3627AD3}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "275ce007c8b1587bee51451d49dcf89e2972674f81ea1394f8c53f5b704a8101"
+    },
+    {
+      "layerId": "{34CC800B-32A0-48BE-A139-3C56ED0A40CF}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*演奏01_01_A_low_frets_低フレット",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "929517e8b964e8d44fd9165889ac160f330fddd7a831b3d3c8ef5a25771bd7d5"
+    },
+    {
+      "layerId": "{D25F0503-D57B-4AEB-9563-3DD9EC741E8F}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*演奏02_02_B_high_frets_高フレット",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "d1177d38d5e4a757cfe3eddd9e8204b8c5f81cf834bb086f54333847e3c5b5bd"
+    },
+    {
+      "layerId": "{F2254C23-8344-44C0-8569-EC0BE5F356E1}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*演奏03_03_C_mute_ミュート",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f88c071d2a2104324219fbcac7a73e2428aae6cf70b5fca991c9c8fbc7b5813c"
+    },
+    {
+      "layerId": "{9CCEC11C-BC99-400A-AA87-6FBB34BC959B}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*演奏04_04_D_ready_待機_首境界要調整",
+      "index": 4,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "fc80a76f1b211ea26e4c90349b59c23adb018d9318fe2a46ea96056109145e64"
+    },
+    {
+      "layerId": "{234BCF1B-5F26-4E71-895B-ED5A6EE83283}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*演奏05_05_E_bridge_pluck_ブリッジ寄り",
+      "index": 5,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "651cf99fbb5de6974aeb4eba54912a7d8dd5beffbae60ff0f29015d8fa8263e7"
+    },
+    {
+      "layerId": "{AF1A3468-E6B2-4485-B003-F1840E22D039}",
+      "parentId": "{EF2FDB3C-4897-4EAB-AA21-1AA58823C11A}",
+      "name": "*演奏06_06_F_thumb_accent_親指アクセント",
+      "index": 6,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "362f2edaee345a6e78bfeb1e2ae3d18902517fe708019e79dc6e72134d740871"
+    },
+    {
+      "layerId": "{ED01C9A2-356C-49FA-9BFB-EE046DDAEEFE}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{92C1EEFC-3346-418B-95E9-B46CE79E3E82}",
+      "parentId": "{ED01C9A2-356C-49FA-9BFB-EE046DDAEEFE}",
+      "name": "撥弦",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{FDAB1C8C-CC25-403B-B656-4E7A47702C14}",
+      "parentId": "{92C1EEFC-3346-418B-95E9-B46CE79E3E82}",
+      "name": "ベース",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 14,
+  "hasMore": false
+}

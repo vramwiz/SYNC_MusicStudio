@@ -1,0 +1,19 @@
+{
+  "sha256": "e36ca8dc4e0fa3ceaf1dcc6c03791ab30b9eb3acc1b336688b06abfea1f5e6a9",
+  "user_visual_acceptance": "pending",
+  "original_psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム_基本握り修正_02.psd",
+  "current_unsaved_edits_preserved": true,
+  "new_pose_rgba_sha256": "17de35c5b7809f3f382ac423bc30540857b309cfa885b050448032b17f9d3f99",
+  "added_pose": "*基本_スティック上げ_非打撃",
+  "all_existing_layer_pixels_bounds_attributes_hierarchy_unchanged": true,
+  "pose_count": 8,
+  "passed": true,
+  "modified": false,
+  "layer_count": 15,
+  "output": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム_基本スティック上げ.psd",
+  "basic_and_raised_switched_exclusively": true,
+  "raised_selected": true,
+  "saved_and_reloaded": true,
+  "original_psd_unchanged": true,
+  "original_sha256": "0dce60a92d21b690b2290d5a7a33f4b294ef0b81b1457b36a88ecc9ad854b31d"
+}

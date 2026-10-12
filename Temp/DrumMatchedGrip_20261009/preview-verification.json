@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "saved_basic_rgba_identical": true,
+  "pose_previews": [
+    {
+      "name": "basic",
+      "changed_pixels": 28558,
+      "changed_pixels_outside_mask": 0
+    },
+    {
+      "name": "raised",
+      "changed_pixels": 28441,
+      "changed_pixels_outside_mask": 0
+    }
+  ]
+}

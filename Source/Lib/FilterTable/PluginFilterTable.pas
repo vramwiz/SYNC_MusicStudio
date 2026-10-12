@@ -1,4 +1,4 @@
-unit PluginFilterTable;
+﻿unit PluginFilterTable;
 
 // AviUtl2 Filterテーブルと設定項目の順次登録を一か所で管理する。
 // Syncroh2の同名ユニットを基に、SYNC_Lyricsが使用するSDK型だけへ絞っている。
@@ -72,6 +72,8 @@ begin
   GTable.Items := @GItems[0];
   GTable.Func_Proc_Video := VideoProc;
   GTable.Func_Proc_Audio := AudioProc;
+  GTable.Func_Create := nil;
+  GTable.Func_Destroy := nil;
 end;
 
 procedure AddFile(var Item: TFILTER_ITEM_FILE; Name, Value,
@@ -90,6 +92,7 @@ begin
   Item.ItemType := 'button';
   Item.Name := Name;
   Item.Callback := Callback;
+  Item.Callback2 := nil;
   RegisterItem(@Item);
 end;
 

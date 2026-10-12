@@ -1,5 +1,17 @@
 # Third-party notices
 
+## 現行の演奏スタジオFilter
+
+現行バイナリはFFmpegとSkiaをリンク/同梱しません。WAVは内部で読み、MP3はWindows標準の
+Windows Media Format（DelphiのWinapi.WMF9宣言、wmvcore.dll）を使用します。
+SongReaderのSMF解析・かな母音辞書の考え方を複製して本プロジェクトへ適応しています。
+Syncroh2のPSD部位読取・合成・口形割当UI、SYNC_Motionのリズム計算とRGBA変形を
+プロジェクト専用ユニットへコピーして適応しています。参照元は変更せず、元の著作表記を保持します。
+PSD原本への保存処理は編集UIから呼びません。追加した機能も外部FFmpeg/Skia DLLを必要としません。
+
+以下のFFmpeg資料とバインディングは、継承UIを移植するための参照ソースとして保持したものです。
+現行Filterの依存関係・配布物一覧とは異なります。
+
 ## FFmpeg
 
 SYNC_Lyricsは、WAVの速度変更再生機能のためにFFmpeg共有ライブラリを使用します。

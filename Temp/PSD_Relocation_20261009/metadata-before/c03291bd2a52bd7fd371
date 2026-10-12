@@ -1,0 +1,159 @@
+{
+  "instrument": "guitar",
+  "name_ja": "エレキギター",
+  "attribute": "撥弦",
+  "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\guitar-config.json",
+  "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\guitar",
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\東北きりたん_エレキギター.psd",
+  "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\PSD変換記録",
+  "canvas_wh": [
+    1024,
+    1536
+  ],
+  "pose_count": 8,
+  "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\guitar.png",
+  "head_sha256": "b957a6324360cbcf3e8b7d8988caab9e5f53f4889dc6e95575a9b5e021e63878",
+  "poses": [
+    {
+      "pose_id": "base",
+      "label_ja": "基本_低フレット",
+      "source_label_ja": "guitar_base",
+      "layer_name": "*基本",
+      "layer_path": "キャラクター/演奏姿勢/*基本",
+      "key": "pose_00",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\base\\body.png",
+      "source_sha256": "885c0cdebe15050ff7252a898f0a81b82cde7527f9c3157b1e668f0a5d72ffb3",
+      "rgba_sha256": "8e30859d8d3e53f2979d7776a36e9451d81be99da08537c5ec5ab53a538d2703",
+      "preview_file": "プレビュー/base.png"
+    },
+    {
+      "pose_id": "A_downstroke",
+      "label_ja": "ダウンストローク",
+      "source_label_ja": "guitar_A_downstroke",
+      "layer_name": "*演奏01_A_downstroke_ダウンストローク",
+      "layer_path": "キャラクター/演奏姿勢/*演奏01_A_downstroke_ダウンストローク",
+      "key": "pose_01",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\A_downstroke\\body.png",
+      "source_sha256": "3161ec2a5ec9b232a144073097461dde836821e60a01b2bf743ffbb7bafa6da8",
+      "rgba_sha256": "3cb2e63e6ff3e6621fdcfb88f52e1ff671cac0304772a94768682e5caf165458",
+      "preview_file": "プレビュー/A_downstroke.png"
+    },
+    {
+      "pose_id": "B_upstroke_mid",
+      "label_ja": "アップストローク_中フレット",
+      "source_label_ja": "guitar_B_upstroke_mid",
+      "layer_name": "*演奏02_B_upstroke_mid_アップストローク_中フレット",
+      "layer_path": "キャラクター/演奏姿勢/*演奏02_B_upstroke_mid_アップストローク_中フレット",
+      "key": "pose_02",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\B_upstroke_mid\\body.png",
+      "source_sha256": "0a81df449780f8f580e546f7524e18ac60d13be6b9a8ef3dcf496b84ba2f4155",
+      "rgba_sha256": "5db4913ad498f9f5469843cb612301834a5c29ab9f991e7d9be88d3cc061689d",
+      "preview_file": "プレビュー/B_upstroke_mid.png"
+    },
+    {
+      "pose_id": "C_wait_muted",
+      "label_ja": "待機_ミュート",
+      "source_label_ja": "guitar_C_wait_muted",
+      "layer_name": "*演奏03_C_wait_muted_待機_ミュート",
+      "layer_path": "キャラクター/演奏姿勢/*演奏03_C_wait_muted_待機_ミュート",
+      "key": "pose_03",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\C_wait_muted\\body.png",
+      "source_sha256": "35377d15bf7030c2626f8de0c8ee886c8d1514048b246307f9855f249fee8c15",
+      "rgba_sha256": "352136600c62e5b912b38130ada06124d23a56acb60b46215cd345634b2f25d4",
+      "preview_file": "プレビュー/C_wait_muted.png"
+    },
+    {
+      "pose_id": "D_upstroke_low",
+      "label_ja": "アップストローク_低フレット_要調整",
+      "source_label_ja": "guitar_D_upstroke_low",
+      "layer_name": "*演奏04_D_upstroke_low_アップストローク_低フレット_要調整",
+      "layer_path": "キャラクター/演奏姿勢/*演奏04_D_upstroke_low_アップストローク_低フレット_要調整",
+      "key": "pose_04",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\D_upstroke_low\\body.png",
+      "source_sha256": "138c0987b842f5ccc609273ca89cf370264d7090984512813d20fa1a48ab5a28",
+      "rgba_sha256": "025b0026acb250752c4caede1fbf80fb7714a447b5ab68fa5fc96e4dbcaabb61",
+      "preview_file": "プレビュー/D_upstroke_low.png"
+    },
+    {
+      "pose_id": "E_midstroke_mid",
+      "label_ja": "中間ストローク_中フレット",
+      "source_label_ja": "guitar_E_midstroke_mid",
+      "layer_name": "*演奏05_E_midstroke_mid_中間ストローク_中フレット",
+      "layer_path": "キャラクター/演奏姿勢/*演奏05_E_midstroke_mid_中間ストローク_中フレット",
+      "key": "pose_05",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\E_midstroke_mid\\body.png",
+      "source_sha256": "a805e9bb28fb9a51e58ee926e25ec32ed235a6e80023d54a68e33d4aeed8570b",
+      "rgba_sha256": "8966062bc5f36c78450446276a42cd13153f890afc9902c95ae3b522d15c7f39",
+      "preview_file": "プレビュー/E_midstroke_mid.png"
+    },
+    {
+      "pose_id": "F_downstroke_mid",
+      "label_ja": "ダウンストローク_中フレット",
+      "source_label_ja": "guitar_F_downstroke_mid",
+      "layer_name": "*演奏06_F_downstroke_mid_ダウンストローク_中フレット",
+      "layer_path": "キャラクター/演奏姿勢/*演奏06_F_downstroke_mid_ダウンストローク_中フレット",
+      "key": "pose_06",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\F_downstroke_mid\\body.png",
+      "source_sha256": "e0b2c47bb8e38af08616221cc178a978952a5348fd03bb4366af34301051eff6",
+      "rgba_sha256": "c4bc6a1b87e06c209d66187ad53031a26e4d57407168112f16552f1356ef5e85",
+      "preview_file": "プレビュー/F_downstroke_mid.png"
+    },
+    {
+      "pose_id": "G_high_lead",
+      "label_ja": "高フレット_リード",
+      "source_label_ja": "guitar_G_high_lead",
+      "layer_name": "*演奏07_G_high_lead_高フレット_リード",
+      "layer_path": "キャラクター/演奏姿勢/*演奏07_G_high_lead_高フレット_リード",
+      "key": "pose_07",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\G_high_lead\\body.png",
+      "source_sha256": "fef22503c116ff37d87be03d5919a734029f7f3a65490babf28103d390e0ace9",
+      "rgba_sha256": "a56a777c4bbec130fe84899157b476b4d74b98674e2d1a796f31c97a1a8c601a",
+      "preview_file": "プレビュー/G_high_lead.png"
+    }
+  ],
+  "guide": {
+    "instrument": "guitar",
+    "name_ja": "エレキギター",
+    "classification": "performance_material_candidate",
+    "candidate_pose_count": 8,
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "display_order": [
+      "base",
+      "A_downstroke",
+      "B_upstroke_mid",
+      "C_wait_muted",
+      "D_upstroke_low",
+      "E_midstroke_mid",
+      "F_downstroke_mid",
+      "G_high_lead"
+    ],
+    "display_order_is_not_animation_timing": true,
+    "status_ja": "8姿勢。低・中・高フレット、ストローク、待機。D2は別の改善候補。",
+    "limits_ja": [
+      "旧Dは押弦側袖の最大輪郭差44px。D2は15pxまで改善したが、速い3段階ループの完成版ではない。"
+    ],
+    "integrated_use_ja": "低フレットはbase↔A、中フレットはB→E→F→Eを優先。旧Dは単発アクセントまたは要調整。旧READMEのD→base→A推奨は撤回済み。",
+    "separation_outlook_ja": "頭のみ分離。手とネック、ストラップ、袖の隠れ面を補完しない自動分離は不向き。",
+    "remaining_work_ja": [
+      "低フレット上ストロークの袖固定、厳密な静止一致と曲同期。"
+    ],
+    "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+    "source_edition": "v2",
+    "fixed_head_path": "heads/guitar.png",
+    "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+  },
+  "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+  "instrument_metadata_is_not_separate_raster": true,
+  "chair_and_equipment_integrated": false,
+  "status": "integrated_pose_psd_verified; vocal_face_layer_migration_pending",
+  "psd_sha256": "eae6e27895faf56c22645ae45df568b0eae9f21f6d39d9b781def8fe35f4355f",
+  "source_files_unchanged": true,
+  "every_pose_selected_in_actual_application": true,
+  "every_preview_rendered_from_saved_psd": true,
+  "visual_review": "all 36 poses reviewed on contact sheets; source issues retained",
+  "vocal_head_expression_reuse": "not yet migrated; supplied flattened fixed head used without transformation",
+  "separation_assessment_ja": "手・袖・ネック・ストラップが重なるため独立分離は難しい。補完なしの分解を行っていない。Eの中間ストロークは提供素材であり、他の新しい中間画像は作成していない。"
+}

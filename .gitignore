@@ -32,3 +32,9 @@ Win64/
 *.[mM][xX][lL]
 *.[mM][sS][cC][xX]
 *.[mM][sS][cC][zZ]
+
+# Downloaded cloud materials and local PSD trials are temporary assets.
+/Temp/Dots_20261009/
+
+# Generated editor test fixtures, screenshots and transfer scratch files.
+/Temp/EditorStage1/

@@ -1,0 +1,266 @@
+{
+  "documentId": "{E3EA25B8-C0E6-4706-811A-74E8DFC21201}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\東北きりたん_エレキギター.psd",
+  "selectedLayerId": "{8CCBE19E-981D-45B0-895B-28439534DF07}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{8CCBE19E-981D-45B0-895B-28439534DF07}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{BA80EAA1-5B89-447D-9422-D354EE640D0F}",
+      "parentId": "{8CCBE19E-981D-45B0-895B-28439534DF07}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{2153A5FE-1DE1-4A40-8ACA-9D2A8D6F5DFD}",
+      "parentId": "{BA80EAA1-5B89-447D-9422-D354EE640D0F}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "61c79e0f6184ddd67fe9ff1e785bfc36aac3a93ed210cbb72b8569d21880efd3"
+    },
+    {
+      "layerId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "parentId": "{8CCBE19E-981D-45B0-895B-28439534DF07}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{7BB868AA-2215-423E-B364-9AF7143D62A3}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "8e30859d8d3e53f2979d7776a36e9451d81be99da08537c5ec5ab53a538d2703"
+    },
+    {
+      "layerId": "{A0DBE57A-939C-4A6A-A1E9-6BA21D61D3A6}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏01_A_downstroke_ダウンストローク",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "3cb2e63e6ff3e6621fdcfb88f52e1ff671cac0304772a94768682e5caf165458"
+    },
+    {
+      "layerId": "{42F88B21-8F02-4630-AF3F-6D5D08BCBFDE}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏02_B_upstroke_mid_アップストローク_中フレット",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "5db4913ad498f9f5469843cb612301834a5c29ab9f991e7d9be88d3cc061689d"
+    },
+    {
+      "layerId": "{B046608C-765F-48BA-AE06-CE461206C761}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏03_C_wait_muted_待機_ミュート",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "352136600c62e5b912b38130ada06124d23a56acb60b46215cd345634b2f25d4"
+    },
+    {
+      "layerId": "{2E554FFA-1EFA-4345-AE1A-6C7FBD53EA0B}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏04_D_upstroke_low_アップストローク_低フレット_要調整",
+      "index": 4,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "025b0026acb250752c4caede1fbf80fb7714a447b5ab68fa5fc96e4dbcaabb61"
+    },
+    {
+      "layerId": "{F1645CA4-A34F-4B78-83D9-147904E121C9}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏05_E_midstroke_mid_中間ストローク_中フレット",
+      "index": 5,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "8966062bc5f36c78450446276a42cd13153f890afc9902c95ae3b522d15c7f39"
+    },
+    {
+      "layerId": "{C4BC9A21-E332-4669-869B-2D29BCE33869}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏06_F_downstroke_mid_ダウンストローク_中フレット",
+      "index": 6,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "c4bc6a1b87e06c209d66187ad53031a26e4d57407168112f16552f1356ef5e85"
+    },
+    {
+      "layerId": "{1DDEC14E-BCDE-47D5-B28F-2BCB752B17CA}",
+      "parentId": "{5E171051-56D2-4081-A33E-9D0DA521B94F}",
+      "name": "*演奏07_G_high_lead_高フレット_リード",
+      "index": 7,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "a56a777c4bbec130fe84899157b476b4d74b98674e2d1a796f31c97a1a8c601a"
+    },
+    {
+      "layerId": "{C67BFA81-70F1-47AC-BE67-3EC0EEF3E1A8}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{11AA3137-B93F-4F7D-BDC6-EC53406BAD94}",
+      "parentId": "{C67BFA81-70F1-47AC-BE67-3EC0EEF3E1A8}",
+      "name": "撥弦",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{1B7A2158-5127-4028-86BA-0E12354FADE1}",
+      "parentId": "{11AA3137-B93F-4F7D-BDC6-EC53406BAD94}",
+      "name": "エレキギター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 15,
+  "hasMore": false
+}

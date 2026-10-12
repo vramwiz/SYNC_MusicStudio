@@ -1,0 +1,198 @@
+{
+  "documentId": "{56C9DE56-FEBD-4BB5-84AC-3F0077792DC2}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_トライアングル.psd",
+  "selectedLayerId": "{0F20B1B8-3D78-426B-9558-33061D7E30E0}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{0F20B1B8-3D78-426B-9558-33061D7E30E0}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{71B4C9B7-2274-4CB6-8318-65959B820020}",
+      "parentId": "{0F20B1B8-3D78-426B-9558-33061D7E30E0}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{1BEF4E5A-CBD2-46BA-AA22-EA3E295AA6E7}",
+      "parentId": "{71B4C9B7-2274-4CB6-8318-65959B820020}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f193466549a5b86ae2a51a181c233834347854ce7bc2453b756c16d394d5cdc6"
+    },
+    {
+      "layerId": "{A8958F37-E191-4E06-B4EC-C41A394C4A58}",
+      "parentId": "{0F20B1B8-3D78-426B-9558-33061D7E30E0}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{EF7F70A9-E819-4324-ADF6-0C5A6DB75294}",
+      "parentId": "{A8958F37-E191-4E06-B4EC-C41A394C4A58}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "b04b1573c33423b6796074942a2d6d9fa2eda98c86a8cc90db011675ced390b8"
+    },
+    {
+      "layerId": "{A2FEEBA3-B8A2-4126-A998-ABA03ADE2FA9}",
+      "parentId": "{A8958F37-E191-4E06-B4EC-C41A394C4A58}",
+      "name": "*演奏01_01_A_ビーター上げ準備",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "594bd60b29b7df0ae877475f8532bff940a5bb3e89bfdf8754c680b2f23418dd"
+    },
+    {
+      "layerId": "{3098B156-5090-4EFF-9791-F3C9A7C52BBE}",
+      "parentId": "{A8958F37-E191-4E06-B4EC-C41A394C4A58}",
+      "name": "*演奏02_02_B_ビーター下方離し",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "4ec454417d5cf53b102acc179415100ccb09b5947617884cac5e480ac4e82edf"
+    },
+    {
+      "layerId": "{F2D2246E-8CC6-4468-A327-CB1D0B1B7038}",
+      "parentId": "{A8958F37-E191-4E06-B4EC-C41A394C4A58}",
+      "name": "*演奏03_03_C_金属把持_ミュート待機",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "5644bf6df9f7960ee51a9fa16c9ec1b14158d13417cd666fc8434fdf4d1693f1"
+    },
+    {
+      "layerId": "{C5A84036-15C8-4237-B9C1-726B14DB8264}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{E22EC5DD-60B1-43C0-A609-415D1DED5BCE}",
+      "parentId": "{C5A84036-15C8-4237-B9C1-726B14DB8264}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{8E657634-DEEA-46EE-80DD-4FBB21BDDAA7}",
+      "parentId": "{E22EC5DD-60B1-43C0-A609-415D1DED5BCE}",
+      "name": "トライアングル",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 11,
+  "hasMore": false
+}

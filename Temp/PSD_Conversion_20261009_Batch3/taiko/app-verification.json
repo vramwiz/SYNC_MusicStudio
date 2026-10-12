@@ -1,0 +1,31 @@
+{
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "passed": true,
+  "file_sha256": "21c0ef562fd26d8a878347cc77e5537946860450e18ff7fd928e90487380f27a",
+  "default_restored": true,
+  "saved_and_reloaded": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_和太鼓.psd",
+  "pid": 19920,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "checks": [
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{129186EC-BE7C-4AAD-BAAB-FBA4E3FA3497}",
+      "name": "*演奏01_01_A_右鼓面側・左上げ"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{2E478499-3DDB-45D7-B11D-312CB28FE7D9}",
+      "name": "*演奏02_02_B_両撥上げ準備"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{EFF1CA2E-561B-4014-89A4-05AB2ACCE802}",
+      "name": "*演奏03_03_C_両撥低位置_待機"
+    }
+  ],
+  "selected_pose_count": 4
+}

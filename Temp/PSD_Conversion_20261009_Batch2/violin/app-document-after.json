@@ -1,0 +1,181 @@
+{
+  "documentId": "{237838CA-09AE-466E-BC34-9A0066173FF1}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\07_バイオリン\\東北きりたん_バイオリン.psd",
+  "selectedLayerId": "{1224BDA6-40E1-40B8-BFFA-64A1738CF73C}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{1224BDA6-40E1-40B8-BFFA-64A1738CF73C}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{C073E316-D885-4412-8323-13E2B52EC382}",
+      "parentId": "{1224BDA6-40E1-40B8-BFFA-64A1738CF73C}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{80725C05-77E5-4F6B-9483-7E7D3F23302E}",
+      "parentId": "{C073E316-D885-4412-8323-13E2B52EC382}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f8563f2e663bde52f0f931d092a6faf98569fe46f2c4ef43ee719e665790980a"
+    },
+    {
+      "layerId": "{50FE5A25-2486-4DA0-98BC-DB9553437EC8}",
+      "parentId": "{1224BDA6-40E1-40B8-BFFA-64A1738CF73C}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{5F96825F-D32B-4C38-BE13-AEAEAC337A18}",
+      "parentId": "{50FE5A25-2486-4DA0-98BC-DB9553437EC8}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "3734f51e5549cf48da1bf08069338ac89bd638ee375fefe5c112daa8ae741599"
+    },
+    {
+      "layerId": "{ADBCC4CC-B7CE-4E65-B0C0-75D913FEE0F3}",
+      "parentId": "{50FE5A25-2486-4DA0-98BC-DB9553437EC8}",
+      "name": "*演奏01_01_A_lower_下げ弓",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "6ee2a378048f9042daf970523f9bb78155248f00bf58b64777d05d496b4d9515"
+    },
+    {
+      "layerId": "{F13EC023-862C-412D-99A8-A48CCF22D9B8}",
+      "parentId": "{50FE5A25-2486-4DA0-98BC-DB9553437EC8}",
+      "name": "*演奏02_03_C_rest_待機_弦から離す",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "a62551d07a8978297f6e10b18144d5282fead005b79a6ed8052339d879b7927e"
+    },
+    {
+      "layerId": "{1C9570F5-C77E-4F24-A0C7-3C6E780F21EF}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{189E8A00-217E-4E3E-8EAE-69142F257059}",
+      "parentId": "{1C9570F5-C77E-4F24-A0C7-3C6E780F21EF}",
+      "name": "弓奏",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{9CE5379F-6571-4C8E-8B02-8268D50A0116}",
+      "parentId": "{189E8A00-217E-4E3E-8EAE-69142F257059}",
+      "name": "バイオリン",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 10,
+  "hasMore": false
+}

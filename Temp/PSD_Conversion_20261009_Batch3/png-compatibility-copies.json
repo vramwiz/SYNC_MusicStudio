@@ -1,0 +1,67 @@
+{
+  "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\bongo_handbells.png": {
+    "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\bongo_handbells.png",
+    "source_sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+    "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\e77145ca601539598708.png",
+    "copy_sha256": "7b30bffa094efd207864c9306732c6fff114c1f90750b113d78d1934fba7484a",
+    "rgba_sha256": "6b3048fcec9db1602ab41284ca396945fcf14bbe1770b4dcde63ffbc6055acc7",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "rgba_exact": true,
+    "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+  },
+  "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\00_base\\body.png": {
+    "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\00_base\\body.png",
+    "source_sha256": "bc782aafd839c34c45465acf2fff2383aa0bb4e81330f55be4dc31ad25f6488e",
+    "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\f56dee054048ea019ba9.png",
+    "copy_sha256": "d61493383cf4659b76403a669df07be12d01848473503678aa61f64034690cf1",
+    "rgba_sha256": "32d01c6ddf701514f931b2f42ff1971f03fb1b74fb161e95dde5dd4ea492040f",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "rgba_exact": true,
+    "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+  },
+  "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\01_A\\body.png": {
+    "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\01_A\\body.png",
+    "source_sha256": "35ace66ff1b20d3675175e09cced428b1b01ba92e3cf1e47490b77487d292b12",
+    "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\cec58f56c4df7d4769a3.png",
+    "copy_sha256": "48945bb384ad1d09090111912cf784afe75c095fc4f55cf947cb143f23fd8b95",
+    "rgba_sha256": "0f0738059f29b0210c81db47f5d2ca8ad7925d05e6feb9e9d8e18108ccf24786",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "rgba_exact": true,
+    "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+  },
+  "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\02_B\\body.png": {
+    "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\02_B\\body.png",
+    "source_sha256": "0307413b9da190d9e1752227860ca5659d2c3567a27347a263bd6811c5f8eb12",
+    "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\5e36868d5598e043bc25.png",
+    "copy_sha256": "9b95b0ca0e92e2719ce29a7f87fe0cf4c88765f00a32e09d6d4307c0bb8e1ed4",
+    "rgba_sha256": "a05f1a33bae91cf1cab6921386926e6c296223ea99b7c9ec32e782faf192a37f",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "rgba_exact": true,
+    "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+  },
+  "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\03_C\\body.png": {
+    "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\03_C\\body.png",
+    "source_sha256": "aafc054bf3ef4f23787966fc9f19999b541319a3d258a046afc8fc42bf2fb923",
+    "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\d6529ead137b78e2f940.png",
+    "copy_sha256": "ba9223eacfe76723ad3de0a6ee9b7340e7f2069e6235ab5f2bc54a35de09a3c3",
+    "rgba_sha256": "99e38f818331ea7292bb1c2ec6d0c97daf7c2d554ecb940bd1c849972488af57",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "rgba_exact": true,
+    "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+  }
+}

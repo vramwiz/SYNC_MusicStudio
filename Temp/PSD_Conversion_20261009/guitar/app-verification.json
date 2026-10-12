@@ -1,0 +1,55 @@
+{
+  "selected_pose_count": 8,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\東北きりたん_エレキギター.psd",
+  "checks": [
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏01_A_downstroke_ダウンストローク",
+      "jobId": "{B6A181C1-8510-4884-9983-40BEEA253025}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏02_B_upstroke_mid_アップストローク_中フレット",
+      "jobId": "{E4855F04-59C9-43C1-8382-A3C065D402D3}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏03_C_wait_muted_待機_ミュート",
+      "jobId": "{838044EF-7749-4FC4-A234-7DCDC516FF89}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏04_D_upstroke_low_アップストローク_低フレット_要調整",
+      "jobId": "{02FBBA82-DEA9-4F4A-B5B7-91014EF0D225}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏05_E_midstroke_mid_中間ストローク_中フレット",
+      "jobId": "{29FC55E5-0370-412B-A14A-09BA86EB4198}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏06_F_downstroke_mid_ダウンストローク_中フレット",
+      "jobId": "{7BAC8D83-34F7-4138-B84B-F6A4FA5903DB}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏07_G_high_lead_高フレット_リード",
+      "jobId": "{4C1DCE63-8DD7-4CE1-99CA-89A9CA947C30}",
+      "visible_pose_count": 1
+    }
+  ],
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "saved_and_reloaded": true,
+  "pid": 2968,
+  "file_sha256": "eae6e27895faf56c22645ae45df568b0eae9f21f6d39d9b781def8fe35f4355f",
+  "default_restored": true,
+  "passed": true
+}

@@ -1,0 +1,90 @@
+[
+  {
+    "instrument": "keyboard",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_鍵盤_キーボード.psd",
+    "created_version_sha256": "e150f34a928d217177a4bf15ece3e81345d905bd848bca78300d9325369cf86d",
+    "before_batch3_sha256": "7bae86996fb337728e8ed19f8e35d5a57e9c49903f141a8fec23491e617a30e6",
+    "changed_since_created": true,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "guitar",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_エレキギター.psd",
+    "created_version_sha256": "eae6e27895faf56c22645ae45df568b0eae9f21f6d39d9b781def8fe35f4355f",
+    "before_batch3_sha256": "eae6e27895faf56c22645ae45df568b0eae9f21f6d39d9b781def8fe35f4355f",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "bass",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ベース.psd",
+    "created_version_sha256": "7eeea61aedee98b962c6e0e16e31b5cd40890efcdc87075a53b19c51e3a0a693",
+    "before_batch3_sha256": "7eeea61aedee98b962c6e0e16e31b5cd40890efcdc87075a53b19c51e3a0a693",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "drums",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム.psd",
+    "created_version_sha256": "ecd110fe69c057aedb5b4d0f4cfc34558c3cc41261c17d42816e1e3b68cc7402",
+    "before_batch3_sha256": "ecd110fe69c057aedb5b4d0f4cfc34558c3cc41261c17d42816e1e3b68cc7402",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "accordion",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_鍵盤_アコーディオン.psd",
+    "created_version_sha256": "cd0f03f5dea1053c52db4479f6a2d0563c801f05b3cdc3794f72b01dbd55c8f9",
+    "before_batch3_sha256": "cd0f03f5dea1053c52db4479f6a2d0563c801f05b3cdc3794f72b01dbd55c8f9",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "tambourine",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_タンバリン.psd",
+    "created_version_sha256": "b9658e8f394bfc442942f77f47b1ac98ed7e953ad4ed608b9a438cbb66a97d1c",
+    "before_batch3_sha256": "d232557a5ca3e85f30cdb3452e1e1221addda6baf39845d5a58f05afdce8c8a8",
+    "changed_since_created": true,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "violin",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_弓奏_バイオリン.psd",
+    "created_version_sha256": "77d4bd5512a1e3c6c0f534b7983f8af57b51682d44667e24517db856e4b728e0",
+    "before_batch3_sha256": "77d4bd5512a1e3c6c0f534b7983f8af57b51682d44667e24517db856e4b728e0",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "acoustic_guitar",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_アコースティックギター.psd",
+    "created_version_sha256": "057f08ea326f8a36c9710974fe877dffdce7cab56959f09a780a0798e081884b",
+    "before_batch3_sha256": "057f08ea326f8a36c9710974fe877dffdce7cab56959f09a780a0798e081884b",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "marimba",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_マリンバ_非標準配置.psd",
+    "created_version_sha256": "e54e15baef75db803c8b09390fe4d94ea85c5b14f371a7a4fdae1cc877b38285",
+    "before_batch3_sha256": "e54e15baef75db803c8b09390fe4d94ea85c5b14f371a7a4fdae1cc877b38285",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "cello",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_弓奏_チェロ.psd",
+    "created_version_sha256": "94b7967860b462e15c650bb13b899591233794947160271b697774d5d1ded347",
+    "before_batch3_sha256": "94b7967860b462e15c650bb13b899591233794947160271b697774d5d1ded347",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  },
+  {
+    "instrument": "normal_marimba",
+    "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_マリンバ_通常配置.psd",
+    "created_version_sha256": "a34d31cfd9785dbec5e342b448b55bcce8c32e6969a642183be822e5a0ca38d4",
+    "before_batch3_sha256": "a34d31cfd9785dbec5e342b448b55bcce8c32e6969a642183be822e5a0ca38d4",
+    "changed_since_created": false,
+    "policy": "Preserve the current file; previous verification applies to the created version."
+  }
+]

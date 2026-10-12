@@ -1,0 +1,38 @@
+{
+  "pipeName": "AIArtToPSD.16528.{F7196CD1-04DD-4049-B28E-4FB9D65634BF}",
+  "busy": false,
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム.psd",
+  "commands": [
+    "status",
+    "document",
+    "save",
+    "export",
+    "import",
+    "progress",
+    "cancel",
+    "undo",
+    "redo",
+    "recover",
+    "image-begin",
+    "image-chunk",
+    "image-status",
+    "image-commit",
+    "image-abort"
+  ],
+  "canUndo": true,
+  "canRedo": false,
+  "modified": true,
+  "canEdit": true,
+  "documentId": "{D1A838B0-69A0-4F24-B7FE-68EB2A8FD2C2}",
+  "revision": "2",
+  "job": {
+    "jobId": "{E7D3A536-9A38-4D0A-8462-453431B62210}",
+    "directory": "D:\\DelphiProg\\AIArtToPSD\\Exchange\\{E7D3A536-9A38-4D0A-8462-453431B62210}",
+    "state": "queued",
+    "progress": 0,
+    "message": "",
+    "documentId": "{D1A838B0-69A0-4F24-B7FE-68EB2A8FD2C2}",
+    "ifRevision": "2",
+    "stale": false
+  }
+}

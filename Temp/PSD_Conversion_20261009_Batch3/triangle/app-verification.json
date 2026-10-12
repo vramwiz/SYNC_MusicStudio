@@ -1,0 +1,31 @@
+{
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "passed": true,
+  "file_sha256": "7e7b950fcd08466cacfb57e437e5239c90f84253cda28630ec20cb872917b95c",
+  "default_restored": true,
+  "saved_and_reloaded": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_トライアングル.psd",
+  "pid": 5992,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "checks": [
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{CCCEEBF9-A8F5-46DF-8822-01718FEC248D}",
+      "name": "*演奏01_01_A_ビーター上げ準備"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{0D617A76-67AD-4066-8EDA-5288EAF5E04C}",
+      "name": "*演奏02_02_B_ビーター下方離し"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{7B01BA1B-8928-49DC-AF94-B7960273F5C5}",
+      "name": "*演奏03_03_C_金属把持_ミュート待機"
+    }
+  ],
+  "selected_pose_count": 4
+}

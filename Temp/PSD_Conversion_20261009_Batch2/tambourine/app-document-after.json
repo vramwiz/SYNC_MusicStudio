@@ -1,0 +1,198 @@
+{
+  "documentId": "{4F1E2B68-8F69-4BD6-9D62-F8466E821FDF}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\06_タンバリン\\東北きりたん_タンバリン.psd",
+  "selectedLayerId": "{B333881F-37FC-4616-8BC7-8F52064D14AF}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{B333881F-37FC-4616-8BC7-8F52064D14AF}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{C1DD3EF7-CEDA-44D7-A83A-ED3045AA99CD}",
+      "parentId": "{B333881F-37FC-4616-8BC7-8F52064D14AF}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{62AF3A0A-D21A-4DAF-97EF-6E98712EB24B}",
+      "parentId": "{C1DD3EF7-CEDA-44D7-A83A-ED3045AA99CD}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f193466549a5b86ae2a51a181c233834347854ce7bc2453b756c16d394d5cdc6"
+    },
+    {
+      "layerId": "{21D4DA16-20DF-4374-A913-65DD2BFA41FA}",
+      "parentId": "{B333881F-37FC-4616-8BC7-8F52064D14AF}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{0125D1D1-14DB-4E8B-B2DB-5274304D0B1B}",
+      "parentId": "{21D4DA16-20DF-4374-A913-65DD2BFA41FA}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "177e02705606dce711f1f8ee980b24f45d1fb07412205226dab8681329204a9d"
+    },
+    {
+      "layerId": "{5599FC25-98A3-43A7-BD52-6F9206198750}",
+      "parentId": "{21D4DA16-20DF-4374-A913-65DD2BFA41FA}",
+      "name": "*演奏01_01_A_打つ直前",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "ec282a76953266619824fd25ce79fb0ee17e84d7c10b891ee77a968616c955d5"
+    },
+    {
+      "layerId": "{AEF6C847-817F-438B-98D3-8F08EB373038}",
+      "parentId": "{21D4DA16-20DF-4374-A913-65DD2BFA41FA}",
+      "name": "*演奏02_02_B_リム接触寄り",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "599cdb4e849e76a67a3eaafb67042ee69fbcbbe5aa822e8d5567d57d6544e969"
+    },
+    {
+      "layerId": "{E620767E-6CBD-4913-BEC8-87BCE58BDB5C}",
+      "parentId": "{21D4DA16-20DF-4374-A913-65DD2BFA41FA}",
+      "name": "*演奏03_03_C_軽い角度変更_待機",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "d76716d07f7300589ef072d22f6f1aa494f8597197f033f818c29f4277e0aab3"
+    },
+    {
+      "layerId": "{F48E5C4E-06EE-4E0B-97C0-7CA1F006FD52}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{36907F66-A6A7-4885-9583-0BA3F2265004}",
+      "parentId": "{F48E5C4E-06EE-4E0B-97C0-7CA1F006FD52}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{A9DCA464-C2E0-42F7-87F8-B8B63425E773}",
+      "parentId": "{36907F66-A6A7-4885-9583-0BA3F2265004}",
+      "name": "タンバリン",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 11,
+  "hasMore": false
+}

@@ -1,0 +1,126 @@
+{
+  "instrument": "marimba",
+  "source_group": "core",
+  "name_ja": "マリンバ_非標準配置",
+  "attribute": "打撃",
+  "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\marimba-config.json",
+  "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\marimba",
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\東北きりたん_マリンバ_非標準配置.psd",
+  "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\PSD変換記録",
+  "canvas_wh": [
+    1536,
+    1024
+  ],
+  "pose_count": 5,
+  "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\marimba.png",
+  "head_sha256": "5c2e73f457dc5146a9c4c4c219c114c819ece8a9163f6c574bdbc4526b526afe",
+  "poses": [
+    {
+      "pose_id": "00_base",
+      "label_ja": "基本_黒窓群",
+      "source_label_ja": "右打面付近・左直前",
+      "key": "pose_00",
+      "layer_name": "*基本",
+      "layer_path": "キャラクター/演奏姿勢/*基本",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\00_base\\body.png",
+      "source_sha256": "cfe0fe63d2e2202417152da086104ba53a54594250be87b2df78324a20c00412",
+      "rgba_sha256": "62ff4fb2588477d402dafdb7b8b7a3eeb0b79ca0978072b4a9b9b971cd6dd8c3",
+      "preview_file": "プレビュー/00_base.png"
+    },
+    {
+      "pose_id": "01_A",
+      "label_ja": "左離脱_黒窓群",
+      "source_label_ja": "左離脱（直前・直後兼用）・右打面付近",
+      "key": "pose_01",
+      "layer_name": "*演奏01_01_A_左離脱_黒窓群",
+      "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_左離脱_黒窓群",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\01_A\\body.png",
+      "source_sha256": "9e11bf03bc772ea066a86ded6242d706e2fed290d284bda8aab119b487e7e1ce",
+      "rgba_sha256": "715ea78822c2e31e66b5c9894b237115feb23d15fb7f3df94cbd112527c39307",
+      "preview_file": "プレビュー/01_A.png"
+    },
+    {
+      "pose_id": "02_B",
+      "label_ja": "右離脱_透明窓群",
+      "source_label_ja": "右離脱（直前・直後兼用）・左直前",
+      "key": "pose_02",
+      "layer_name": "*演奏02_02_B_右離脱_透明窓群",
+      "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_右離脱_透明窓群",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\02_B\\body.png",
+      "source_sha256": "e6015793b18498289e850c61d0c12b99543480decfc6222d599fa461e0664aad",
+      "rgba_sha256": "0b85e12ddfa3374a2717c551689f2def61ea4efc307cb34dcca8179a12092d7f",
+      "preview_file": "プレビュー/02_B.png"
+    },
+    {
+      "pose_id": "03_C",
+      "label_ja": "両手待機_透明窓群",
+      "source_label_ja": "両手待機",
+      "key": "pose_03",
+      "layer_name": "*演奏03_03_C_両手待機_透明窓群",
+      "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_両手待機_透明窓群",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\03_C\\body.png",
+      "source_sha256": "a75809f6d11daaffa08c603728d7cc8252df72268f0d3ad052687c9836c12764",
+      "rgba_sha256": "bacae610da0e9ac27ef0ed47eed00a338422aeebd110d6f45bda917974992fff",
+      "preview_file": "プレビュー/03_C.png"
+    },
+    {
+      "pose_id": "04_D",
+      "label_ja": "左低域接触_透明窓群",
+      "source_label_ja": "左低域接触・右待機",
+      "key": "pose_04",
+      "layer_name": "*演奏04_04_D_左低域接触_透明窓群",
+      "layer_path": "キャラクター/演奏姿勢/*演奏04_04_D_左低域接触_透明窓群",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\04_D\\body.png",
+      "source_sha256": "be9ba68f6c08dfbd827ccefb9da8976380fffa1aa3833ab66ba3e3a2edbf862b",
+      "rgba_sha256": "a9104e2886ad73d71ac401e36db0c3e78251099af4c8c8cdfa9da85ea87ad9e5",
+      "preview_file": "プレビュー/04_D.png"
+    }
+  ],
+  "guide": {
+    "instrument": "marimba",
+    "name_ja": "マリンバ",
+    "classification": "performance_material_candidate",
+    "candidate_pose_count": 5,
+    "canvas_wh": [
+      1536,
+      1024
+    ],
+    "display_order": [
+      "00_base",
+      "01_A",
+      "02_B",
+      "03_C",
+      "04_D"
+    ],
+    "display_order_is_not_animation_timing": true,
+    "status_ja": "基準・片手離脱A/B・両手待機C・画面左低域接触Dの5姿勢。 背面側から叩く非標準配置。通常奏法図として未検証。",
+    "limits_ja": [
+      "基準/Aは架台内窓がほぼ黒不透明、B/C/Dはほぼ透明で、群を跨ぐと窓が点滅する。基準は両手同時接触ではなく、A/Bの時間の前後も断定しない。",
+      "背面側から叩く非標準配置。通常奏法図として未検証。 既存5姿勢とARが対象です。Yamahaの配列説明と素材画像からの向きの推論であり、物理的に演奏不可能という判定ではありません。教材用の通常演奏構えとしては扱わないでください。"
+    ],
+    "integrated_use_ja": "背面側から叩く非標準配置。通常奏法図として未検証。 旧基準/Aの黒窓群と、AR＋B/C/Dの透明窓群を分けて使う。ARはAの改訂候補。Cは待機、Dは低域接触。旧基準を透明窓群へ混ぜない。",
+    "separation_outlook_ja": "頭のみ分離。手・マレット・袖を分けるには柄の接触と隠れた音板の補完が必要。",
+    "remaining_work_ja": [
+      "静止外観と内窓透過構造の統一、接触と離脱の中間コマ。00R試作は首元の局所欠けで不採用。"
+    ],
+    "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+    "source_edition": "v2",
+    "fixed_head_path": "heads/marimba.png",
+    "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+  },
+  "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+  "instrument_metadata_is_not_separate_raster": true,
+  "chair_and_equipment_integrated": false,
+  "status": "integrated_pose_psd_verified; vocal_face_layer_migration_pending",
+  "psd_sha256": "e54e15baef75db803c8b09390fe4d94ea85c5b14f371a7a4fdae1cc877b38285",
+  "source_files_unchanged": true,
+  "every_pose_selected_in_actual_application": true,
+  "every_preview_rendered_from_saved_psd": true,
+  "visual_review_observations_ja": [
+    "5姿勢を目視。頭部は固定で、マレットと手位置の差を保持。",
+    "00/Aの架台内窓は暗く、B/C/Dでは背景が見える差が明確。黒窓群と透明窓群を跨ぐ切替は外観が変わる。",
+    "非標準配置として通常配置と別ファイルにし、補修ARへは置き換えていない。"
+  ],
+  "supplied_composite_comparisons": [],
+  "vocal_head_expression_reuse": "not yet migrated; supplied flattened fixed head used without transformation"
+}

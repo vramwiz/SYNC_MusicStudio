@@ -1,0 +1,181 @@
+{
+  "documentId": "{D306D938-A454-4C6A-AFA5-BC4AE4B30A45}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\東北きりたん_チェロ.psd",
+  "selectedLayerId": "{BABF5AD1-D450-46FB-926C-BBF38EBB6B78}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{BABF5AD1-D450-46FB-926C-BBF38EBB6B78}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{4BCFE599-688C-4DE7-9B48-AAA95DD13C88}",
+      "parentId": "{BABF5AD1-D450-46FB-926C-BBF38EBB6B78}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{6880539B-0678-4999-A51F-CEC7AF676523}",
+      "parentId": "{4BCFE599-688C-4DE7-9B48-AAA95DD13C88}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "e55145e3e5d5521e667a3e820bd4016f20a4f85b1671ab3e41c536fda5561baa"
+    },
+    {
+      "layerId": "{DF498F68-91C5-43B6-B41D-299C62247143}",
+      "parentId": "{BABF5AD1-D450-46FB-926C-BBF38EBB6B78}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{449B8F6C-4A61-473D-8EFB-8CC1A599FC47}",
+      "parentId": "{DF498F68-91C5-43B6-B41D-299C62247143}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "69885a9af1db7f42259764d4fba9a8c0768364b943d992e8600edd2ae2a1d59b"
+    },
+    {
+      "layerId": "{50ACDB29-6061-4626-9F99-CA2FC2D44EC1}",
+      "parentId": "{DF498F68-91C5-43B6-B41D-299C62247143}",
+      "name": "*演奏01_01_A_left_左寄り_接触",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "2358d2d3689bb86d572f43c052a9be978352b7b13d6cfff26d8bbbcd4fd9393f"
+    },
+    {
+      "layerId": "{4E6BE5C3-C162-4633-925D-D9402AFB880C}",
+      "parentId": "{DF498F68-91C5-43B6-B41D-299C62247143}",
+      "name": "*演奏02_02_B_inward_内寄り_接触_位置差注意",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "c9add3c14b704fc75005b61b76fc6ad02fc173f5560f64bfc3cbd11977d6c4ae"
+    },
+    {
+      "layerId": "{8A504239-8F86-4359-B609-1284F4D48669}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{939A20C9-FDBA-46EC-91D2-C5308E7E58C8}",
+      "parentId": "{8A504239-8F86-4359-B609-1284F4D48669}",
+      "name": "弓奏",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{AA88E613-C17E-4199-8963-D0DA72D2AC04}",
+      "parentId": "{939A20C9-FDBA-46EC-91D2-C5308E7E58C8}",
+      "name": "チェロ",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 10,
+  "hasMore": false
+}

@@ -1,0 +1,659 @@
+[
+  {
+    "instrument": "keyboard",
+    "name_ja": "キーボード",
+    "attribute": "鍵盤",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\keyboard-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\keyboard",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\東北きりたん_キーボード.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 14,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\keyboard_bass.png",
+    "head_sha256": "23d24b111abccbef999270bb83518eb246b72eaf796ba3deaa686f6f2dff1495",
+    "poses": [
+      {
+        "pose_id": "01",
+        "label_ja": "基本",
+        "source_label_ja": "体と鍵盤一体_01_基準",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "key": "pose_00",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\01\\body.png",
+        "source_sha256": "3dbc825b52f913cb7a205c19f229f4bd82f0ebe2791b2733081aacec377255e6",
+        "rgba_sha256": "283a745e3a68879d85f01d5262f770da95ceb6adde66165b0b811cafc6eb81b8",
+        "preview_file": "プレビュー/01.png"
+      },
+      {
+        "pose_id": "02",
+        "label_ja": "画面左手を中央へ",
+        "source_label_ja": "体と鍵盤一体_02_画面左手を中央へ",
+        "layer_name": "*演奏01_02_画面左手を中央へ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_02_画面左手を中央へ",
+        "key": "pose_01",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\02\\body.png",
+        "source_sha256": "75f825d26018eb53ded29902a4e1cd85e12de2fb48d723f3b402cd67fadb7648",
+        "rgba_sha256": "f7c70f93e4ae9c4f8b4cdc1d5157486f2076d9a57501c0d869d072fa288665c4",
+        "preview_file": "プレビュー/02.png"
+      },
+      {
+        "pose_id": "03",
+        "label_ja": "画面右手を中央へ",
+        "source_label_ja": "体と鍵盤一体_03_画面右手を中央へ",
+        "layer_name": "*演奏02_03_画面右手を中央へ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_03_画面右手を中央へ",
+        "key": "pose_02",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\03\\body.png",
+        "source_sha256": "42739b626662bda4b8d4c136416fa682f2daa440b80670b5bc6fdcca7d6dd6b9",
+        "rgba_sha256": "0b431b8393738d2836c4dcb36667381756025faa82e57e007b50b41fa588e779",
+        "preview_file": "プレビュー/03.png"
+      },
+      {
+        "pose_id": "04",
+        "label_ja": "画面左手を外側へ",
+        "source_label_ja": "体と鍵盤一体_04_画面左手を外側へ",
+        "layer_name": "*演奏03_04_画面左手を外側へ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_04_画面左手を外側へ",
+        "key": "pose_03",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\04\\body.png",
+        "source_sha256": "316c1b815a317f489de8b2077fa8c4e8ebaa3f61c6899dbffa0f5827584883ac",
+        "rgba_sha256": "9bf9218b169aafee4ba428e7b8d6a674f98bf4edc3a732c2eb866543edd01b87",
+        "preview_file": "プレビュー/04.png"
+      },
+      {
+        "pose_id": "05",
+        "label_ja": "画面右手を外側へ",
+        "source_label_ja": "体と鍵盤一体_05_画面右手を外側へ",
+        "layer_name": "*演奏04_05_画面右手を外側へ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏04_05_画面右手を外側へ",
+        "key": "pose_04",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\05\\body.png",
+        "source_sha256": "3068d8a2544b3f4c0b45af124a51929a5950ad9618bfb8508c03c7dfcc38c2b6",
+        "rgba_sha256": "3b2706a39bccb9a506600e3b008030fe87637d204746c330db7a37274bdf097d",
+        "preview_file": "プレビュー/05.png"
+      },
+      {
+        "pose_id": "06",
+        "label_ja": "両手を中央寄りへ",
+        "source_label_ja": "体と鍵盤一体_06_両手を中央寄りへ",
+        "layer_name": "*演奏05_06_両手を中央寄りへ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏05_06_両手を中央寄りへ",
+        "key": "pose_05",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\06\\body.png",
+        "source_sha256": "eafd1b4135b0c8ac9db78615c080719e02de4f27df731fc20ec0488078df2d83",
+        "rgba_sha256": "0e19113b1cb8f4709af02844fd881790e96bdc82b41175168ded72a7c23a2ea0",
+        "preview_file": "プレビュー/06.png"
+      },
+      {
+        "pose_id": "07",
+        "label_ja": "両手を広めへ",
+        "source_label_ja": "体と鍵盤一体_07_両手を広めへ",
+        "layer_name": "*演奏06_07_両手を広めへ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏06_07_両手を広めへ",
+        "key": "pose_06",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\07\\body.png",
+        "source_sha256": "b0e54f7c03f03d4d0bf818286c9d937a140c6f7d4a99578a111fdd8236f5fcbe",
+        "rgba_sha256": "cf0624437fc917fd9afeeb8c020840ddbb7bf5d680d555b4524c2805aee30e2b",
+        "preview_file": "プレビュー/07.png"
+      },
+      {
+        "pose_id": "08",
+        "label_ja": "画面左手_大きい離鍵",
+        "source_label_ja": "画面左手・大きい離鍵",
+        "layer_name": "*演奏07_08_画面左手_大きい離鍵",
+        "layer_path": "キャラクター/演奏姿勢/*演奏07_08_画面左手_大きい離鍵",
+        "key": "pose_07",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\08\\body.png",
+        "source_sha256": "f31d9cb7e2975fa5069522fa0b15df390244be7dcf942f186651a08391d8ed1d",
+        "rgba_sha256": "73e212e41e8fe99dddbd88dd9e4d5fa556fd7ebf943a242873a811e24539bdd2",
+        "preview_file": "プレビュー/08.png"
+      },
+      {
+        "pose_id": "09",
+        "label_ja": "画面右手_大きい離鍵",
+        "source_label_ja": "画面右手・大きい離鍵",
+        "layer_name": "*演奏08_09_画面右手_大きい離鍵",
+        "layer_path": "キャラクター/演奏姿勢/*演奏08_09_画面右手_大きい離鍵",
+        "key": "pose_08",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\09\\body.png",
+        "source_sha256": "ad4579a76d247c23820e0868eb2102c85cea3cfea4065481bff12c15a3b32409",
+        "rgba_sha256": "3004089b1221971360f2cc25f040483231c09b4a185dcac89073c34e99bfc0b4",
+        "preview_file": "プレビュー/09.png"
+      },
+      {
+        "pose_id": "10",
+        "label_ja": "両手待機_鍵盤直上",
+        "source_label_ja": "両手を鍵盤直上へ浮かせる",
+        "layer_name": "*演奏09_10_両手待機_鍵盤直上",
+        "layer_path": "キャラクター/演奏姿勢/*演奏09_10_両手待機_鍵盤直上",
+        "key": "pose_09",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\10\\body.png",
+        "source_sha256": "8f3942e64867b982b9f016817ec1024946c1c8822e8cafd7568b5212f61167a4",
+        "rgba_sha256": "1150ade16a2e745ed2b243a161db2d77c753c1466b55f216435492db89eaded1",
+        "preview_file": "プレビュー/10.png"
+      },
+      {
+        "pose_id": "11",
+        "label_ja": "両手を画面左寄り",
+        "source_label_ja": "両手を画面左寄り",
+        "layer_name": "*演奏10_11_両手を画面左寄り",
+        "layer_path": "キャラクター/演奏姿勢/*演奏10_11_両手を画面左寄り",
+        "key": "pose_10",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\11\\body.png",
+        "source_sha256": "6dce3db9641e85a0f099651fdcb5812f19bb41d5f76014308b50080c16dd08c5",
+        "rgba_sha256": "41781142c0adce0ea8b204158e96605b66eb85a0ed6ccec4adf4f6ea4182428d",
+        "preview_file": "プレビュー/11.png"
+      },
+      {
+        "pose_id": "12",
+        "label_ja": "両手を画面右寄り",
+        "source_label_ja": "両手を画面右寄り",
+        "layer_name": "*演奏11_12_両手を画面右寄り",
+        "layer_path": "キャラクター/演奏姿勢/*演奏11_12_両手を画面右寄り",
+        "key": "pose_11",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\12\\body.png",
+        "source_sha256": "bf5d8205189823f1c95940c388dff355b6980e162626cf786a5984fcfed89849",
+        "rgba_sha256": "8f0f581802021479f5f79e01717e06efbf4a19f7d62466bd17fa3689f100baaa",
+        "preview_file": "プレビュー/12.png"
+      },
+      {
+        "pose_id": "13",
+        "label_ja": "画面左手_小さい離鍵",
+        "source_label_ja": "画面左手の小さい離鍵",
+        "layer_name": "*演奏12_13_画面左手_小さい離鍵",
+        "layer_path": "キャラクター/演奏姿勢/*演奏12_13_画面左手_小さい離鍵",
+        "key": "pose_12",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\13\\body.png",
+        "source_sha256": "723b31d04bdf970afec116df62e1368908c31f0c9bd1fb8fd956713ed9d9d5f4",
+        "rgba_sha256": "e5b71f99a9b95b2eb065a3a852bfd7443352a352c19bcd400ef5ecc29c1961af",
+        "preview_file": "プレビュー/13.png"
+      },
+      {
+        "pose_id": "14",
+        "label_ja": "画面右手_小さい離鍵",
+        "source_label_ja": "画面右手の小さい離鍵",
+        "layer_name": "*演奏13_14_画面右手_小さい離鍵",
+        "layer_path": "キャラクター/演奏姿勢/*演奏13_14_画面右手_小さい離鍵",
+        "key": "pose_13",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\14\\body.png",
+        "source_sha256": "99be9f1bae24e92684b8eae2110a6e45ea1c084f45f004dbbc8c9b749baa3290",
+        "rgba_sha256": "c92eab9d1b96959462cebced230e707c66e958567755ed1ab4d8fc0acc41fab4",
+        "preview_file": "プレビュー/14.png"
+      }
+    ],
+    "guide": {
+      "instrument": "keyboard",
+      "name_ja": "キーボード",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 14,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "既存01–07＋今回追加08–14。通常演奏、画面上の手位置移動、大小の離鍵、両手待機。",
+      "limits_ja": [
+        "キーの沈み込みは対象外。13は足・スタンドの輪郭P95が約3px。02/06にも約3px級の輪郭差がある。",
+        "キーボード11＝両手を画面左寄り、12＝両手を画面右寄り。音域を断定しません。"
+      ],
+      "integrated_use_ja": "通常は01中心。静止輪郭の比較では03/05/11が基準01から約1px以内。13/14は離鍵の中間候補で、速い切替は確認が必要。",
+      "separation_outlook_ja": "頭のみ分離。手・腕・鍵盤・スタンドの分離は未検証。",
+      "remaining_work_ja": [
+        "曲に合わせた保持時間と静止部の調整。"
+      ],
+      "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+      "source_edition": "v2",
+      "fixed_head_path": "heads/keyboard_bass.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false
+  },
+  {
+    "instrument": "guitar",
+    "name_ja": "エレキギター",
+    "attribute": "撥弦",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\guitar-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\guitar",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\東北きりたん_エレキギター.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 8,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\guitar.png",
+    "head_sha256": "b957a6324360cbcf3e8b7d8988caab9e5f53f4889dc6e95575a9b5e021e63878",
+    "poses": [
+      {
+        "pose_id": "base",
+        "label_ja": "基本_低フレット",
+        "source_label_ja": "guitar_base",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "key": "pose_00",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\base\\body.png",
+        "source_sha256": "885c0cdebe15050ff7252a898f0a81b82cde7527f9c3157b1e668f0a5d72ffb3",
+        "rgba_sha256": "8e30859d8d3e53f2979d7776a36e9451d81be99da08537c5ec5ab53a538d2703",
+        "preview_file": "プレビュー/base.png"
+      },
+      {
+        "pose_id": "A_downstroke",
+        "label_ja": "ダウンストローク",
+        "source_label_ja": "guitar_A_downstroke",
+        "layer_name": "*演奏01_A_downstroke_ダウンストローク",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_A_downstroke_ダウンストローク",
+        "key": "pose_01",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\A_downstroke\\body.png",
+        "source_sha256": "3161ec2a5ec9b232a144073097461dde836821e60a01b2bf743ffbb7bafa6da8",
+        "rgba_sha256": "3cb2e63e6ff3e6621fdcfb88f52e1ff671cac0304772a94768682e5caf165458",
+        "preview_file": "プレビュー/A_downstroke.png"
+      },
+      {
+        "pose_id": "B_upstroke_mid",
+        "label_ja": "アップストローク_中フレット",
+        "source_label_ja": "guitar_B_upstroke_mid",
+        "layer_name": "*演奏02_B_upstroke_mid_アップストローク_中フレット",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_B_upstroke_mid_アップストローク_中フレット",
+        "key": "pose_02",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\B_upstroke_mid\\body.png",
+        "source_sha256": "0a81df449780f8f580e546f7524e18ac60d13be6b9a8ef3dcf496b84ba2f4155",
+        "rgba_sha256": "5db4913ad498f9f5469843cb612301834a5c29ab9f991e7d9be88d3cc061689d",
+        "preview_file": "プレビュー/B_upstroke_mid.png"
+      },
+      {
+        "pose_id": "C_wait_muted",
+        "label_ja": "待機_ミュート",
+        "source_label_ja": "guitar_C_wait_muted",
+        "layer_name": "*演奏03_C_wait_muted_待機_ミュート",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_C_wait_muted_待機_ミュート",
+        "key": "pose_03",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\C_wait_muted\\body.png",
+        "source_sha256": "35377d15bf7030c2626f8de0c8ee886c8d1514048b246307f9855f249fee8c15",
+        "rgba_sha256": "352136600c62e5b912b38130ada06124d23a56acb60b46215cd345634b2f25d4",
+        "preview_file": "プレビュー/C_wait_muted.png"
+      },
+      {
+        "pose_id": "D_upstroke_low",
+        "label_ja": "アップストローク_低フレット_要調整",
+        "source_label_ja": "guitar_D_upstroke_low",
+        "layer_name": "*演奏04_D_upstroke_low_アップストローク_低フレット_要調整",
+        "layer_path": "キャラクター/演奏姿勢/*演奏04_D_upstroke_low_アップストローク_低フレット_要調整",
+        "key": "pose_04",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\D_upstroke_low\\body.png",
+        "source_sha256": "138c0987b842f5ccc609273ca89cf370264d7090984512813d20fa1a48ab5a28",
+        "rgba_sha256": "025b0026acb250752c4caede1fbf80fb7714a447b5ab68fa5fc96e4dbcaabb61",
+        "preview_file": "プレビュー/D_upstroke_low.png"
+      },
+      {
+        "pose_id": "E_midstroke_mid",
+        "label_ja": "中間ストローク_中フレット",
+        "source_label_ja": "guitar_E_midstroke_mid",
+        "layer_name": "*演奏05_E_midstroke_mid_中間ストローク_中フレット",
+        "layer_path": "キャラクター/演奏姿勢/*演奏05_E_midstroke_mid_中間ストローク_中フレット",
+        "key": "pose_05",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\E_midstroke_mid\\body.png",
+        "source_sha256": "a805e9bb28fb9a51e58ee926e25ec32ed235a6e80023d54a68e33d4aeed8570b",
+        "rgba_sha256": "8966062bc5f36c78450446276a42cd13153f890afc9902c95ae3b522d15c7f39",
+        "preview_file": "プレビュー/E_midstroke_mid.png"
+      },
+      {
+        "pose_id": "F_downstroke_mid",
+        "label_ja": "ダウンストローク_中フレット",
+        "source_label_ja": "guitar_F_downstroke_mid",
+        "layer_name": "*演奏06_F_downstroke_mid_ダウンストローク_中フレット",
+        "layer_path": "キャラクター/演奏姿勢/*演奏06_F_downstroke_mid_ダウンストローク_中フレット",
+        "key": "pose_06",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\F_downstroke_mid\\body.png",
+        "source_sha256": "e0b2c47bb8e38af08616221cc178a978952a5348fd03bb4366af34301051eff6",
+        "rgba_sha256": "c4bc6a1b87e06c209d66187ad53031a26e4d57407168112f16552f1356ef5e85",
+        "preview_file": "プレビュー/F_downstroke_mid.png"
+      },
+      {
+        "pose_id": "G_high_lead",
+        "label_ja": "高フレット_リード",
+        "source_label_ja": "guitar_G_high_lead",
+        "layer_name": "*演奏07_G_high_lead_高フレット_リード",
+        "layer_path": "キャラクター/演奏姿勢/*演奏07_G_high_lead_高フレット_リード",
+        "key": "pose_07",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\G_high_lead\\body.png",
+        "source_sha256": "fef22503c116ff37d87be03d5919a734029f7f3a65490babf28103d390e0ace9",
+        "rgba_sha256": "a56a777c4bbec130fe84899157b476b4d74b98674e2d1a796f31c97a1a8c601a",
+        "preview_file": "プレビュー/G_high_lead.png"
+      }
+    ],
+    "guide": {
+      "instrument": "guitar",
+      "name_ja": "エレキギター",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 8,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "base",
+        "A_downstroke",
+        "B_upstroke_mid",
+        "C_wait_muted",
+        "D_upstroke_low",
+        "E_midstroke_mid",
+        "F_downstroke_mid",
+        "G_high_lead"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "8姿勢。低・中・高フレット、ストローク、待機。D2は別の改善候補。",
+      "limits_ja": [
+        "旧Dは押弦側袖の最大輪郭差44px。D2は15pxまで改善したが、速い3段階ループの完成版ではない。"
+      ],
+      "integrated_use_ja": "低フレットはbase↔A、中フレットはB→E→F→Eを優先。旧Dは単発アクセントまたは要調整。旧READMEのD→base→A推奨は撤回済み。",
+      "separation_outlook_ja": "頭のみ分離。手とネック、ストラップ、袖の隠れ面を補完しない自動分離は不向き。",
+      "remaining_work_ja": [
+        "低フレット上ストロークの袖固定、厳密な静止一致と曲同期。"
+      ],
+      "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+      "source_edition": "v2",
+      "fixed_head_path": "heads/guitar.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false
+  },
+  {
+    "instrument": "bass",
+    "name_ja": "ベース",
+    "attribute": "撥弦",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\bass-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\bass",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\東北きりたん_ベース.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 7,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\keyboard_bass.png",
+    "head_sha256": "23d24b111abccbef999270bb83518eb246b72eaf796ba3deaa686f6f2dff1495",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本",
+        "source_label_ja": "00_base",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "key": "pose_00",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\00_base\\body.png",
+        "source_sha256": "f76bfe9a286e0e530b5a58261ac32681e6b084de53327130538ef74a9298fde1",
+        "rgba_sha256": "275ce007c8b1587bee51451d49dcf89e2972674f81ea1394f8c53f5b704a8101",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A_low_frets",
+        "label_ja": "低フレット",
+        "source_label_ja": "01_A_low_frets",
+        "layer_name": "*演奏01_01_A_low_frets_低フレット",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_low_frets_低フレット",
+        "key": "pose_01",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\01_A_low_frets\\body.png",
+        "source_sha256": "6a361dae19f2142724494f658944f3197ec6ec062ce2f595b54539871ea02b85",
+        "rgba_sha256": "929517e8b964e8d44fd9165889ac160f330fddd7a831b3d3c8ef5a25771bd7d5",
+        "preview_file": "プレビュー/01_A_low_frets.png"
+      },
+      {
+        "pose_id": "02_B_high_frets",
+        "label_ja": "高フレット",
+        "source_label_ja": "02_B_high_frets",
+        "layer_name": "*演奏02_02_B_high_frets_高フレット",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_high_frets_高フレット",
+        "key": "pose_02",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\02_B_high_frets\\body.png",
+        "source_sha256": "f3a5f0fbd7edfda8cc3912ce3f492542520bac6bc675e8ff6576d2d166cc1c4a",
+        "rgba_sha256": "d1177d38d5e4a757cfe3eddd9e8204b8c5f81cf834bb086f54333847e3c5b5bd",
+        "preview_file": "プレビュー/02_B_high_frets.png"
+      },
+      {
+        "pose_id": "03_C_mute",
+        "label_ja": "ミュート",
+        "source_label_ja": "03_C_mute",
+        "layer_name": "*演奏03_03_C_mute_ミュート",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_mute_ミュート",
+        "key": "pose_03",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\03_C_mute\\body.png",
+        "source_sha256": "3c47c9f74d720652e9d02c1eda5fe203ff04189cbc0c6eb227e5eb9eb1cd6a1a",
+        "rgba_sha256": "f88c071d2a2104324219fbcac7a73e2428aae6cf70b5fca991c9c8fbc7b5813c",
+        "preview_file": "プレビュー/03_C_mute.png"
+      },
+      {
+        "pose_id": "04_D_ready",
+        "label_ja": "待機_首境界要調整",
+        "source_label_ja": "04_D_ready",
+        "layer_name": "*演奏04_04_D_ready_待機_首境界要調整",
+        "layer_path": "キャラクター/演奏姿勢/*演奏04_04_D_ready_待機_首境界要調整",
+        "key": "pose_04",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\04_D_ready\\body.png",
+        "source_sha256": "e65047eecad57c0296ca7d0ca535d49963bde6e9893ca6a280fe2cd9f048acb5",
+        "rgba_sha256": "fc80a76f1b211ea26e4c90349b59c23adb018d9318fe2a46ea96056109145e64",
+        "preview_file": "プレビュー/04_D_ready.png"
+      },
+      {
+        "pose_id": "05_E_bridge_pluck",
+        "label_ja": "ブリッジ寄り",
+        "source_label_ja": "05_E_bridge_pluck",
+        "layer_name": "*演奏05_05_E_bridge_pluck_ブリッジ寄り",
+        "layer_path": "キャラクター/演奏姿勢/*演奏05_05_E_bridge_pluck_ブリッジ寄り",
+        "key": "pose_05",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\05_E_bridge_pluck\\body.png",
+        "source_sha256": "593772a5ea83aeda73a71a1a2c8b0ff543bb76d11eef3328fc3288507ed1f5e9",
+        "rgba_sha256": "651cf99fbb5de6974aeb4eba54912a7d8dd5beffbae60ff0f29015d8fa8263e7",
+        "preview_file": "プレビュー/05_E_bridge_pluck.png"
+      },
+      {
+        "pose_id": "06_F_thumb_accent",
+        "label_ja": "親指アクセント",
+        "source_label_ja": "06_F_thumb_accent",
+        "layer_name": "*演奏06_06_F_thumb_accent_親指アクセント",
+        "layer_path": "キャラクター/演奏姿勢/*演奏06_06_F_thumb_accent_親指アクセント",
+        "key": "pose_06",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\06_F_thumb_accent\\body.png",
+        "source_sha256": "40a95a152aebbf3a47e9606e59bdddf6789e7cec92eb54569d405ebc81d7a56b",
+        "rgba_sha256": "362f2edaee345a6e78bfeb1e2ae3d18902517fe708019e79dc6e72134d740871",
+        "preview_file": "プレビュー/06_F_thumb_accent.png"
+      }
+    ],
+    "guide": {
+      "instrument": "bass",
+      "name_ja": "ベース",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 7,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A_low_frets",
+        "02_B_high_frets",
+        "03_C_mute",
+        "04_D_ready",
+        "05_E_bridge_pluck",
+        "06_F_thumb_accent"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "7姿勢。低・高フレット、弾く位置変更、ミュート、待機、親指アクセント。",
+      "limits_ja": [
+        "基本/Aは主に左手の低フレット差。右手の交互弾きは未成立で、追加2試作は6指に見え不採用。D待機は首元に局所透過穴があり、首接合の調整が必要。"
+      ],
+      "integrated_use_ja": "基本↔Aを緩い切替に。B/Eはフレーズ移動、Cは保持、Fは単発。待機はD3改善候補も比較できる。元Dは首接合要調整のまま保持。",
+      "separation_outlook_ja": "頭のみ分離。手と楽器を分けるには接触部と隠れ面の補完が必要。",
+      "remaining_work_ja": [
+        "5指を保つ交互指と中間コマ。D3は主穴と反対側の髪/襟境界に数pxの抜けが残るため、実際の表示サイズで確認。"
+      ],
+      "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+      "source_edition": "v2",
+      "fixed_head_path": "heads/keyboard_bass.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false
+  },
+  {
+    "instrument": "drums",
+    "name_ja": "ドラム",
+    "attribute": "打撃",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\drums-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\drums",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\東北きりたん_ドラム.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\PSD変換記録",
+    "canvas_wh": [
+      1536,
+      1024
+    ],
+    "pose_count": 7,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\drums.png",
+    "head_sha256": "f349001aad1eb0c8f14051c42a4a2fc1dc499c681fffcc5ffe3f9979e0a35600",
+    "poses": [
+      {
+        "pose_id": "base",
+        "label_ja": "基本_左手上げとスネア",
+        "source_label_ja": "基本：左手を上げ、右手をスネアへ",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "key": "pose_00",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\base\\body.png",
+        "source_sha256": "79078d9bec0ca9491e82b25b621064066a51c7a20730cda5842d4a0a30eedfea",
+        "rgba_sha256": "a15ee73a56c9682bd1416de51adadcd0128cd8912894f9fb0077312dd529191c",
+        "preview_file": "プレビュー/base.png"
+      },
+      {
+        "pose_id": "A",
+        "label_ja": "タム前の低い構えとスネア",
+        "source_label_ja": "A：タム前の低い構え＋スネア",
+        "layer_name": "*演奏01_A_タム前の低い構えとスネア",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_A_タム前の低い構えとスネア",
+        "key": "pose_01",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\A\\body.png",
+        "source_sha256": "ef9cb4af2b5bc0b32ba47048b21e99f18e86758e2f5e21b83aa351c5c9f9ee18",
+        "rgba_sha256": "1e8bf807b1a70fe03d074526399d2b968d051248117f7575be214306107a3770",
+        "preview_file": "プレビュー/A.png"
+      },
+      {
+        "pose_id": "B",
+        "label_ja": "両タム",
+        "source_label_ja": "B：両タムの打点",
+        "layer_name": "*演奏02_B_両タム",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_B_両タム",
+        "key": "pose_02",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\B\\body.png",
+        "source_sha256": "930ecfc8ff7f058b9fe809a99340fc0e0cfab4e4ceccf1cd369ec1709b06a495",
+        "rgba_sha256": "b6c0525c6af8e4b11be2ab6be2a0c140c086ec330b465eefa03228d0ab04e06d",
+        "preview_file": "プレビュー/B.png"
+      },
+      {
+        "pose_id": "C",
+        "label_ja": "左クラッシュとスネア",
+        "source_label_ja": "C：左クラッシュ＋スネア、シンバル揺れ候補",
+        "layer_name": "*演奏03_C_左クラッシュとスネア",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_C_左クラッシュとスネア",
+        "key": "pose_03",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\C\\body.png",
+        "source_sha256": "2ff29bc2166cd066d6adcf0a040190a5e0f5dd7042c4b02f7bc5e7cd024c38f4",
+        "rgba_sha256": "1f0bf7094101fa01a3257fee48ca0fbb85b2cc52dad23de093cc001e383ba539",
+        "preview_file": "プレビュー/C.png"
+      },
+      {
+        "pose_id": "D",
+        "label_ja": "右ハイハット_接触未成立",
+        "source_label_ja": "D：右ハイハットの打撃直前／直後＋スネア",
+        "layer_name": "*演奏04_D_右ハイハット_接触未成立",
+        "layer_path": "キャラクター/演奏姿勢/*演奏04_D_右ハイハット_接触未成立",
+        "key": "pose_04",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\D\\body.png",
+        "source_sha256": "2549cc0d9ac75e4edad2bd44088f8c84fa9e5f915aee2174614de66c709bbec2",
+        "rgba_sha256": "168ee5bf1f811ba413372eb4a2cfaf8ae749fc9983b8ca6d229eb5c54cfe0f22",
+        "preview_file": "プレビュー/D.png"
+      },
+      {
+        "pose_id": "C2",
+        "label_ja": "左クラッシュ予備動作",
+        "source_label_ja": "C2：左クラッシュ方向への予備動作。先端は未接触。シンバルは基本に近い角度だが輪郭に小差。",
+        "layer_name": "*演奏05_C2_左クラッシュ予備動作",
+        "layer_path": "キャラクター/演奏姿勢/*演奏05_C2_左クラッシュ予備動作",
+        "key": "pose_05",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\C2\\body.png",
+        "source_sha256": "6e0eafe80e02424096bccabcb2be1a427e0201c8b27f6b82daeee203813d0800",
+        "rgba_sha256": "24cc3501a03ebff2df60926b83379d804d109a1358be22e0eacafce2f1c341c8",
+        "preview_file": "プレビュー/C2.png"
+      },
+      {
+        "pose_id": "F",
+        "label_ja": "左手大振り_予備動作",
+        "source_label_ja": "F：高い左手振り上げ＋右手スネア。左先端は空中の予備動作。",
+        "layer_name": "*演奏06_F_左手大振り_予備動作",
+        "layer_path": "キャラクター/演奏姿勢/*演奏06_F_左手大振り_予備動作",
+        "key": "pose_06",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\F\\body.png",
+        "source_sha256": "95449c186c7155c0b6f23323e9ccb31ba9b2b2e53ae85f62a20a588273697128",
+        "rgba_sha256": "6610d4f9eee655e0f354d9698aaf781c4c178b38f9aefef396bd1487eb90c683",
+        "preview_file": "プレビュー/F.png"
+      }
+    ],
+    "guide": {
+      "instrument": "drums",
+      "name_ja": "ドラム",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 7,
+      "canvas_wh": [
+        1536,
+        1024
+      ],
+      "display_order": [
+        "base",
+        "A",
+        "B",
+        "C",
+        "D",
+        "C2",
+        "F"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "基本/A/B/C/D＋追加C2/Fの7姿勢。全機材と脚間スネアを含む首下一体。",
+      "limits_ja": [
+        "Dはハイハット未接触。追加D2は金具付近へ着き不採用。Cはシンバル角度が変わる。全7姿勢の右端スタンドのゴム足先に小さな先端切れがある。"
+      ],
+      "integrated_use_ja": "base↔Aは短い往復、Fは拍合わせの大きい動き、C2/Cは単発クラッシュ。C2とFは予備動作。",
+      "separation_outlook_ja": "頭のみ分離。人物と脚間スネアは常に一体で使用。手・スティック・全機材の分離は未実施。",
+      "remaining_work_ja": [
+        "ハイハットの明瞭な接触コマ、待機、中間姿勢、静止機材の厳密一致。"
+      ],
+      "head_policy": "original_supplied_head_only",
+      "source_edition": "v2",
+      "fixed_head_path": "heads/drums.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": true
+  }
+]

@@ -1,0 +1,98 @@
+{
+  "instrument": "cello",
+  "source_group": "core",
+  "name_ja": "チェロ",
+  "attribute": "弓奏",
+  "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\cello-config.json",
+  "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\cello",
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\東北きりたん_チェロ.psd",
+  "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\PSD変換記録",
+  "canvas_wh": [
+    1024,
+    1536
+  ],
+  "pose_count": 3,
+  "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\cello.png",
+  "head_sha256": "1cc2c89b534ea20a0b5424c8278da0e9d94f5a7bb01cfb425e2988e7cf3ab5b3",
+  "poses": [
+    {
+      "pose_id": "00_base",
+      "label_ja": "基本_接触",
+      "source_label_ja": "Basic / contact",
+      "key": "pose_00",
+      "layer_name": "*基本",
+      "layer_path": "キャラクター/演奏姿勢/*基本",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\00_base\\body.png",
+      "source_sha256": "a393378675c696b5afce26e8e6d5f3d3f83dab66d113ac998b3c903037f7210b",
+      "rgba_sha256": "69885a9af1db7f42259764d4fba9a8c0768364b943d992e8600edd2ae2a1d59b",
+      "preview_file": "プレビュー/00_base.png"
+    },
+    {
+      "pose_id": "01_A_left",
+      "label_ja": "左寄り_接触",
+      "source_label_ja": "A / left stroke / contact",
+      "key": "pose_01",
+      "layer_name": "*演奏01_01_A_left_左寄り_接触",
+      "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_left_左寄り_接触",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\01_A_left\\body.png",
+      "source_sha256": "afb819352d1097eb73dbaddb0c1c87dae1c394f03fae0eda654674fdf0ed6390",
+      "rgba_sha256": "2358d2d3689bb86d572f43c052a9be978352b7b13d6cfff26d8bbbcd4fd9393f",
+      "preview_file": "プレビュー/01_A_left.png"
+    },
+    {
+      "pose_id": "02_B_inward",
+      "label_ja": "内寄り_接触_位置差注意",
+      "source_label_ja": "B / inward stroke / contact",
+      "key": "pose_02",
+      "layer_name": "*演奏02_02_B_inward_内寄り_接触_位置差注意",
+      "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_inward_内寄り_接触_位置差注意",
+      "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\02_B_inward\\body.png",
+      "source_sha256": "37c6495dce922c85ee84ff6b31eb0e0e8c94c9ffff050956ebe27ca7737df8ce",
+      "rgba_sha256": "c9add3c14b704fc75005b61b76fc6ad02fc173f5560f64bfc3cbd11977d6c4ae",
+      "preview_file": "プレビュー/02_B_inward.png"
+    }
+  ],
+  "guide": {
+    "instrument": "cello",
+    "name_ja": "チェロ",
+    "classification": "performance_material_candidate",
+    "candidate_pose_count": 3,
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "display_order": [
+      "00_base",
+      "01_A_left",
+      "02_B_inward"
+    ],
+    "display_order_is_not_animation_timing": true,
+    "status_ja": "基本・A左寄り・B内寄りの3接触姿勢の部分セット。待機Cと左手位置違いDは未成立。",
+    "limits_ja": [
+      "00/Aの顎下に薄い透過隙間が残り、Bのスクロールは基本より約6px上の位置差。旧ZIPの同名PNGは安全v2で姿勢別フォルダに分かれている。"
+    ],
+    "integrated_use_ja": "基本/Aを優先。Bは実際の表示サイズで比較して選ぶ。安全v2の姿勢別フォルダを保つ。旧ZIPを使う場合は必ず個別展開。",
+    "separation_outlook_ja": "頭以外は体・手・弓・チェロ・椅子・脚の一体で使用。任意分離には隠れ面補完が必要。",
+    "remaining_work_ja": [
+      "待機C・左手位置違いDは生成未成立。連続運弓の中間コマとBの首側の位置差を確認。"
+    ],
+    "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+    "source_edition": "v2",
+    "fixed_head_path": "heads/cello.png",
+    "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+  },
+  "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+  "instrument_metadata_is_not_separate_raster": true,
+  "chair_and_equipment_integrated": true,
+  "status": "integrated_pose_psd_verified; vocal_face_layer_migration_pending",
+  "psd_sha256": "94b7967860b462e15c650bb13b899591233794947160271b697774d5d1ded347",
+  "source_files_unchanged": true,
+  "every_pose_selected_in_actual_application": true,
+  "every_preview_rendered_from_saved_psd": true,
+  "visual_review_observations_ja": [
+    "3姿勢を目視。弓・右手位置の差と、Bの楽器上端の位置差を確認。",
+    "椅子・脚・楽器を一体で保持し、座面や接触部の隠れ面を切り離していない。専用待機コマは未収録。"
+  ],
+  "supplied_composite_comparisons": [],
+  "vocal_head_expression_reuse": "not yet migrated; supplied flattened fixed head used without transformation"
+}

@@ -1,0 +1,31 @@
+{
+  "checks": [
+    {
+      "name": "*演奏01_01_A_打つ直前",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{8BBCD9E9-4A9B-43B7-AD70-8352482DE5AD}"
+    },
+    {
+      "name": "*演奏02_02_B_リム接触寄り",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{9AD40938-441C-4A52-979F-12E4D9270C10}"
+    },
+    {
+      "name": "*演奏03_03_C_軽い角度変更_待機",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{E4F569DF-B97A-4478-AF2B-F61BB2CA0919}"
+    }
+  ],
+  "passed": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\06_タンバリン\\東北きりたん_タンバリン.psd",
+  "default_restored": true,
+  "file_sha256": "b9658e8f394bfc442942f77f47b1ac98ed7e953ad4ed608b9a438cbb66a97d1c",
+  "pid": 1996,
+  "selected_pose_count": 4,
+  "saved_and_reloaded": true,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "all_pixels_bounds_hierarchy_preserved": true
+}

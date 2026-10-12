@@ -1,0 +1,76 @@
+{
+  "date": "2026-10-09",
+  "reason": "Unapplied grip attempts superseded by the user-reference correction. Only obsolete staging copies removed.",
+  "root": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009",
+  "file_count": 13,
+  "total_bytes": 19459832.0,
+  "files": [
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\basic-expected-gray.png",
+      "bytes": 1388585,
+      "sha256": "5c60afb8804cc76ac521ffa14e8bc8911b37b0fef5dbb34cb608daa181bf1863"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\basic-root-detail.png",
+      "bytes": 608419,
+      "sha256": "3bd8b9068796e0c50420c1d051f6dfbfa0241cdb05093c628ab5b715fcf676f5"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\basic-root-final.png",
+      "bytes": 2084518,
+      "sha256": "0467cf880235ddc17071c11a0884967d5ecf9e5c186d732f8e26083f130b2523"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\basic-root-fixed.png",
+      "bytes": 2093729,
+      "sha256": "0e3dbfbae748403e574fd9cf5d8ec9204cb7750087d100cad25713bd23546855"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\generated-basic-root.png",
+      "bytes": 1479324,
+      "sha256": "1de456690d50f3f00d6af229cf907bdbfedd6e0fa5004f181da04e9ca7b0aaba"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\generated-raised-root-attempt1.png",
+      "bytes": 1570435,
+      "sha256": "28eadc17488afb8a648b720735ffdf5f8f0b80131e4ba4e638d3220ec8f544d8"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\generated-raised-root-final.png",
+      "bytes": 1569931,
+      "sha256": "493f6938986151274f0753bb9b2b8823bce5fb2bc64950f59f4a549990294748"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\generated-raised-root.png",
+      "bytes": 1566726,
+      "sha256": "d674bb98280354d202f0b51c63d47b16bdd9540d332c10fee8c3a920c9e447b5"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\raised-expected-gray.png",
+      "bytes": 1395340,
+      "sha256": "d556127c68c52c83c6dee30c80b01630c4e58d71dc09e26d08054c80b6e353d3"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\raised-join-repair-target.png",
+      "bytes": 896996,
+      "sha256": "6ea2c1abd4ae9a350973c944acdc23d24e51980c35286d014dff43c4ea29965b"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\raised-root-detail.png",
+      "bytes": 637810,
+      "sha256": "bc6fd82db7cd97b5692f5864e62824e1ceaf6bbf6f88fb63ade47ae1073f8a74"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\raised-root-final.png",
+      "bytes": 2081212,
+      "sha256": "7d9e705e95fbf8a30be3d080e4ee6ed1752cf20501b9f7e75e060bd5e8f3567c"
+    },
+    {
+      "path": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumButtGrip_20261009\\raised-root-fixed.png",
+      "bytes": 2086807,
+      "sha256": "bf31ef6c3ce8c728a20b210b09532a9c4c5ec5b2f1b3f6bcd979f196fa923f4f"
+    }
+  ],
+  "generated_originals_and_source_references_preserved": true,
+  "live_exchange_snapshots_preserved": true
+}

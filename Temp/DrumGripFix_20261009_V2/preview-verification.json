@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "comparison_before": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumGripFix_20261009\\app-corrected-preview.png",
+  "comparison_after": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\DrumGripFix_20261009_V2\\app-corrected-preview.png",
+  "changed_pixels": 6776,
+  "changed_pixels_outside_rectangle": 0,
+  "original_alpha_entirely_preserved": true,
+  "edited_rectangle_ltrb": [
+    944,
+    407,
+    1033,
+    487
+  ]
+}

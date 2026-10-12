@@ -1,0 +1,96 @@
+{
+  "width": 1536,
+  "height": 1024,
+  "output": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\harp",
+  "layers": [
+    {
+      "key": "character",
+      "name": "キャラクター",
+      "parent": "",
+      "visible": true
+    },
+    {
+      "key": "head_group",
+      "name": "頭部",
+      "parent": "character",
+      "visible": true
+    },
+    {
+      "key": "head",
+      "name": "固定頭（付属PNG）",
+      "parent": "head_group",
+      "visible": true,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\harp.png"
+    },
+    {
+      "key": "poses",
+      "name": "演奏姿勢",
+      "parent": "character",
+      "visible": true
+    },
+    {
+      "key": "pose_00",
+      "name": "*基本",
+      "parent": "poses",
+      "visible": true,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\00_base\\body.png"
+    },
+    {
+      "key": "pose_01",
+      "name": "*演奏01_01_A_high_right_右手_高め",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\01_A_high_right\\body.png"
+    },
+    {
+      "key": "pose_02",
+      "name": "*演奏02_02_B_low_left_左手_低め",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\02_B_low_left\\body.png"
+    },
+    {
+      "key": "pose_03",
+      "name": "*演奏03_03_C_right_rest_右手_響板保持待機",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\03_C_right_rest\\body.png"
+    },
+    {
+      "key": "instrument_metadata",
+      "name": "楽器名",
+      "parent": "",
+      "visible": true
+    },
+    {
+      "key": "attribute",
+      "name": "撥弦",
+      "parent": "instrument_metadata",
+      "visible": true
+    },
+    {
+      "key": "formal_name",
+      "name": "ハープ",
+      "parent": "attribute",
+      "visible": true
+    }
+  ],
+  "states": [
+    {
+      "key": "pose_00",
+      "id": "00_base"
+    },
+    {
+      "key": "pose_01",
+      "id": "01_A_high_right"
+    },
+    {
+      "key": "pose_02",
+      "id": "02_B_low_left"
+    },
+    {
+      "key": "pose_03",
+      "id": "03_C_right_rest"
+    }
+  ]
+}

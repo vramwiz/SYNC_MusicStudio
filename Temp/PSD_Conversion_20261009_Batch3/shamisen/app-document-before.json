@@ -1,0 +1,198 @@
+{
+  "documentId": "{4A2DCBC4-4EE9-4B7B-92E7-FE08854567B7}",
+  "revision": "0",
+  "fileName": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\shamisen\\assembled.psd",
+  "selectedLayerId": "{33F182F5-23A7-4AE0-8B11-19413530F9AB}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{33F182F5-23A7-4AE0-8B11-19413530F9AB}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{BD1E12C7-CCBB-4405-B273-457EBB922CF1}",
+      "parentId": "{33F182F5-23A7-4AE0-8B11-19413530F9AB}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{719ED8AF-67FA-4C06-B83D-7322E0FE2829}",
+      "parentId": "{BD1E12C7-CCBB-4405-B273-457EBB922CF1}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "72833a7bc95959386bf4b48edd8c174234488652a9194149dae9214784624d02"
+    },
+    {
+      "layerId": "{B5FF6BB2-5ADC-4E7C-A671-EC43D9FF1436}",
+      "parentId": "{33F182F5-23A7-4AE0-8B11-19413530F9AB}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{419354CB-5862-4F03-8E11-21B00F9B68E0}",
+      "parentId": "{B5FF6BB2-5ADC-4E7C-A671-EC43D9FF1436}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "566cebeb582059eff81ca8fcc6e50e329391e4142ab5ae5493604a09ba16bb13"
+    },
+    {
+      "layerId": "{534BB00D-2963-4447-BFF6-7E50B0DA9924}",
+      "parentId": "{B5FF6BB2-5ADC-4E7C-A671-EC43D9FF1436}",
+      "name": "*演奏01_01_A_down_下げた撥",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "8f4d63afb4dc2151c368ba2fc992180034c9d77c39618d8bd9d34b82fa10aec8"
+    },
+    {
+      "layerId": "{04A126E1-E12D-4A79-95AB-9F7CF39583BD}",
+      "parentId": "{B5FF6BB2-5ADC-4E7C-A671-EC43D9FF1436}",
+      "name": "*演奏02_02_B_up_撥上げ_準備",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "04c271f2be59cc8ed7ea2137845447d58f691184cb8a83455b7bbcd8d58d6d1f"
+    },
+    {
+      "layerId": "{82FBF5D6-8874-4654-B6A7-BB724AC547A4}",
+      "parentId": "{B5FF6BB2-5ADC-4E7C-A671-EC43D9FF1436}",
+      "name": "*演奏03_03_C_wait_胴端_待機",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "1f1cdd9df3a81389684d7cb33c0c5c169e2bcea5341389a19ea0f910dc191985"
+    },
+    {
+      "layerId": "{CED03AFC-A6BE-455D-A578-6DDD9853075D}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{0A222AC6-FACC-485F-8CE4-47EDF033FE93}",
+      "parentId": "{CED03AFC-A6BE-455D-A578-6DDD9853075D}",
+      "name": "撥弦",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{F5EB2569-BC4E-46D8-A728-5CFA1594DA27}",
+      "parentId": "{0A222AC6-FACC-485F-8CE4-47EDF033FE93}",
+      "name": "三味線",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 11,
+  "hasMore": false
+}

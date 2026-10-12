@@ -1,0 +1,31 @@
+{
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "passed": true,
+  "file_sha256": "7f07c9e105cf5ea0da6cfcf13b5a4ed9778c7baa4385d8a6391bd9e759315502",
+  "default_restored": true,
+  "saved_and_reloaded": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ウクレレ.psd",
+  "pid": 5512,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "checks": [
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{73D40227-8C01-4945-AEE8-5780B3302343}",
+      "name": "*演奏01_01_A_down_下ストローク端"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{1AFCDB1C-6D6A-44DF-9CB6-FA2E11317353}",
+      "name": "*演奏02_02_B_up_上ストローク接触_改稿B"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{B9181D18-842D-4180-9226-707E2CAA5B86}",
+      "name": "*演奏03_03_C_wait_ミュート待機"
+    }
+  ],
+  "selected_pose_count": 4
+}

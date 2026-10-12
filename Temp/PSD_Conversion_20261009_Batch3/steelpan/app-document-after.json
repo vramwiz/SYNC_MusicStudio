@@ -1,0 +1,198 @@
+{
+  "documentId": "{283C731E-4A01-4FD7-8C1B-B83D590246CA}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_スティールパン.psd",
+  "selectedLayerId": "{B40DD4C8-03F6-46A6-8770-37622FC31BEF}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{B40DD4C8-03F6-46A6-8770-37622FC31BEF}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{BC974C74-FA8B-4907-832F-52C7560D1BEF}",
+      "parentId": "{B40DD4C8-03F6-46A6-8770-37622FC31BEF}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{ECBC76DD-CC3D-495E-A464-074625D35AFC}",
+      "parentId": "{BC974C74-FA8B-4907-832F-52C7560D1BEF}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "ed982805dd9af9d9dd79571db1dc6a235a0352f4447c4ed876ba3c835d5af416"
+    },
+    {
+      "layerId": "{0B0B1313-46D8-44E7-A79C-6369D50FB048}",
+      "parentId": "{B40DD4C8-03F6-46A6-8770-37622FC31BEF}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{FAC8D684-DA7D-47DF-842D-6E2F86C4A162}",
+      "parentId": "{0B0B1313-46D8-44E7-A79C-6369D50FB048}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "7fb294e73877e2d8e57fc194e88e221e5a321d91ba3fb99b6ad976896e1d95f9"
+    },
+    {
+      "layerId": "{528DDCBF-05F1-47C1-AF21-BDACEA780DD6}",
+      "parentId": "{0B0B1313-46D8-44E7-A79C-6369D50FB048}",
+      "name": "*演奏01_01_A_右手_画面左上げ・左手低打点候補",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f9048e9511efa1fbf0d41f3de9d5971afcdc1d36e95b21ba25b5ebf41ee4a54e"
+    },
+    {
+      "layerId": "{44DEEB26-D236-423B-AFC7-09021C5A0DDB}",
+      "parentId": "{0B0B1313-46D8-44E7-A79C-6369D50FB048}",
+      "name": "*演奏02_02_B_左手_画面右上げ・右手近接",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "7f845fc8fead0626b630e115e79a5508ce7919e49e2182aa5a1422ed3e78c704"
+    },
+    {
+      "layerId": "{1CFC3251-BE96-4EBD-8AD4-162AEDF49B99}",
+      "parentId": "{0B0B1313-46D8-44E7-A79C-6369D50FB048}",
+      "name": "*演奏03_03_C_両マレット上げ_待機",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "9170950afe1968df49e55d3b58fc4661d10083f9259a64ea7c9c7410450a6b78"
+    },
+    {
+      "layerId": "{626FFBCA-9852-43FD-AEDA-DB6932D8CA0F}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{30D2F62C-2413-4D0E-AC55-38CF0738C35F}",
+      "parentId": "{626FFBCA-9852-43FD-AEDA-DB6932D8CA0F}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{6951E9DC-3F66-408E-BA44-C732EA5CA797}",
+      "parentId": "{30D2F62C-2413-4D0E-AC55-38CF0738C35F}",
+      "name": "スティールパン",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 11,
+  "hasMore": false
+}

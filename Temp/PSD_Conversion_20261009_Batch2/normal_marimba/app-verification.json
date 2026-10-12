@@ -1,0 +1,25 @@
+{
+  "checks": [
+    {
+      "name": "*演奏01_02_A_画面左上げ_画面右低め",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{C5C0AEE6-A44D-4307-B1E6-FAB1B81769CC}"
+    },
+    {
+      "name": "*演奏02_03_B_両側上げ_構え",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{725EAB96-8202-45B6-A028-B794DCF7A07D}"
+    }
+  ],
+  "passed": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\05_マリンバ_通常配置\\東北きりたん_マリンバ_通常配置.psd",
+  "default_restored": true,
+  "file_sha256": "a34d31cfd9785dbec5e342b448b55bcce8c32e6969a642183be822e5a0ca38d4",
+  "pid": 20160,
+  "selected_pose_count": 3,
+  "saved_and_reloaded": true,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "all_pixels_bounds_hierarchy_preserved": true
+}

@@ -39,3 +39,1260 @@
 実行スクリプト: Scripts/TestFoundation.ps1。
 AviUtl2本体での配置・設定操作・aup2保存再読込は未確認。
 音楽データUI、タイムライン、WAVプレビュー、PSD描画は未実装。
+
+## 2026-10-09 Dots素材の取得・素体と演奏差分の試験
+
+- キーボード10 ZIP・ドラム4 ZIPを`Temp/Dots_20261009/`へ取得。
+  14 ZIPを正常展開し、原素材261ファイルを保持。付属SHA-256の246件は全一致・参照欠落なし。
+- `AIArtToPSD`のArtDocument、ArtParts、ArtRasterTransform、ArtPng、ArtPsdを
+  一時検証プログラムから利用。両プロジェクトの製品コードと既存素材は変更していない。
+- キーボードは腕抜き素体から付属マスクで旧右足を除き、左右腕11種・右足3種を別スロット化。
+  開始・終了は対応する腕抜き胴体と腕を組で交換。試験PSDは30レイヤー、25状態を描画。
+  各単独差分の範囲外の可視画素変化は0。全腕差分のy<=610は可視RGBA一致。
+  開始・終了の頭・胴体・腕の再合成は付属完成人物と可視RGBA完全一致。
+- キーボードの肩固定・手首と袖の小さい動き・右足交換は使用可能と評価。
+  指先は鍵盤でほぼ隠れ、右コード3は未収録。実物ペダルは素材にない。
+- ドラムは人物とスネアを固定1枚のまま保持し、腕・手・棒・脚・機材を分離。
+  試験PSDは32レイヤー、静止・移動・素体等の7状態を描画。
+  12px上移動で肩や手の継ぎ目、旧棒先端のスネア面に欠けを確認。
+  棒だけ移動時の接触付近[900,506,938,539]には、元alpha>200からalpha<32になる画素が233。
+  静止組立には使えるが、可動には隠れ面補完と対象別打撃差分が必要。
+- 保存・再読込後の全レイヤーRGBA、座標、表示状態が一致。
+  AIArtToPSD実アプリの専用インスタンスで両PSDを編集可能として読込。
+  左右ソロ3と右足踏み込みの排他切替、Undo/Redo、新規名保存・再読込が成功。
+  実アプリの基準・切替プレビューは試験描画とRGBA完全一致。
+- 検証プログラムをDelphi 37.0 Win64 Debug/Releaseで警告0・エラー0ビルド。
+  Releaseの主要7状態はDebugとRGBA完全一致。表情・記号・機材補完候補、
+  AviUtl2実時間再生、MIDI同期、外部PSDホスト互換は今回未検証。
+- 比較HTMLのブラウザー表示確認はfile: URLの禁止により実施できなかった。
+  HTML/JavaScriptの構文と参照ファイルを確認。PSD・GIF・比較画像の検証は完了。
+
+成果物・状態切替ビューアー：`Temp/Dots_20261009/AssetTrial_20261009/output/review.html`。
+PSDとGIF、画素・範囲・実アプリ検証JSON、再現用ソース・設定を同一試験フォルダーへ保存。
+このPSD階層・名前は試験用であり、楽器別必須レイヤー仕様の確定ではない。
+
+## 2026-10-09 Dots追加素材のダウンロード
+
+- 軽量本体19 ZIP、ガイド3 ZIP、補修・任意頭・箏構図各1 ZIP、通常配置マリンバ3 ZIPを取得。
+  計28 ZIP・174.98 MiBを`Temp/Dots_20261009/Additional_20261009/`へ保存した。
+  Downloadsの元ファイルと前回の14 ZIP・試験成果物は保持している。
+- 全28 ZIPのCRC検証と、DownloadsからコピーしたファイルのSHA-256一致を確認。
+  付属目録が対象とする22 ZIPはSHA-256・バイト数・収録ファイル数・PNG数が全一致。
+- 取得一覧・コピー検証は`download-verification.json`、目録照合は`catalog-verification.json`に保存。
+  追加素材の動作確認・PSD化は未実施。付属ガイド上の候補分類を製品仕様へ確定していない。
+
+## 2026-10-09 Dots追加画像の分類保存
+
+- 取得済み28 ZIPの画像を
+  `C:/Users/zan12/Documents/SYNC_MusicStudio/Characters/PNG/東北きりたん/`へ分類保存。
+  本体は楽器別19フォルダー・97姿勢と共通頭。補修候補、任意193px頭、箏構図検討用、
+  通常配置マリンバは別フォルダーとし、元ガイド・目録・比較画像・生成記録も保持した。
+- PNG142枚・確認用JPG11枚を保存。通常配置マリンバの共通頭とマスクの同一重複4件だけを統合。
+  全保存画像は元ZIPとSHA-256一致。付属目録の131 PNGはハッシュ・サイズ・画像形式情報が全一致。
+- `分類目録.json`、各楽器の`組み合わせ一覧.txt`、`00_はじめに.txt`を作成。
+  本体97・補修3・箏構図4・通常配置マリンバ3の全107組の参照ファイルが存在することを確認。
+  `分類保存_検証結果.json`を同フォルダーへ保存。画像の再加工・再エンコードは行っていない。
+
+
+## 2026-10-09 追加PNGの一体差分PSD化・第1バッチ
+
+- `Instrument_PSD_Conversion_Instructions.md`に従い、主要4楽器の首下一体差分PSDを作成。
+  キーボード14・エレキギター8・ベース7・ドラム7、計36姿勢。PNG配下の各楽器フォルダーへ保存した。
+- AIArtToPSDのArtDocument / ArtPng / ArtPsd / ArtPartsを再利用する専用Win64ヘルパーを使用。
+  ヘルパーはDelphi 37.0で警告0・エラー0。製品ソース・参照プロジェクトは変更していない。
+- 全画像を元キャンバス・原点(0,0)・原寸で保持し、トリミング・再拡縮・生成・補完は行っていない。
+  `キャラクター/頭部`と`キャラクター/演奏姿勢`を分離し、姿勢は同親`*`の排他群とした。
+  固定識別階層`楽器名/演奏属性/楽器正式名`は画素を持たないメタデータ群。
+  描画用楽器・接触する手足は一体差分内に保持。不要な楽器_前・楽器_後群は作っていない。
+- 保存・再読込で全層のRGBA・座標・階層・表示状態が一致。保存PSDから全36状態を描画し、
+  付属頭と該当首下の2層合成と完全一致。全プレビュー・全姿勢一覧を目視した。
+- AIArtToPSD Release実アプリの専用インスタンスで全36姿勢を1枚ずつ排他選択。
+  常に1姿勢だけON、全層画素・原点不変を確認。基本へ戻して新規名save・再読込を実施し、
+  既定プレビューもネイティブ検証画像とRGBA完全一致。専用インスタンスだけを終了した。
+- 元PNGと元ボーカルPSDのSHA-256は変更なし。各楽器の`PSD変換記録/`に透明プレビュー、
+  元画像とPSDの対応、レイヤー構造、実アプリ・ネイティブ検証JSON、作業報告を保存。
+  全体進捗はキャラ直下の`PSD変換進捗.json`。再現用資料は`Temp/PSD_Conversion_20261009/`。
+- 頭部は付属の合成済み固定頭。ボーカルの目・眉・口・髪の個別レイヤー移植は未完了。
+  ドラムの人物・脚間スネア・イス・機材は一体のまま。個別固定化・シンバル独立可動は未実施。
+  ギターDの袖差、ベースDの首穴、ドラムDの未接触など原素材の制約を注意名と報告に残した。
+  PSD化を素材修復・演奏動作完成とは扱わず、分離可能性と中間素材の有無を楽器別に記録した。
+- 残りはcore15楽器61姿勢と、通常配置マリンバ等の別枠素材。第2段階の部位分割、
+  MusicStudio実登録、MIDI同期・時間制御、外部PSDホスト互換は未検証。
+
+- 最終PSD・記録の確定後、今回の専用実アプリが作成した検証用交換40ジョブの再生成可能な
+  snapshot/input/preview等と専用ヘルパーDCUだけを整理し、約2,066 MiBを回収。
+  要求・結果・接続メタデータとcleanup記録を保持。元画像・最終PSD・再現ソースは保持し、
+  整理後も全ソースSHA-256、最終PSDハッシュ、36プレビュー・対応表・報告の存在を再確認した。
+
+
+## 2026-10-09 追加PNGの一体差分PSD化・第2バッチ
+
+- アコーディオン5・タンバリン4・バイオリン3・アコースティックギター5・
+  非標準配置マリンバ5・チェロ3のcore6楽器25姿勢と、通常配置マリンバ3姿勢をPSD化。
+  計7点28姿勢をPNG配下の各楽器フォルダーへ保存した。前回4点のPSDと元素材は変更なし。
+- 前回検証済みのAIArtToPSD実装を使うヘルパーと実アプリの既存パイプを再利用。
+  製品ソースは変更せず、原寸・原点(0,0)・フルキャンバス・元RGBAを保持した。
+  頭部は付属固定頭、演奏姿勢は同親*排他。楽器の固定識別階層も前回と同じ。
+- 保存再読込後の全層RGBA・座標・階層・表示状態が一致。全28状態を保存PSDから描画し、
+  指定頭と該当首下の2層合成と完全一致。7枚の全姿勢一覧で全提供姿勢を目視した。
+- AIArtToPSD Releaseの専用インスタンスで全28姿勢を選択し、1姿勢だけON・画素不変を確認。
+  基本へ戻して新規名save・再読込。各既定プレビューもネイティブ検証画像とRGBA完全一致。
+  専用インスタンスのみ終了した。元PNG・ボーカルPSD・前回4PSDのハッシュも不変。
+- 通常配置マリンバはcore97姿勢および非標準配置とは別PSD・別集計。
+  付属固定頭合成済み3PNGとalpha完全一致。可視RGBと白黒背景表示の差は最大1/255の合成丸め。
+  大きい生RGB差はalpha=0領域だけ。頭・首下の元レイヤーRGBAは不変で、測定値を対応JSONへ保存。
+- 非標準配置マリンバの00/A黒窓群とB/C/D透明窓群の差をレイヤー名・報告へ記録。
+  バイオリン上げ弓未成立、アコギ顎下の薄い隙間、チェロBの位置差等は原素材のまま。
+  チェロのイス・脚・楽器も一体で保持。未提供の中間・待機等を生成せず、分離可能性を楽器別に記録。
+- 各`PSD変換記録/`へ28枚の透過プレビュー、全姿勢一覧、対応表、層名一覧、作業報告、検証JSONを保存。
+  進捗JSONはbatch_1を保持してbatch_2を追加。累計11PSD・64姿勢（core10楽器61＋別枠3）。
+  再現用資料は`Temp/PSD_Conversion_20261009_Batch2/`。
+- 保存・報告確定後、専用交換35ジョブの不要なsnapshot/input/preview等だけを整理し、
+  約814.2 MiBを回収。要求・結果・接続・cleanupメタデータは保持。
+  整理後も元ファイル、最終PSDハッシュ、確認画像と各報告の存在を再照合した。
+- 残りは11トライアングル以降のcore9楽器36姿勢と、補修候補・任意頭・箏構図等の別枠。
+  個別頭部・表情移植、第二段階部位分割、MusicStudio登録・MIDI同期・外部PSDホスト互換は未完了。
+
+
+## 2026-10-09 作成PSDの保存先・ファイル名統一
+
+- ユーザー指定により、今回作成した11PSDをPNG側から`Characters/PSD/`直下へ移動。
+  `東北きりたん_属性_楽器名.psd`に改名し、属性は既存の鍵盤・撥弦・打撃・弓奏を使用。
+  マリンバの通常配置・非標準配置の区別を保持。既存の`東北きりたん_立ち絵.psd`は変更なし。
+- 11PSDの移動前後のSHA-256一致、旧保存先の不存在、元PNG・既存立ち絵PSDのハッシュ不変を確認。
+  PSDの画素・レイヤー内容は変更していない。累計11PSD・64姿勢と未完了要件は従来どおり。
+- 進捗JSON、対応表、作業報告、バッチ設定と今後の準備スクリプトを新保存先へ更新。
+  確認画像は元PNG側に保持。過去のアプリ検証ログは実行時のパスを残し、保存先変更記録を併置。
+  制作指示書とnote.mdにも保存先・命名を明記。移動一覧・元メタデータは`Temp/PSD_Relocation_20261009/`。
+
+
+## 2026-10-09 追加PNGの一体差分PSD化・第3バッチ
+
+- 残りcore9楽器36姿勢（トライアングル、ウクレレ、コントラバス、ボンゴ、三味線、ハープ、和太鼓、スティールパン、ハンドベル）を追加。
+  ユーザー指定の`Characters/PSD/`直下へ`東北きりたん_属性_楽器名.psd`で保存。
+  コントラバスは素材のピチカートに基づく撥弦、ハンドベルは振る姿勢に基づく振奏として記録。
+- AIArtToPSDの既存コードを用いる検証済み補助ツールを再利用。全36姿勢の元RGBA、原寸、原点(0,0)、階層、排他表示の保存・再読込一致を確認。
+  ハープ1536×1024、和太鼓1152×1664と既存余白を維持。頭の二重変換、素材にない姿勢生成、機材やイスの無理な分離は実施せず。
+- ボンゴPNGのDelphi読込でCRC例外。独立した全44入力のチャンクCRC・zlib展開は正常。
+  ボンゴ頭・4本体の5PNGを作業用コピーへ再符号化し、原寸・全RGBA完全一致を確認。共通頭コピーはハンドベルでも使用。
+  原PNGは変更なし。ネイティブPSDレイヤーと元PNGのRGBA SHA-256も一致。コピーの一覧とハッシュを対応JSONに保存。
+- AIArtToPSD Release専用インスタンスで全36姿勢を排他選択し、全層画素・境界・階層を照合。
+  基本へ戻して新規名save・再読込し、既定プレビューとネイティブ検証画像がRGBA完全一致。専用インスタンスのみ終了。
+- 全身36枚と首境界の白黒背景36組を目視。原素材の首の細線・隙間、ハープB/Cの椅子脚、反射や静止機材の描画差等を記録。
+  音高・運指・物理的接触・発音タイミング、音楽に合わせた高速切替の成立を保証するものではない。
+- 各元PNG側の`PSD変換記録/`へ透過プレビュー、全姿勢一覧、首境界白黒一覧、対応表、層名一覧、作業報告、検証JSONを保存。
+  batch_1・batch_2を保持して進捗へbatch_3を追加。core19楽器97姿勢が揃い、通常配置マリンバ込みで累計20PSD・100姿勢。
+- 作業開始時に既存キーボード・タンバリンPSDが前回検証版から変更されていたため、その現状を保護し今回の出力対象から除外。
+  前回作成時・今回開始時のSHA-256を区別し、以前の検証は以前の版に適用。現在版の全姿勢再検証は未実施。
+  元PNG、ガイド、ボーカルPSD、既存11PSDの今回開始時からのハッシュ不変を確認。
+- 保存・報告確定後、専用交換45ジョブのsnapshot/input/preview等だけを整理し約1038.3 MiB回収。
+  要求・結果・接続・cleanupメタデータを保持。最終PSDと報告・プレビューの存在を整理後に再照合。
+- 残りは個別頭部・表情の移植と補修候補・任意頭・箏構図用等の別枠。第二段階の部位分割、MusicStudio登録、MIDI同期、外部PSDホスト互換は未完了。
+  再現用資料は`Temp/PSD_Conversion_20261009_Batch3/`。本体プラグインとAIArtToPSDのソースは変更していない。
+
+
+## 2026-10-09 PSD変換作業の完了確認
+
+- ユーザーより、作成済みPSDがすべて指定のPSDフォルダーに入っていれば完了とする旨の指示。
+- 作成した楽器PSD20点が`Characters/PSD/`直下に存在し、有効なPSDヘッダーを持つことを再確認。
+  既存の立ち絵PSDも同フォルダーに保持。元画像やPSD本体には変更を加えず、進捗JSONとnote.mdを完了へ更新。
+- 個別頭部・表情移植、補修候補・任意頭・箏構図用、第二段階部位分割は今回の完了条件外の将来作業として区別。
+  既存PSDの編集後版に関する検証履歴もそのまま保持し、全制作要件の検証完了と読み替えていない。
+
+
+## 2026-10-09 ドラム基本のスティック握り修正
+
+- 起動中AIArtToPSDへ現在のエンドポイントで接続。ユーザー指示により基本の画面右・スネア側の手を修正。
+  組み込みimage_genで親指と指が軸を包む握りを作り、元の一体レイヤーへ局所反映。
+- 修正対象89×80px内の6,742画素だけ変更。対象外のRGBAと全画素のalphaは元画像と一致。
+  上げた手、頭、他6姿勢、機材・衣装・脚、寸法1536×1024・原点・層名・階層・属性を保持。
+- 作業中の表示切替で最初のexportがstaleとなったため、適用直前に現在文書を再export。
+  最新の未保存状態を保持して基本だけreplace_layer・排他選択。非対象層のRGBA・座標・属性を照合。
+- 同じPSDフォルダーの`東北きりたん_打撃_ドラム_基本握り修正.psd`へ新規名save・再読込を確認。
+  元PSDのハッシュは不変。保存後のアプリプレビューも握り周辺以外のRGBA・全alphaが修正前と一致。
+  ユーザーのアプリを閉じず、修正版の基本を表示。検証用exportのcancelは修正を戻すものではない。
+- 変換時の20PSD・100姿勢の集計は保持し、修正版をpost_conversion_revisionsとして追加。
+  PNG側`04_ドラム/PSD変換記録/基本握り修正_20261009/`へ修正PNG、前後プレビュー、握り比較、生成指示、検証・報告を保存。
+  再現用資料は`Temp/DrumGripFix_20261009/`。ユーザーの見た目確認・本採用判断は未了。
+
+
+## 2026-10-09 ドラム基本の指の形と滑らかさを再修正
+
+- ユーザーより前回握りの指が同じ根元から下へ分岐して見え、ゴツゴツしているとの指摘。
+  組み込みimage_genで手元を拡大して再修正。親指の下に垂れた指形を除き、指の曲線と陰影を滑らかにした。
+- 採用した手元だけを元の基本レイヤーへ局所反映。89×80px内の6,776画素を変更し、
+  矩形外RGBAと全alphaが一致。反対側の手・スティック両端・頭部・衣装・機材・脚を保持。
+- 反映直前に現在文書を再exportして基本RGBA一致を照合。replace_layer・排他選択後、
+  `Characters/PSD/東北きりたん_打撃_ドラム_基本握り修正_02.psd`へ新規名save・再読込。
+  他6姿勢と頭部の画素、全層の境界・属性・階層を照合し、前回PSDのハッシュ不変も確認。
+  保存後アプリプレビューも前回基本と握り矩形外RGBA・全alphaが一致。ユーザーのアプリは開いたまま。
+- PNG側`04_ドラム/PSD変換記録/基本握り修正_20261009_V2/`へ修正PNG、比較、プレビュー、生成指示、検証記録を保存。
+  進捗JSONに第2版を追加し、前版へ再修正要望を記録。20PSD・100姿勢の変換完了集計は維持。
+  作業資料は`Temp/DrumGripFix_20261009_V2/`。ユーザーの見た目の採用判断は未了。
+- 不採用案の作業コピーと別姿勢プレビューの3ファイル（4,716,393 bytes）を確認して整理。採用画像・生成原本・検証記録・交換snapshotは保持。検証後のアプリ編集状態には触れず、保存済み第2版を保持。
+
+
+## 2026-10-09 ドラム基本のスティック上げ・非打撃差分を追加
+
+- 前回の握り修正02をユーザーが「うまくいった」と確認。続けて、同じ基本から棒を上に移動した非打撃差分を明示指定。
+  組み込みimage_genでスネア側の手・棒・前腕・袖を持ち上げ、打面との隙間を設けた。旧手・棒の跡を補完。
+- 採用した局所だけを基本画像へ反映し、ハイハット表面・輪郭は元画素を保持。
+  本体41,996画素を変更。マスク外RGBA・alphaは一致。新旧の棒・袖の輪郭内ではalphaを更新。
+  原寸1536×1024・原点(0,0)・首下一体差分のまま`演奏姿勢`直下へ`*基本_スティック上げ_非打撃`を追加。
+- 反映直前に現在文書を再exportし、確認済み基本のRGBA一致を照合。既存7姿勢と頭部の画素、既存全層の名前・境界・属性・階層を保持。
+  実アプリで新差分→基本→新差分を排他切替してから、新規名save・再読込。8姿勢・15層として保存。
+- `Characters/PSD/東北きりたん_打撃_ドラム_基本スティック上げ.psd`へ保存。元PSDのファイルハッシュ不変。
+  基本のアプリプレビューは握り修正02とRGBA完全一致、新差分も保存前後で完全一致。
+  新旧プレビューの変更は適用マスク内だけ。全身、手元、白・暗背景で浮き・握り・旧棒跡・つながり・透過を目視。
+- PNG側`04_ドラム/PSD変換記録/基本スティック上げ_20261009/`へ新PNG、比較・プレビュー、生成指示、検証・報告を保存。
+  進捗JSONへ追加生成として記録し、元の20PSD・100姿勢の変換完了集計は維持。握り修正02のユーザー確認も記録。
+  未使用の初期書出しプレビュー1枚を確認して削除。生成原本・採用画像・交換snapshot・検証記録は保持。
+  作業資料は`Temp/DrumRaisedStick_20261009/`。ユーザーのアプリは開いたまま。新差分の見た目の採用判断は未了。
+
+## 2026-10-09 ドラム2姿勢の持ち方を参考図に沿って修正
+
+- ユーザーから2枚とも棒の根元を握る指示と、握りの参考図を受領。
+  参考図追加前の根元位置だけを変えた案は未反映のまま不採用とし、組み込みimage_genで指・親指・手首を再修正。
+  基本は下打ち、上げた差分は長い先端を上へ向ける方針を明示して実施。
+- 基本38927画素、上げ37858画素を局所変更。適用マスク外RGBAの変更は0。
+  手・袖・棒の輪郭内ではalphaを更新。棒の端点の完全固定は要件とせず、握りに合わせて手首と形を調整。
+  基本の打面側と、上げた差分の非接触の状態を目視確認。
+- 適用直前の現在文書を再exportし、未保存状態を保持して2姿勢だけreplace_layer。
+  他6姿勢と固定頭のRGBA、全層の名前・境界・属性・階層を保持。15層・8姿勢。
+- 実アプリで基本→上げ→基本を排他切替し、`Characters/PSD/東北きりたん_打撃_ドラム_持ち方修正.psd`へ新規名save・再読込。
+  保存前後の基本プレビューRGBA完全一致。変更は各マスク内だけ（基本28558、上げ28441画素）。白・暗背景で手元と旧棒跡を目視。
+  元PSDのSHA-256不変を確認し、ユーザーのアプリは修正版を開いたまま保持。
+- PNG側`04_ドラム/PSD変換記録/持ち方修正_20261009/`へ2姿勢PNG、実アプリ比較、参考図、生成指示、検証・報告を保存。
+  進捗JSONに追加修正版を記録し、前版への握り再修正要望と、修正02が一度ユーザー確認済みだった履歴を保持。
+  元の20PSD・100姿勢の変換完了集計は維持。今回の見た目の採用判断は未了。
+- 未反映の不採用案の作業コピー13点（19459832.0 bytes）を明示パスで整理。
+  生成原本・採用画像・元画像・参考図・生成指示・交換snapshotは保持。削除一覧とSHA-256を記録。
+  再現資料は`Temp/DrumMatchedGrip_20261009/`。プラグインとAIArtToPSDのソースは変更していない。
+
+## 2026-10-10 1ページ編集画面・音声/歌唱パターン・型付き配置
+
+- FL Studioを参考にした1ページの編集UIに変更。左の＋メニューとパターン一覧、音声/PSDトラック、秒タイムラインを追加。
+  共通の名前/色/確定/取消を共通フォームに置き、音声・歌唱・PSD参照の固有UIを別フレームへ分離。
+  演奏・感情・リズム同期は無効メニューで未実装を明示。音声再生とPSDプレビューも準備中表示。
+- 音声はWAV/MP3を参照し、実サンプルから波形を生成。PCM8/16/24/32・float32とWindowsのMP3デコードに対応。
+  位相が逆の左右チャンネルも波形が相殺されない。音量0～200%を保持し波形へ反映。
+  キャンセル/再選択/解除時に世代番号とファイルパスで古い非同期結果を破棄。画面破棄時は所有ジョブを終了待機。
+- 歌唱はSMF0/1・PPQのMIDI/KARを読込み、使用トラック、音符開始/長さ/音高/歌詞/かな母音を表示。
+  他トラックにあるテンポを含む全体テンポマップで時刻を計算。通常のMIDIテキストを歌詞と誤認しない。
+  音符と歌詞が別トラックの場合、音符側の歌詞なしを明示。漢字の読みを推測せず不明は?。
+  SMF2・SMPTE・未選択・欠落・破損・歌詞なしを区別。歌唱生成や口パク描画は未実装。
+- JSONのschemaVersion=1と旧previewAudio/materials/characters/未知フィールドを保持。
+  任意patternsと既知tracksを追加し、パターンIDと配置IDを分離。音声→音声、歌唱→PSDのD&Dのみ許可し理由を表示。
+  複数配置、開始/長さ、0.5秒スナップ移動、配置削除、トラック設定/削除、JSON再読込を実装。
+  配置中の元パターンと未対応属性は削除不可。未対応トラックの標準patternId参照も保護。
+  保存32,767文字・参照整合を検証し、変更失敗時は元JSON全体へ戻す。
+  外部JSONはUTF-8/BOM可、同一ストリーム1MiB上限、128階層以内、ルート後の余分なデータを拒否。
+- このPCのDelphi 37.0でWin64 Debug/Releaseを最終ソースから順番にRebuild。警告0・エラー0。
+  Win64/Debug/SYNC_MusicStudio_Filter.auf2とWin64/Release/SYNC_MusicStudio_Filter.auf2を生成。
+  両成果物でTestFoundationがJSON_OK/SETTINGS_FORM_OK/PLUGIN_ARTIFACT_OK/FOUNDATION_TESTS_OKを通過。
+  開いた時点のオブジェクトへの反映、取消、タイトルバー閉じる、失敗時の画面維持、登録・DLLロードを確認。
+- TestEditorStage1を最終コードで再実行しEDITOR_STAGE1_TESTS_OK。
+  WAV各形式・MP3・壊れたファイル、JSON未知属性/ID/保存上限/参照整合、MIDIテンポ/歌詞/母音/例外形式を検証。
+  実VCLフォームで追加/編集/取消/再オープン/複数クリップ/旧非同期結果/参照解除/リサイズを確認。
+  D&Dハンドラの型制約と拒否理由、配置ID分離・移動・削除、トラック設定/削除、再読込、未対応属性保護を検証。
+  ネイティブのダブルクリック後にマウスキャプチャが残る問題を修正し、メッセージ経由のテストを追加。
+  最終追加テストの非公開メソッド呼出しコンパイルエラーをイベント経由へ修正。失敗時に古い成功ログが残らないようスクリプトを修正。
+- 実フォームから通常/最小サイズのPNGを取得して目視。共通設定、音声波形/音量、歌唱トラック/歌詞表、型付き配置が表示される。
+  Temp/EditorStage1/verification/にbuild-debug.log/build-release.log、foundation-*.log、stage1-run.log、editor-tests.log、
+  source-audit.log、artifacts.json、editor-arrangement.png、audio-settings.png、singing-settings.png、各最小サイズPNGを保存。
+  Tests/Win64/SYNC_MusicStudio_EditorPreview.exeは独立した手動確認UI。任意JSONを第1引数で開ける。
+- 依存監査で現行Filterが旧Input・Skia・FFmpegを使用しないこと、dpr/dprojの18ユニット参照が一致することを確認。
+  不要なSYNC_Lyrics_Input.dpr/.dproj/.res、Setup/SYNC_Lyrics.catalog.json、Setup/make_release_zip.bat/.ps1を削除。
+  旧Inputの処理ソースと旧テスト、継承UI、SongReader、参照文書、ユーザーの素材/PSD引継ぎは保持。
+  Source/Lib・Source/UI・Source/Plugin/Input・ReferenceのGit差分なし。既存HISTORYの素材記録へ追記する形で保存。
+  追加/変更ソースのUTF-8 BOM/CRLFとgit diff --checkを確認。音源/MIDI/PSD実体は変更・埋込みしない。
+- ビルド出力を作業フォルダーへ変更し自動配備を停止。実作品や稼働中AviUtl2へ上書き配備せず、他PCでのビルド・commit/push/公開はしていない。
+- 未検証: 実AviUtl2のオブジェクト設定起動、aup2保存/再読込、外部マウスによるD&D、Windows N等のMP3デコーダ欠落環境。
+  未実装: 音声再生、PSD画像/口パク/全楽器演奏描画、拍/小節スナップ、配置内波形/ピアノロール、速度変更。
+  PSDは26バイトヘッダー情報のみの確認で、全PSD構造の検証/層や画素の読込みではない。合成ヘッダーのGUI検証を実PSD確認と区別。
+  Library参考PNGはprepare_materialize成功後の公式helper実行用Pythonランタイムが利用できず、実ピクセル未取得・未確認。
+  レイアウトはローカル仕様と文章要件から作成。取得用の一時helper/署名転送ファイルは削除。
+
+## 2026-10-10 汎用スロット・仮想JSONの追加検証
+
+- トラックの媒体とパターン受入属性を分離。既知の音声/PSDトラックに種類別スロットを持たせ、選択中トラックだけを展開。
+  楽器側PSDにも歌唱/口パク枠を置ける。D&Dは対象スロットのacceptsで判断し、トラック見出しへの配置を拒否。
+  演奏/感情/リズムは予約枠として追加できるが、パターン属性編集と描画は未実装と明記。
+- スロット追加、共通の名前/色、固有の受入属性、上下移動、削除を実装。
+  使用中属性を解除する編集は拒否して設定へ戻り、取消で文書を保持。削除は指定枠と配置だけに限定。
+- schemaVersion=1を維持しarrangementVersion=2を追加。slotsのID/種別/order/accepts、配置のslotIdを保存。
+  旧track.clipsは固定の移行スロットへ移し、配置ID・参照・拡張フィールドを保持。移行後の再検証と再読込を通過。
+  未対応版、混在形式、ID重複、親slotId不一致、不正order/受入属性を明確に拒否し、元文書を保持。
+- Samples/Debug/へgeneric-slots.json・legacy-tracks.json・unsupported-version.jsonと操作手順を追加。
+  通常JSON読込、サンプルJSONボタン、独立EXEの引数で使用。参照は意図的に欠損させ、音源/MIDI/PSDを仮造・埋込みしない。
+- 最終ソースをこのPCのDelphi 37.0でDebug→Releaseの順にRebuild。両方とも警告0・エラー0。
+  両auf2でTestFoundationのJSON_OK/SETTINGS_FORM_OK/PLUGIN_ARTIFACT_OK/FOUNDATION_TESTS_OKを確認。
+  TestEditorStage1は既存音声/MIDIテストと追加スロットのモデル/GUIテストを含めEDITOR_STAGE1_TESTS_OK。
+  独立編集、誤配置、削除影響、安定ID、保存上限rollback、警告後の再編集/取消、欠損参照、再読込、リサイズを検証。
+- 実VCLフォームの読込直後・編集後・最小サイズ・スロット設定・追加後スクロール画像を取得して目視。
+  VCL内部144DPIの座標変換/スロット判定/文書不変を検証し、倍率変更時の説明文折返しを修正。
+  96DPIの実モニター上での内部倍率切替であり、実モニター間移動やAviUtl2上の高DPI確認とは区別する。
+- dpr/dprojの19ユニット参照とDFM同居、変更ソースのUTF-8 BOM/CRLF、git diff --checkを確認。
+  Source/Lib・Source/UI・Source/Plugin/Input・Referenceの差分なし。自分で作った旧スロット化前の一時バックアップのみ整理。
+  先行段階で監査・削除した6つの旧プロジェクト/配布ファイル以外に、ユーザー素材や継承ソースを削除していない。
+- 最終ログ/PNG/編集後JSON/成果物ハッシュはTemp/EditorStage1/verification/。
+  build-debug.log、build-release.log、foundation-debug.log、foundation-release.log、stage1-slots-run.log、source-audit.log、artifacts.json。
+  generic-slots-loaded.pngはサンプル読込直後。generic-slots.pngは設定・並替え後。実機未検証/描画未実装の範囲は前項から継続。
+  自動配備、他PCのビルド、commit/push/公開は行っていない。
+
+## 2026-10-10 編集プレビュー・音声試聴・再生位置同期
+
+- 上部の仮表示を16:9編集プレビューへ置換。再生/一時停止/停止/シークバー、秒/明示した30fps位置、音量メーターを追加。
+  時間目盛からのシークと橙の再生線を同じ位置へ同期。一時停止で位置保持、停止で0秒。JSONに再生位置を追加しない。
+- AudioWaveformのRIFF/PCM検証と既存WMFデコーダを適応し、配置の開始/長さ/音量を反映して試聴する。
+  PCM8/16/24/32・float32のWAVとMP3、配置内のシーク、重なりの合成、0～200%の個別音量に対応。
+  waveOutの実出力時計を使用。44.1kHz/stereo PCM16・4×1024フレームの固定出力バッファ、音声配置32件まで。
+  20分WAVの終端付近へシークして試聴でき、音源全体のPCMを蓄積しない。生成した106MBの一時WAVは検証後に削除。
+- PreviewFrameが再生とPSD/MIDI読込ジョブを所有し、文書はUI側だけで借用。ワーカーには配置と参照の値コピーを渡す。
+  連打で出力を重複させず、シーク/JSON切替/編集/取消/閉じる/破棄時に旧出力とジョブを回収。
+  欠損/破損音源は理由を表示して無音扱い、他配置と時間軸を継続。デバイス失敗は再生失敗として表示。
+- AIArtToPSDのArtPsdを読取だけで参照し、PSD保存済み合成画像のraw/RLE/PackBits境界検証を適応。
+  RGB8 PSD v1、8M画素/1GiB上限で静止表示。先頭4PSD/4MIDIまで。選択MIDIトラックの歌詞/音高を配置ローカル時刻で表示。
+  既存の東北きりたん_打撃_ドラム_持ち方修正.psdを実際に読込み表示し、前後SHA256不変を確認。参照元ソースも変更なし。
+- TestEditorStage1全回帰を通過。実waveOut出力/時計、WAV各形式/MP3、音量/ミュート/重なり、開始前無音、
+  配置内シーク/自然終了/20分音源、PSD raw/RLE/破損、再生連打/一時停止/停止/シーク/JSON切替/取消/破棄、
+  MIDI歌詞/音高同期とJSON不変を検証しEDITOR_STAGE1_TESTS_OK。実音の聴取・ループバック録音は行っていない。
+- このPCのDelphi 37.0で最終Debug→ReleaseをRebuild。両方とも警告0/エラー0。
+  両auf2でJSON_OK/SETTINGS_FORM_OK/PLUGIN_ARTIFACT_OK/FOUNDATION_TESTS_OK。Preview EXEも同じ最終ソースから生成。
+- 実VCLフォームのpreview-playing.png・preview-existing-psd.png・通常/最小/内部144DPI画像を保存して目視確認。
+  preview-demo.jsonは合成WAV/MIDIと64px PSDの試聴用。既存PSD画面の画像と合成fixtureを区別する。
+  144DPIは96DPI実モニター上の内部倍率切替。実モニター移動とAviUtl2上の高DPI確認は未検証。
+- dpr/dprojの21ユニット、DFM同居、変更/追加28ソース・スクリプトのUTF-8 BOM/CRLF、git diff --checkを確認。
+  未使用となった自作EditorBackdropユニットと全プロジェクト参照を削除。継承UI/Lib/Input/Referenceとユーザー素材を保持。
+  ログ/PNG/デモJSON/最終成果物SHA256はTemp/EditorStage1/verification/へ保存。
+  build-debug.log・build-release.log・foundation-debug.log・foundation-release.log・stage1-preview-run.log・source-audit.log・artifacts.json。
+- 未実装: AviUtl2背景の取込み/映像への描画、PSD層/表情/口形/演奏差分合成、歌声/MIDI音源生成、キャラ移動/拡大操作。
+  最近傍の簡易レート変換と3ch以上の先頭2ch試聴は編集確認用の制限。実AviUtl2設定起動/aup2保存再読込は未検証。
+  自動配備、他PCビルド、commit/push、Libraryへの画像/ファイルアップロード・公開はしていない。
+
+## 2026-10-10 再生中の直接破棄・ウィンドウ閉じる回帰
+
+- PreviewChecksに取消/Stopを先に呼ばない専用fixtureを追加。音声再生中の直接Form.Freeと、
+  WM_SYSCOMMAND/SC_CLOSEで閉じた後に呼出元が破棄する経路を別々に検証した。
+- 合成WAV（音量0）と専用8M画素PSD4参照だけを使用。開始時に生存するPSD/音声ワーカーの
+  OS同期ハンドルを捕捉し、破棄直後の全ワーカー終了・waveOut所有数0・WAV/PSDの排他再オープンを確認。
+  閉じる時のJSON不変、破棄後のメッセージ処理で音声が再開しないことも確認。専用24MiB一時PSDは削除。
+- 最終テストEXEを再生成し全回帰EDITOR_STAGE1_TESTS_OK。
+  GUI_ACTIVE_DIRECT_FREE_TITLEBAR_CLOSE_PSD_AUDIO_WORKERS_WAVEOUT_FILES_RELEASED_OKを確認。
+  製品コードの修正は不要。Debug/Releaseのauf2 SHA256は先の最終ビルドから不変で、製品再ビルドは行わない。
+- 最新実行ログはTemp/EditorStage1/verification/stage1-preview-close-run.logとeditor-tests.log。
+  テストソース/EXE/ログのmtime・サイズ・SHA256をclose-regression-artifacts.jsonへ保存し、artifacts.jsonも更新。
+  テストのUTF-8 BOM/CRLFとgit diff --checkを確認。既存ユーザー素材・参照元は変更していない。
+  閉じるは実VCLへのWindowsメッセージで検証し、外部マウス操作やAviUtl2本体の確認とは区別する。
+
+## 2026-10-10 IDE構成・通常ビルドイベント・auf2配備の修正
+
+- ユーザーのIDE報告を受け、現行dprojと同階層のSYNC_Lyrics/SYNC_MVStudio/SYNC_Breath/CanvasTestを比較。
+  修正前の既定CLI Buildは成功し、IDE固有の最初のエラーはCLIでは再現していない。
+- 最小Filterテンプレートを基にGUID/Library/Win64/Debug/Releaseと既存21ユニット・7フォーム/フレームを整理。
+  IDEが参照するCfg_1_Win64/Cfg_2_Win64へ前後コマンドを設定し、MSBuildのImport後にも同内容を評価させる。
+  Debug/Releaseのコンパイラ設定は専用Cfg_1/Cfg_2グループへ分離。IDE保存で設定が落ちた途中版を退避して修復した。
+- 06:15のユーザー保存でDCU先がProgramData/aviutl2/Plugin/新しいフォルダーへ変更されたことを検出。
+  同時保存確認中は書換えを止め、ユーザーがプロジェクトを閉じ「正しいフォルダ」へ直す承認を受けて再開。
+  現在はDCU=Win64/<構成>/DCU、DLL/生成auf2=Win64/<構成>。古いDCU先のファイルは削除していない。
+- DLLとDCUの出力を分離。後処理はOUTPUTPATHで実DLLを受け、同じ場所へ同名auf2を生成する。
+  元のGit設定と既存フォルダーにあるC:/ProgramData/aviutl2/Plugin/SYNC_MusicStudioへauf2だけを配置。
+  この配備は今回のユーザー明示承認に基づく。実作品・他プラグイン・参照元へは書き込まない。
+  DLLはDelphi/IDE標準出力として保持。登録グループSYNC・表示名演奏スタジオ・英語内部ファイル名は維持。
+- このPCのDelphi37で通常dprojからDebug/Release Rebuildを通過。警告0/エラー0。
+  Config/Platform指定なしの既定Release/Win64 Buildを別cwdからも通過。
+  各ログにPLUGIN_OUTPUT_PREPARED、PLUGIN_OUTPUT_COPIED、PLUGIN_DEPLOYEDを確認。
+  最終各ビルド前後にdproj SHA256不変を確認し、以後の同時保存は検出して止める。
+- Debug/ReleaseそれぞれでDLL・生成auf2・配置版のSHA256が一致。配置版を実LoadLibraryして
+  PLUGIN_IDENTITY_SYNC_PERFORMANCE_STUDIO_OK/PLUGIN_ARTIFACT_OK/FOUNDATION_TESTS_OKを確認。
+  全編集/音声/JSON/スロット/再生/破棄回帰もEDITOR_STAGE1_TESTS_OK。
+- AviUtl2不稼働時、配置ファイルを検証用に一時読取ロックして通常Release Buildを実行。
+  後処理は非0で失敗し、配置版SHA256不変。解除後の通常ビルド・配備は成功。
+  プロセス強制終了・ロック強制解除・読取専用属性解除は行わない。
+- SourceのUI/再生処理とDPR入口、継承Lib/UI/Input/Referenceを保持。参照一覧/DFM同居、BOM/CRLF、git diff --checkを確認。
+  書換え用の自作一時スクリプトを削除し、ユーザー保存版・比較ログ・成果物SHA256の証拠は保持。
+  記録はTemp/EditorStage1/project-repair/。final-debug-build-deploy.log、final-release-build-deploy.log、
+  final-default-build-deploy-from-temp.log、foundation-deployed-debug.log、foundation-deployed-release.log、
+  controlled-locked-deploy.log、editor-regression.log、debug/release-deployment-artifacts.json、project-audit.log。
+- IDE実画面の読込/設定欄表示、AviUtl2本体での設定/aup2再読込は未検証。
+  computer-useはnode_replによる初期化を要求するが、この接続にツールがなくIDE画面を操作していない。
+  スクリーンショットのアップロード・他PCビルド・commit/push・公開はしていない。
+
+## 2026-10-10 本文フォント統一・ピークメーター方向修正
+
+- 実フォームの調査では、フォーム本文がYu Gothic UI/-13、属性フレームとプレビューが
+  Segoe UI/-12だった。共通Controlsの基準をYu Gothic UI・96DPIで13pxに統一し、
+  従来の小さい本文から1px拡大。共通設定/音声/歌唱/PSD/スロット/プレビューへ適用する。
+  JSONコード欄はConsolasの書体を保持し、本文と同じ高さにする。継承DarkThemeの原本は変更しない。
+- ピークメーターは上端から下へ伸びていた。背景を描き、下端から上へ伸びる矩形に修正。
+  無音は空、最大は全面、範囲外/非有限値を制限。音量スライダー、JSON値、再生ゲインは変更しない。
+  プレビューのステータス行は20px、シークバーを2px下へ調整した。
+- 通常1200x800/最小1000x562/内部144DPIで部品を再生成・再オープンし、本文フォントの同一性、
+  入力欄の間隔、一覧行/タイムラインの高さを確認。144DPIは20px。実モニター間の移動ではなくVCL内部倍率の検証。
+  音量0/100/200%の表示・JSON保存/読込・再オープン、メーターの無音/半分/最大と境界を確認。
+  GetFormImageで実フォームを表示してPNG保存し、最小画面/144DPI音声設定/再生中メーターのピクセルを閲覧。
+- 全編集/実音声出力/JSON/非同期結果/スロット/PSD/再生停止/直接破棄/タイトルバー終了回帰が通過。
+  GUI_UNIFIED_13PX_FONT_NORMAL_MINIMUM_144DPI_VOLUME_0_100_200_JSON_REOPEN_BOTTOM_UP_METER_OK と
+  EDITOR_STAGE1_TESTS_OK を確認。Debug/Releaseのauf2をそれぞれ実LoadLibraryして
+  PLUGIN_IDENTITY_SYNC_PERFORMANCE_STUDIO_OK と FOUNDATION_TESTS_OK を確認。
+- 通常Debug Rebuildは後処理の既定ProgramDataプラグイン上書きについて、自動承認レビューが
+  「この上書きへのユーザー許可を確認できない」と拒否し、実行前に停止。
+  上書きは回避/強行せず、この検証だけMSBuildのPostBuildEventをDeployDirectoryなしへ指定した。
+  ローカルDebug/Release Rebuild・Prepare/Complete後処理は警告0/エラー0。
+  dprojのSHA256はC8661DADDBC4EA85303A0D0D6B600342405224A0D16CE3D3F649D5CEB086AE61のまま。
+  出力先/ビルドイベント/グループSYNC/名前演奏スタジオは保持。既定配置版は以前のReleaseのままで未更新。
+- 今回の参考PNG libfile_913c25a276488191987efffb6e8203ca はLibraryで準備できたが、
+  公式取得ヘルパーに必要なこのPCのPythonが実行不可で、画像ピクセルを確認できなかった。
+  ローカル実フォームによる独立検証を行った。画像アップロード/他PCビルド/commit/pushは行わない。
+- 証拠: Temp/EditorStage1/font-meter/ のbaseline-fonts.log、regression.log、debug-local-build.log、
+  release-local-build.log、foundation-debug-local.log、foundation-release-local.log、artifacts.json。
+  PNGはTemp/EditorStage1/verification/ のfonts-editor-0/1/2.png、fonts-audio-0/1/2.png、
+  fonts-singing-0/1/2.png、preview-playing.png。自作の一時フォント調査DPR/EXE/DCUは削除。
+  ユーザー差分/素材/参照ソース/既存IDE出力先を保持し、git diff --checkを通過。
+- 残り: 既定auf2への今回Release上書きの承認、AviUtl2本体での編集/aup2再読込、実モニター間DPI移動。
+## 2026-10-10 フォント/音量修正版Releaseの承認済み配置
+
+- 上記で保留した配置について、ユーザー本人の「おきかえてよい」と指定auf2置換の許可を確認。
+  コピー前にRelease DLL/auf2のSHA256、成功したローカルReleaseビルド・登録・全回帰記録を照合。
+- 既存のRelease後処理を指定した同じ配置先に一度再試行し、PLUGIN_DEPLOYED Releaseを確認。
+  C:/ProgramData/aviutl2/Plugin/SYNC_MusicStudio/SYNC_MusicStudio_Filter.auf2 を修正版へ置換した。
+  使用中/ロックの強制解除、プロセス強制終了、無関係なファイル操作、画像アップロードは行わない。
+- ソースDLL/ローカルauf2/配置auf2は4,803,584bytesでSHA256が一致:
+  55E6BEB88D97DBD0783DEE80C9256035DA64A8C3E57687663DC6C6A46A707F5A。
+  配置版を実LoadLibraryし、group=SYNC/name=演奏スタジオを照合した
+  PLUGIN_IDENTITY_SYNC_PERFORMANCE_STUDIO_OK、PLUGIN_ARTIFACT_OK、FOUNDATION_TESTS_OKを確認。
+- 証拠はTemp/EditorStage1/font-meter/deployment-before.json、deployment-after.json、
+  release-approved-deploy.log、foundation-deployed-release.log。note/progress/artifact記録の配置保留状態を解消。
+  プロジェクト/出力先/ビルドイベントは変更せず、AviUtl2本体での設定操作/aup2再読込は未検証のまま。
+## 2026-10-10 IDEプロジェクト設定エラーの一次調査（未修正）
+
+- ユーザーの「ビルドは出来るが、プロジェクト設定を開くとエラー」をIDEオプション読込の問題として調査。
+  現在のdproj/.dproj.localをTemp/EditorStage1/ide-options-error/へ退避し、調査中のSHA256不変を確認。
+  未保存作業のあるIDEを閉じる/保存する操作、実プロジェクトの書換え、プラグイン再配備は行わない。
+- XMLは構文正常、.localは空のBorlandProject。参照21ユニット/7DFMは全件存在。
+  Debug/Release/BaseのKey/CfgParent、Win64、Library、フォーム情報を同階層3プロジェクトと比較。
+  同階層にもImport後のイベント定義があり、重複定義だけを原因と断定できない。
+  Alwaysとデバッグ情報1はインストール済みDelphi 37.0 Targetsに扱う定義がある。
+- 構成の値グループがBase/Win64 Debug/Win64 Release/Debug/Releaseの順で、
+  比較対象の親→子の順と異なる。値/出力先/ビルドイベントを変えず、
+  Base/Debug/Win64 Debug/Release/Win64 Releaseへ並べ替えたcandidate-native-order.dprojを比較用に作成。
+  実プロジェクトには適用していない。構成順がエラー原因かは未確定。
+- 具体的なIDEエラー文/画像を親が依頼中。この接続はネイティブIDE操作手段がなく、
+  プロジェクトオプションを実際に開く確認はできていない。CLI/MSBuild成功でIDE成功と判定しない。
+  証拠: analysis.json、references-audit.json、candidate-native-order.dproj、dproj/.local.before。
+## 2026-10-10 Provisioningページの選択エラーに対応した一項目修正（IDE再確認待ち）
+
+- 親側で添付 libfile_8da5120c8e80819194af800a6988db65 の実ピクセルを確認。
+  正確なエラーは「リストのインデックスが範囲を超えています (-1).
+  TList<System.Classes.TCollectionItem> 範囲は 0..1 です.」。
+  TCollection.GetItem/TListControlItems.GetListItem/TComboExItems.GetComboItem/ProvisioningOptionsPage/
+  PlatformAwarePropertySheet/IDEPropSheet.DoBroadcastのスタックが報告された。
+  こちらのLibrary読込は画像参照と一致するOCRを返したが、ローカル側で画像ピクセルを描画したとは扱わない。
+- インストール済みdelphicoreide370.bplのProvisioningページDFMをLOAD_LIBRARY_AS_DATAFILEで読み、
+  cbPlatformConfigurationsが「Build type」の選択部品、OnChangeがcbPlatformConfigurationsChangeであることを確認。
+  SDK PlatformAPI.pasの配布種別とテンプレートMDIAPP.dprojのWin64 BT_BuildType=Debugを照合した。
+- 以前の設定整理で、コンパイラ構成名Releaseを配布用BT_BuildTypeにも入れていた。
+  これを今回の選択番号-1の有力原因とし、Cfg_2のBT_BuildTypeをRelease→Debugへ一項目だけ変更。
+  出力先/イベント/構成GUID/Platforms/フォーム参照を維持。構成順の候補は未適用のまま保持。
+  ファイル同時変更をSHA256で検知し、直前バックアップを保存して修正した。
+  修正後dproj SHA256=3E21A9227C1503C153EBA980F1B275B2B820C3588710A766DAA52FE122A13661。
+- Debug/ReleaseのローカルBuildは警告0/エラー0。今回だけ後処理をDeployDirectoryなしへ指定し、配置版へ書き込まない。
+  DebugはDEBUG/R+/Q+、ReleaseはRELEASE/D0/L-と既存最適化を保持する実コンパイラコマンドを確認。
+  ローカルReleaseでPLUGIN_IDENTITY_SYNC_PERFORMANCE_STUDIO_OK/PLUGIN_ARTIFACT_OK/FOUNDATION_TESTS_OK。
+  配置版は08:38:14 UTCの別ビルドでSHA256=1EB7BDCFCCB232092F720B67B732E58A10FBBBDFBFB57753C2C826FD9642C7D7となっていた。
+  古い08:02配置SHAとの一致を前提にした保護チェックは停止し、更新が今回の修正/ローカルBuildより前であると確認した。
+  今回のエージェントによる配置上書き・プロセス終了は行わない。
+- ネイティブIDE操作手段がないため、未保存作業のあるIDEを閉じる/保存する操作は行わず、
+  ユーザーへプロジェクト再読込後のオプション表示を確認依頼した。CLI成功でIDE解消とは判定しない。
+  原因の確定とIDEエラー解消の確認は保留。証拠はTemp/EditorStage1/ide-options-error/の
+  provisioning-fix.json、project-fix.diff、provisioning-page.dfm.txt、before-provisioning-fix.dproj、
+  debug-local-build.log、release-local-build.log、foundation-release-local.log、final-status.json。
+  SDK読込用の自作DPR/EXEは不要として削除した。
+## 2026-10-10 音声配置の折りたたみサマリーと波形キャッシュ
+
+- トラックの展開と選択を分離。見出しクリックで折りたたみ/復元し、配置をサマリーにも表示する。
+  複数スロットは番号/名前付きの別段。選択/移動/D&Dは元スロットへ対応し、汎用acceptsを維持する。
+  可変高さをピクセル単位でスクロールし、16スロットの最終配置まで操作できる。
+- 配置内に既存WAV/MP3 WaveJobによる実ピークを描く。正規化パスごとに共有し、可視音源を最大2ジョブで解析。
+  更新日時/サイズを約1秒ごとと完了時に確認。世代/パス/識別情報の不一致は破棄する。
+  PaintはIO/デコードを行わず、256pxの波形タイルを最大128個LRU保持。倍率/高さ/DPI/音量/色/世代別に再利用。
+  音源0秒を配置開始へ合わせ、配置長さで切り、音源終端以後を引き伸ばさない。trim/速度変更は現モデルにない。
+  未選択/解析中/欠損/解析失敗/無音/ミュートを区別。キャッシュや音源はJSONへ埋め込まない。
+- 開始前TerminateではTThreadがExecuteを省略するため、WaveJob.DoneはFinishedも確認して回収する。
+  LoadDocumentのOnChangeと明示JSONMemoChangeによる二重Bindを防止。Queue/破棄後UI callbackは使わない。
+- 最終TestEditorStage1全件成功。直接再描画100回/GUI80回で解析と既存タイル生成の増加0。
+  同一参照の共有、ズーム/DPIで再解析なし、可視音源のみ解析、LRU上限、同サイズ更新/欠損復旧/削除を検証。
+  前半無音/後半ピーク/音源終端/0/75/200%音量、旧世代取消、JSON切替と破棄を検証。
+  折りたたみ複数スロットの選択/移動/D&D/シーク/復元、通常/最小/144DPI/長いサマリーを検証。
+  合成DPI検証のリセットをまたぐ画像ではなく、96DPIの縦スクロールと144DPIを独立した順で確認した。
+  waveform-expanded/collapsed/restored/minimum/dpi144/tall-summary-scrolled.pngをローカルで実際に閲覧した。
+- 最終Debug/Releaseは警告0/エラー0。両方のFoundationでJSON/設定フォーム/実auf2登録成功。
+  BT_BuildType=DebugのIDE修正、ビルドイベント/出力先/名前/グループは保持し、dproj差分は新unit参照だけ。
+  ビルド前後の入力SHA256は一致。IDE保存/終了、別PCへのビルド依頼、commit/push、画像uploadは行わない。
+  今回の後処理はDeployDirectoryなしのローカル生成を指定し、配布先はタスク開始時の版から変更なし。
+- 依存監査: dproj参照22件すべて存在。新WaveCacheは必要な描画責務、外部DLLの依存追加なし。
+  自分の操作で一時生成された空のTests内ファイルは内容を確認して削除し、旧UIとユーザー素材は保持。
+  新しいReleaseの配備は別途その版の上書き承認が必要。AviUtl2/aup2の実機操作と実モニター間DPI移動は未検証。
+  証拠はTemp/EditorStage1/audio-timeline/final-status.json、build-input-hashes.json、dependency-audit.jsonと各ログ。
+  試用はTests/Win64/SYNC_MusicStudio_EditorPreview.exeでverification/waveform-demo.jsonを開く。
+
+## 2026-10-10 歌唱ピアノロール・固定PSDサムネイル
+
+- 歌唱配置と折りたたみサマリーに、選択MIDIトラックの実音符を表示。共通テンポの開始/終了秒と音高を反映し、配置長で切る。
+  ワーカーでトラック別の開始秒順配列/終了秒索引を構築し、可視区間とプレビュー歌詞を二分探索する。
+- PSD見出し右端に44×40px(96DPI)の合成画像サムネイルを追加。透明度/縦横比を保ち、名前/開閉印と重ならない。
+  横スクロールで固定、縦スクロールで行に追従。未割当/読込中/参照切れ/失敗を区別する。
+- VisualCacheの同一参照をタイムライン/編集プレビューで共有。解析は最大2ジョブ、更新日時/サイズと世代/パスを確認。
+  PaintはファイルIO/解析を行わず、波形/ロール/PSDが共通BitmapCacheのLRU実装を利用する（各128画像）。
+  PSD表示像は長辺512px以内、キャッシュはJSONへ埋め込まない。開始前取消/旧世代/削除/破棄を安全に回収する。
+- 半透明PSDの新テストでVCL AlphaFormat変更による二重乗算を検出し、画素コピー前に設定して修正した。
+- 最終TestEditorStage1全件成功。新規検証もテンポ変化/音高/選択トラック/配置長、透過/上下方向/縦横比、同一参照共有を確認。
+  直接/GUI各100回再描画で解析/画像生成の増加0。ズーム/色/DPI、LRU128上限、同サイズ更新、完了直前の旧MIDI排除を確認。
+  折りたたみ/復元/選択、横固定/縦追従、トラック並べ替え/削除/JSON切替、最小/144DPI/閉じるを確認。
+  既存波形/試聴/13px本文/下から上のメーター/JSON/設定ポップアップの回帰テストも通過。
+- 通常/折りたたみ/横スクロール/縦スクロール/最小/合成144DPIの実VCL画像をローカルで閲覧。
+  既存ドラムPSDもプレビューと固定列へ表示し、元PSDのSHA256一致を確認した。画像はアップロードしない。
+- Win64 Debug/Releaseは警告0/エラー0、両FoundationでJSON/設定フォーム/実auf2の登録成功。
+  ビルド前後/最終の入力SHA256一致。dprojはBitmapCache/VisualCacheの2参照追加だけで、BT_BuildType/ビルドイベント/出力先を維持。
+  参照24件すべて存在。外部DLLを追加せず、今回不要と確認できた新規ソースはなし。生成vrcは標準ビルドで削除済み。
+  継承UI/参照元ソース/ユーザー素材/ユーザー差分のAup2/sample.aup2を保持。別PCビルド、IDE保存/終了、commit/pushは行わない。
+- この追加版はDeployDirectoryなしのローカル生成のみ。配備済みauf2は開始時の849DF19F…から変更なし。
+  Releaseは5,029,888 bytes、SHA256=1F6F0EE5573A582F9677C5F49A5A66C91093890935E2A49042AE0F5D6228793D。
+  新版の上書き配備は別途承認が必要。AviUtl2内の編集/aup2保存再読込と実モニター間DPI移動は未検証。
+  証拠はTemp/EditorStage1/piano-psd/final-status.json、build-input-hashes.json、dependency-audit.jsonとビルド/Foundationログ。
+  試用はTests/Win64/SYNC_MusicStudio_EditorPreview.exeでverification/piano-psd-demo.jsonを開く。
+
+## 2026-10-10 ピアノロール音域fit・FL Studioを参考にしたクリップ表示
+
+- ユーザーのピアノロール表示成功確認後、使用MIDIトラックのmin/max音高と表示音域を解析キャッシュへ固定。
+  上下各1音の余白、最小5音、0～127内。表示高へfitし、高音は上・低音は下へ置く。
+  短い/広音域の本文は最低2px(96DPI)を確保し、上下の画素余白と太さを本文内へクランプする。
+  Paintでmin/maxを走査せず、同じトラックの全配置/タイルが音域を共有する。
+- 親で実ピクセル確認したFL Studio参考画像の観察を基に、上下1pxのクリップ余白と16pxの色付きタイトル帯へ変更。
+  本文を広い暗色領域にし、波形は明るい灰色、ノートはパターン色の明度を確保。名前/色/音量のJSON値は変更しない。
+  波形の実ピーク×設定音量、時間長さ/開始位置、PSD固定サムネイル、再生、13px本文、メーターを維持する。
+- 音声停止連絡前にTestEditorStage1全回帰成功（ログ最終更新2026-10-10T11:21:03Z）。
+  単音/狭音域/空/音高0・127/全音域、本文高1/2/3/8/26/39/64px、96/144DPI、タイル境界/横スクロールを確認。
+  再描画100回で解析/タイル生成増加0、選択トラック切替、同サイズMIDI更新、折りたたみ、JSON不変を検証。
+  通常/折りたたみ/最小/合成144DPIとピアノロール/波形の実VCL画像をローカルで閲覧。画像uploadは行わない。
+- ユーザー就寝による音声テスト停止連絡時に、当方テスト/プレビュー/音出力プロセスは実行されていないことを確認。
+  以後は全Editorスイート/再生/試聴/waveOut/音声fixture解析を実施しない。ユーザーの再開連絡まで保留条件をnote.mdへ記載。
+  Foundationはソースで音声を読まない空文書/JSON/登録だけと確認して実施。停止連絡後の音声関連再検証は未実施。
+- Debug/Releaseは警告0/エラー0、両FoundationでJSON/空設定フォーム/auf2ロード・SYNC/演奏スタジオ登録成功。
+  dprojはタスク開始時とSHA256一致し、BT_BuildType/ビルドイベント/出力先を保持。ビルド前後/最終の入力ハッシュも一致。
+  参照24件の依存監査を実施。新規不要ソースはなし、標準ビルドが生成vrcを削除。継承UI/参照元/ユーザー差分を保持。
+- ローカル生成だけで、配備済みauf2は開始時のF1C5CD32…から変更なし。Aup2/sample.aup2もハッシュ一致。
+  Releaseは5,030,912 bytes、SHA256=727DA31DCFCFA9142091CF701A05ABFE6C1849B72E2904842636954211C80D3D。
+  新版の配備承認は未取得。IDE保存/終了、他PCビルド、commit/pushは行わない。
+  証拠はTemp/EditorStage1/pitch-range/final-status.json、各ビルド/Foundationログ、build-input-hashes.json。
+  静的画像はverification/piano-psd-expanded.png、pitch-range-expanded/collapsed/dpi144.png。
+  AviUtl2内の実機操作/aup2保存再読込、実モニター間DPI移動は未検証。
+
+## 2026-10-10 スロット連動ライブラリ・共有PSD・拍演奏
+
+- 右の選択スロットで左の見出し/一覧/＋を切替。属性別の直接追加、PSD別表情/animation/姿勢の絞込を実装。
+  共通の名前/色と専用フレームを分離。共有一覧の閲覧は作品JSONを変更せず、初回配置で参照を作り再配置で重複させない。
+- Known Folder Documents/SYNC_MusicStudio/Libraries/PSDAssetsの管理コピー・GUID・SHA256重複判定を実装。
+  同名異内容の別ID、欠損の同内容復旧/再登録、revision競合拒否、atomic保存、未知metadata保持、重複共有ID拒否を確認。
+  登録は共有設定の確認後だけ行う。共有設定の保存と作品の適用/取消は独立する旨を画面へ表示。
+- Syncroh2のPSD実部位読込/合成/口形UIをコピーして適応。通常・a/i/u/e/o/n・smallA/I/U/E/Oの12枠、
+  小さい母音の通常サイズfallback、表示状態とPSD別表情/姿勢をJSON保持。固定レイヤー名を必須にしない。
+  SYNC_Motionのリズム計算とRGBA変形をコピーして、画像のみの無音設定プレビューと配置ローカル拍のmotionを実装。
+- SceneCacheは先頭4PSDトラックの文書/設定/テンポを値コピーして保持。同じPSDのdecodeを共有、load/render各2ジョブ、
+  世代/ファイル変更時の古い結果排除、母音/表情/姿勢/motion合成、100回描画の再読込/再合成増加0を確認。
+  固定列サムネイルも同じScene画像を借用。PaintでJSON解析や外部ファイルIOをしない。
+- 歌唱可能な楽器トラックとPSD/歌唱/表情/animation/姿勢/演奏スロットを追加。
+  演奏は拍ピアノロールで音符追加/移動/削除、ズーム依存スナップ。拍配置をarrangementVersion=3で保存。
+  timingのテンポ点/曲全体の固定拍子を編集し、拍↔秒の境界、7/8、テンポ変化を跨ぐ配置、BPM編集後の拍保持を確認。
+  音声秒と歌唱MIDI内テンポは独立。演奏タイルは索引/LRU128を使い、100回描画で再解析増加0を確認。
+- 最終TestNoAudio全件成功。PSD raw/RLE・破損/非対応・読込取消/再オープン・複数参照・旧世代・リサイズ、
+  共有コピー/設定/スロット連動/拍/変化テンポ/Scene/motionを検証。波形ジョブ0、音声エンジン未生成をassert。
+  この作業では音声fixture・decode・Play・waveOut、TestEditorStage1全体は一度も実行しない。
+- 実DocumentsのキーボードPSD(21層/1024x1536)とドラム持ち方修正版(15層/1536x1024)の実部位読込/合成成功。
+  SHA256は前後一致。原本を保存/登録せず、512px PNGだけをTempへ出力して目視確認。
+- 通常/最小/内部144DPIのVCL画像を検証し、統合画面・PSD母音/表情・motion・テンポ・拍演奏の実ピクセルを閲覧。
+  テストホスト初回SW_HIDEをrootのSW_SHOWNOACTIVATEで解消し、ツールバーのnative可視/配置assertを維持。
+  パネルの既定Caption残像と、変化テンポ後に詰まる拍ラベルを修正。実モニター間DPI移動は未検証。
+- このPCだけでDebug→Releaseを直列ビルド。sandbox内MSBuildのレジストリ読取拒否は権限付き再実行で解消。
+  ライセンス障害は発生せず、両構成の警告0/エラー0、両auf2のFoundation(JSON/空フォーム/ABI/登録)成功。
+  SYNC/演奏スタジオ/SYNC_MusicStudio_Filterを維持し、独立EditorPreviewもコンパイル成功。
+- .dprojは43参照の監査で全ファイル存在、参照追加以外は開始時の内容と一致。
+  BT_BuildType/IDEイベント/出力先は保持、呼出時PostBuildEventだけDeployDirectoryなしへ上書き。ビルド前後の入力SHA256一致。
+  外部FFmpeg/Skia DLLを追加せず、追加PSD由来のbcrypt/crypt32はWindows標準。継承UIと参照元ソースは保持。
+  使用されなくなったPreviewFrameの旧PSDジョブ/画像保持分岐と、今回の一時編集スクリプトを整理。
+- Aup2/sample.aup2と配備済みauf2は開始時のSHA256と一致。既存Characters/PNG・PSD、ユーザー差分を保持。
+  配備、他PCビルド、IDE保存/終了、commit/pushは行わない。
+- AviUtl2内の設定起動/実作品aup2保存再読込、音声回帰、実モニターDPIは未検証。
+  旧TestEditorStage1には新規PSDの歌唱slot0・全属性一覧等の旧前提が残り、音声再開後の前提更新と全回帰が必要。
+  Filter映像はpass-throughのまま。歌声生成/音符からの手足動作/ドラムステップ/途中拍子変更/キャラ配置ハンドルは未対応。
+  onset/decayと連続同母音の口中心縮小は将来方針。PSD特殊blend/clipping/group mask等は非対応を明示。
+- 添付Library PNG(libfile_d834fe0c7fd08191be01ddfd92229850)は取得403で、この作業ではピクセルを閲覧できなかった。
+  ローカル仕様と文章要件による独立実装は完了。接続切断によるローカル編集/検証データの欠落は確認されなかった。
+- 証拠はTemp/EditorStage1/slot-library/のnoaudio-tests.log、各build/Foundationログ、dependency-audit.json、
+  build-input-hashes.json、artifacts.json、final-status.json、実VCL PNG。試用手順はREADME.mdの--silentコマンド。
+
+Release: 5945856 bytes / SHA256=6D4FE1CE0014A4CDE04AC6D21C21B86B227757415F0A4BEB41D3CFEABC90C103。
+
+### 素材引継ぎの保管（note.mdから内容を保持）
+
+
+
+Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得済み。
+本日追加の軽量本体19 ZIP・ガイド等9 ZIPは`Temp/Dots_20261009/Additional_20261009/`へ取得済み。
+分類済みPNGは`C:/Users/zan12/Documents/SYNC_MusicStudio/Characters/PNG/東北きりたん/`。
+頭と首下の対応は同フォルダーの`分類目録.json`と各楽器の`組み合わせ一覧.txt`を参照。
+追加PNGはcore19楽器97姿勢＋通常配置マリンバ3姿勢を一体差分PSD化済み（20PSD・100姿勢）。PSDは`Characters/PSD/`直下へ`人名_属性_楽器名.psd`で保存。確認画像・対応表は元PNG側の各楽器フォルダー。
+ユーザー指定条件（作成済みPSDを全てPSDフォルダーへ配置）を満たし、今回の変換作業は完了。進捗は同キャラ直下の`PSD変換進捗.json`。
+ドラム基本とスティック上げの持ち方をユーザー参考図に沿って再修正し、`Characters/PSD/東北きりたん_打撃_ドラム_持ち方修正.psd`へ保存・アプリ反映（8姿勢）。他6姿勢を保持。修正版の採用確認は未了。
+付属固定頭を保持。個別頭部・表情移植、補修候補・任意頭・箏構図用、第二段階の部位分割は今回の完了条件外の将来作業。
+再現用資料は`Temp/PSD_Conversion_20261009/`および`_Batch2/`・`_Batch3/`。既存キーボード・タンバリンPSDの作成後編集は保持し、進捗JSONで版を区別。
+素体・差分の試験PSDと比較は`Temp/Dots_20261009/AssetTrial_20261009/output/review.html`。
+キーボードの小さい腕・右足差分と開始終了は切替可能。右コード3は不足。
+ドラムは静止組立まで。動かすと肩・握り・旧棒位置に欠けが出るため、補完と打撃差分が必要。
+詳細な検証結果はHISTORY.mdに記録。PSDの試験名を製品の必須レイヤー名として確定しない。
+
+## 2026-10-10 独立レビュー修正と無音回帰の分離
+
+- 独立レビューP2を修正。＋で割当済み原本を再登録して共有設定を保存した後も、revisionを読み直してScene/固定列サムネイル/左一覧を更新する。
+  左一覧と＋はslot.kind固定ではなくacceptsから導出し、歌唱＋表情などの混在枠で割当PSDの共有項目を選べる。
+  単種の直接＋/複数属性メニュー/未対応リズムの無効表示を回帰検証した。
+- スロット設定にPSD/animation/楽器姿勢の受入属性を追加。共通の名前/色と専用UIの分離を維持し、通常/最小/内部144DPI画像を閲覧した。
+  空JSONへの切替時に旧タイムライン行が同期通知へ残る不具合も修正。Root入替前に旧表示を外す。
+- 旧音声スイートの固定slot0/全一覧前提をkind・追加戻り値・パターンIDへ更新し、MIDI/JSON/配置/共通GUIをTestNoAudioへ分離。
+  音声ホストはコンパイルのみ。スクリプトとEXE直接起動の既定停止をTestAudioGateで確認（終了2・fixtureフォルダー未生成）。
+  音声fixture/decode/再生/waveOut・許可フラグ付き全スイートは一度も実行しない。再開許可後の全音声回帰は未検証。
+- arrVersion=2の予約演奏配置を現在のテンポで拍へ移行。テンポ境界、元の秒/ID/拡張保持、部分拍指定と拍上限の原状維持拒否を確認。
+  既に揃った有効な拍座標は再計算せず保持し、終了拍の上限も配置編集と揃えて検証した。
+  既存サンプルJSONや原ファイルを上書きしない。
+- atomic置換失敗時に既存metadata/管理コピー/revisionを保持しtmp残存0、別Storeのrevision競合でも原状維持を確認。
+  同名異内容PSD、同原本再登録の表示更新、別PSD表情のドロップ拒否/割当切替後の排除、JSON30回切替と最終世代の画像一致を無音で確認。
+- 追加回帰の途中失敗は成功扱いから外し、ログとnoaudio-result.jsonへ実行中/失敗/成功を記録するよう変更。
+  新規の空証拠フォルダーでも成功し、過去の音声テスト出力へ依存しない。最終runは2026-10-10 13:48UTC、TestNoAudio全件成功。
+- 全ソース更新後にこのPCでDebug→Releaseを直列ビルド。警告0/エラー0、両auf2のFoundationと独立EditorPreviewコンパイル成功。
+  最終58入力SHA256一致、43依存参照存在。不要な旧固定＋メニュー組立コードを整理し、継承UI・参照元・既存差分は保持した。
+  配備済auf2/実作品/読取実PSDのSHA256一致。配備/アップロード/別PCビルド/commit/pushは行わない。
+- 最新証拠はTemp/EditorStage1/slot-library/{noaudio-result.json,noaudio-tests.log,artifacts.json,final-status.json,各build/Foundationログ}。
+  停止ゲートはTemp/EditorStage1/silent-regression/audio-gate-result.log。READMEに安全な試用手順と再開条件を記載。
+
+最新Release: 5952000 bytes / SHA256=57C9C94A30FD249CB20D0A0FF4D9307035D740DA764E93FC539C2268699BC15A。
+
+## 2026-10-10 共有PSD本体の安全な公開とプロセス間保存競合
+
+- 新規登録・重複登録の欠損復旧・再リンクの3経路を、同一ディレクトリの新規一時ファイルへコピーする共通経路へ統一。
+  原本を書込拒否で開いたままコピーし、flush/サイズ/SHA256を確認してから、既存対象を置換しないrenameでsource.psdへ公開する。
+  失敗時はこの操作が生成した一時ファイルだけを整理し、既存管理コピー/metadata/ID/revisionを保持する。
+  新規登録は本体公開後にmetadataを確定。metadata保存失敗は新規生成した本体だけを整理する。
+- 保存ロックは共有rootの.write.lockをshare=0で開く方式へ変更。revisionの再読込・照合からJSONのatomic置換まで同じ排他範囲に置く。
+  同じ実体のrootを指す大小文字/末尾区切りの差を検証した。Windowsセッションに依存しないファイル排他を使う。
+  別PCに同期された別の実体を同時編集する分散排他は今回の範囲外。
+- 隔離PSDで5種の登録失敗と4種の復旧失敗・重複復旧失敗を注入。
+  途中例外、短いコピー、同サイズの内容破損、先行公開された正常PSD、metadata確定失敗を検証した。
+  各失敗で未検証の本体を公開せず、先行する正常ファイルを削除せず、metadata/参照/revisionを保持。処理できた失敗のtmp残存0と正常な再試行を確認。
+- 専用workerを2プロセス起動し、同じ版を読み込んだ後のバリアで同時保存を3回実施。
+  毎回一方だけ保存成功・他方は「他の画面で更新」の競合。勝者の名前/新revision/未知configと本体SHA256を保持し、古い版からの再保存も拒否した。
+  プロセス中断はテスト所有workerだけに実施。新規登録と欠損復旧のコピー途中で停止し、256Bの残存一時ファイルを管理PSDとして認識しないことを確認。
+  OSによるロック解放後に正常な再登録/同ID復旧が成功。別操作の一時ファイルを変更せず、確認後に所有fixtureの一時ファイルだけを整理した。
+  本体公開後・metadata未確定の孤立フォルダーも登録済と認識せず、正常な再登録を妨げないことを確認。
+- TestNoAudioの最終実行は2026-10-10 14:14:53～14:15:05UTC、全件成功。
+  PSD本体の検証後公開と、既存JSONのatomic置換失敗試験をそれぞれassertした。音声fixture/decode/Play/waveOutは実行していない。
+  専用workerと無音ホストをこのPCで直列コンパイルし、実PSD2件は読取だけでSHA256前後一致。統合画面と共通名/色＋PSD部位画面の実ピクセルも確認した。
+- 最新ソースでDebug→Releaseを無配備直列ビルドし、両方警告0/エラー0。両auf2のFoundation、EditorPreviewコンパイル、音声スクリプト/EXEの既定停止ゲートが成功。
+  58ビルド入力の前後/最終SHA256が一致、43DCC参照が存在。追加依存はWindows標準APIのみ。
+  不要になった直接PSDコピー分岐と名前付きmutex分岐を共通コピー/ファイル排他へ置換し、継承UI/参照元/既存差分を保持した。
+  実作品と配備済auf2のハッシュ一致。所有テスト/ビルドプロセス残存0。配備/アップロード/他PCビルド/commit/pushは行わない。
+- 証拠はTemp/EditorStage1/slot-library/{noaudio-result.json,noaudio-tests.log,shared-library-worker-compile.log,build-input-hashes.json,artifacts.json,final-status.json}。
+  開始前バックアップと途中の失敗/修正ログはTemp/EditorStage1/psd-storage/へ保持。試用手順はREADME.mdの--silent起動例。
+  音声回帰、AviUtl2内の設定起動/aup2保存再読込、実モニターDPIは継続確認事項。演奏エンジン/音符からの手足/途中拍子変更は未実装のまま。
+
+最新Release: 5953024 bytes / SHA256=63F2D10BC5AB6170A9AB7099DA4407BA85AD87FD77852ED99883532C04B1EE68。
+
+## 2026-10-10 PSD設定のtsly合成停止を修正
+
+- ユーザー報告: paperdolls_kiritan_800pxのPSD設定でレイヤー一覧は取得でき、右側は透明チェッカーのみ。
+  親が添付の実ピクセルで「合成未対応 / 読込失敗: Additional info retained in archive: tsly」を確認した。
+  この画面にはプレビューが存在し、読み込み後の合成チェックが停止していた。旧直接参照のトラック設定（ヘッダー確認のみ）は別画面。
+- コピーしたArtPsd.ReadTagsがtslyを一律に未知情報へ分類し、RenderPsdLayersの対応確認が致命的例外にしていた。
+  再利用元AviUtl2PluginLib/Lib/PSDArtEditor/Persistence/PSD/ArtPsd.pasも同じ分類を使っていることを読取確認。参照元は変更しない。
+  正規の16B追加タグを合成PSDへ挿入して、同じ例外を修正前に再現した（before-fix/noaudio-tests.log）。
+- Adobe PSD仕様 https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/ のtslyは、1Bの真偽値＋3B padding。
+  値1は従来の透明度処理と同じ既定値として明記されている。長さ/真偽値/paddingを検証し、1を正常な通常合成として受入れる。
+  0の特殊合成は明示的な未対応、2等の破損値は読込失敗に分ける。未知追加情報や特殊blend/clipping等の一括無視は行わない。
+- パス/状態行を実フォント高と親DPIに合わせて確保。内部ScaleForPPIで子フォントとCurrentPPIに差がある場合もツールバーの全ボタンを同じ倍率で配置し、欠け/重なりを修正。
+  テスト画像はnativeウィンドウ全体を画面内へ戻して取得する。画面外を含んだ旧DPI試験画像と、起動不可だった取得helper/一時転送入力の計8ファイルを所有Tempから整理した。
+- 新しいPsdDisplayChecksは管理コピーへのバインド、合成の非透明画素、実プレビュー領域のGetPixel描画、開き直し2回、欠損からの再選択、リサイズ、内部144DPIを確認する。
+  初回設定/再読込で未選択や欠損を以前の画像として残さず、元PSD/管理コピーのSHA256も前後一致。
+  実キーボードPSD（21層/1024×1536）もTempライブラリへ隔離コピーして同じ設定画面確認が成功。通常/144DPIの実ピクセルを閲覧した。
+- TestNoAudio最終runは2026-10-10 21:47:10～21:47:24UTC、追加表示試験と既存無音回帰が全件成功。
+  最新ソースのDebug→Release無配備ビルドは警告0/エラー0。両Foundation（JSON/空フォーム/登録/ABI）とEditorPreviewコンパイルも成功。
+  58入力のビルド前後/最終SHA256一致、43参照存在、追加外部依存なし。音声fixture/decode/Play/waveOutは行わない。
+- 調査開始時には配備済auf2とローカルReleaseがBC38B57B…、実作品はB7EEEA59…で、前回作業後の変更があった。
+  今回はその現在の状態を基準に保護し、終了時もハッシュ一致。配備/スクリーンショットアップロード/commit/pushは行わない。
+- 報告されたpaperdolls_kiritan_800px.psdのフルパスは回答待ちで、そのファイル自体の確認は未了。
+  添付libfile_792f028ab97c81919acfde0e5bf8aa83はLibraryの準備に成功したが、正規helperのPythonがWindowsAppsの起動不可エイリアスへ解決されたため、このホストでは取得/閲覧できなかった。
+  URLや権限の迂回は行わず、親が確認したエラー文と同じ問題を独立fixtureで再現した。
+  無配備・無音の独立ホストで再確認できる。報告PSDが別の特殊設定も持つかは、その実ファイル確認後に判断する。
+- 証拠: Temp/EditorStage1/psd-display-report/のbefore-fix、after-fix5、real-keyboard-final.log/画像、protected-data.json、build-input-hashes.json、final-status.json。
+  最終全件ログはTemp/EditorStage1/slot-library/noaudio-tests.log。試用はREADMEの--silent起動とTempの隔離ライブラリを使う。
+
+最新Release: 5954560 bytes / SHA256=5EE2A3C7EE15FDC9A0A375E6D5B076CC23BE7CA4308A5879439317BD01155BA8。
+
+### 報告PSDの指定素材域検索
+
+- 親の追加指示で、共有PSD登録JSONと現在の設定/ログ、Known Folder Documentsの既知素材域を読取検索した。
+  SYNC_MusicStudio/Libraries/PSDAssetsは存在せず、RIGMMaker/settings.jsonと作業ログにも対象ファイル名/PSD参照はなし。
+  SYNC_MusicStudio/Characters、RIGMMaker/Characters・Import・Exchangeの225フォルダーと1MiB以内のJSON/log/txt計229件で対象PSD名/参照が見つからなかった。
+  RIGMMaker/RIGM内の素材パッケージ1件もZIPとして読取し、42項目のファイル名と小さいJSONを確認したが対象名/PSDエントリーはなかった。
+  Recovery/Cache/Temp/IDE履歴/生成物/再解析ポイントを除外し、ドライブ全体やその他のユーザーフォルダーは検索しない。
+- 原本の書込/解凍/登録は行わず、未発見の範囲を報告して指示通り停止。追加質問は行わない。
+  証拠はTemp/EditorStage1/psd-display-report/paperdolls-search.jsonとpaperdolls-rigm-search.json。修正版は未配備・未アップロードのまま。
+
+## 2026-10-10 指定paperdolls実PSDの表示対応
+
+- ユーザー指定原本: D:/VoiceroidProj/PSD/EST/紙人形風きりたん/(付属品)/paperdolls_kiritan_800px.psd。
+  読取前後SHA256=3D898F20BB4F0CA60D792D3029BC3E085EA2AABFD46B1E0B61D859139AC20A7F（2386267 bytes）。
+  Temp内だけへ隔離登録し、原本・実共有ライブラリ・aup2を書き換えない。
+- 開始時の配備auf2とローカルReleaseは両方3D553D06…/5954560 bytes/2026-10-10 22:03:01UTC。
+  前回ビルドの58入力とのSHA比較は差分0で、再ビルド後の状態を今回の保護基準とした。
+  前回tsly=1修正済みソースで「Special compositing metadata: tsly」を実素材から再現し、未反映だけで説明できない追加問題と判明。
+- PSDは750×800、128レコード（描画ツリー115層）。tsly=0の13レコードはすべてlsct=3の非描画グループ終端。
+  全タグ解析後に終端だけを許可し、画像/グループ上のtsly=0、破損真偽値、未知タグの拒否は維持。
+  Adobe PSD仕様のtsly/section divider定義を確認: https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/ 。
+- 顔色内の乗算画像3枚と表情の通常グループmaskも合成の停止要因だった。
+  乗算はW3C source-over式 https://www.w3.org/TR/compositing-1/ に従い、透明な背景には元色を残す。
+  通常グループの-2 mask channelを境界/メモリ予算付きで読み、子の合成後に絶対座標・既定値・反転・無効化・group opacityを反映。
+  新規保存の検証と読取合成の検証を分離し、新しい描画対応が原本再保存や未対応PSD保存を許可しないようにした。
+  マスク付きpass、その他blend、clipping、未知合成属性は対応済みに見せない。
+- PsdDisplayChecksに乗算の不透明/半透明/透明背景の数値ピクセル、正規channel付きグループmaskの座標/反転/無効化/不透明度、
+  欠損mask channel、マスク付きpass、終端tsly、未知zzzzタグの検証を追加。従来の未対応blend回帰は乗算から未対応screenへ変更。
+  設定画面はnativeチェッカー領域への実描画も検証し、実PSDで2回開き直し/欠損から再選択/リサイズ/内部144DPIを成功確認。
+  通常サイズと144DPIの実ピクセルを閲覧し、右側に紙人形きりたんが表示され、パス/状態/ボタンに欠け・重なりがないことを確認した。
+- 全TestNoAudioは22:10:46～22:11:05UTCで成功。最新版hostによる指定実PSDのfinal-targetも成功。
+  Debug→Releaseの無配備ビルドは警告0/エラー0、両FoundationとEditorPreviewコンパイルも成功。
+  58入力のビルド前後一致、43参照存在、追加外部依存なし。誤ったTests内の証拠出力だけを整理して正しいTempへ集約。
+- 原本、Aup2/sample.aup2（B7EEEA59…）、開始時配備auf2（3D553D06…）は終了時もSHA256一致。
+  音声fixture/decode/Play/waveOut、配備、アップロード、commit/pushは行わない。
+  AviUtl2内の実操作/既存aup2再読込と実モニター間DPI移動は未検証。独立した最新設定GUIで実素材が表示されることを確認した。
+- 証拠: Temp/EditorStage1/paperdolls-real/のprotected-start/final.json、psd-record-audit.json、before-target.log、
+  final-target.log/実設定画面PNG、full-noaudio/、Debug/Releaseビルド・Foundationログ、artifacts.json、build-input-hashes.json。
+
+最新Release: 5955072 bytes / SHA256=555B46EDF0A800853C92E850681820BCF89884A661665F07C382C62D29588387。未配備。
+## 2026-10-10 指定paperdolls PSDの母音割当修正
+
+- ユーザー実機でPSD表示が確認できた後、母音に対するレイヤー設定が効かない件を同じ指定原本で調査。
+  原因は子の口形だけで`*`兄弟を排他にし、祖先の`*00 口パク`を開く際に同階層の`*A 普通`が残ること。通常口との重なりを修正前ソースの隔離ホストで再現した。
+  Syncroh2のPsdImageTree.pasの親Visible再帰と兄弟排他、PluginFilterPSDDrawLipSyncSong.pasの12枠を読み取りで照合。
+- SelectLayerOverrideを対象と全祖先で排他処理するよう修正。非`*`の装飾や別階層の目は保持。
+  チェック状態を選択母音適用後の表示に合わせ、保存済み割当の母音選択で対象行を選択する。安定キー、JSON形式、small母音の通常サイズへのフォールバックは維持。
+  本体変更はPsdLayers.pas、PsdLayersFrame.pas、PsdLayerFrameUI.pasの3ファイル。参照元ソースは変更していない。
+- 新規PsdMouthChecksは実際のShowModal、母音Combo、割当ボタン、OK/キャンセルを操作。
+  指定原本をTemp専用共有ライブラリへコピーし、12枠割当→各プレビューの期待ピクセル/チェック→OK保存→別Storeで再読込/再オープンを成功確認。
+  smallO割当削除時のOフォールバック、キャンセル時metadata不変、未知JSON項目/固定ID保持、原本/管理コピーSHA不変も確認。
+  同名`*00`が目と口の両方にあるため、初回検証コードの目を拾う誤りを修正し、口の完全階層キーで修正前再現と修正後成功を取り直した。誤った初回一時フォルダは確認して削除。
+- 全TestNoAudioは22:30:47～22:31:07UTCに成功。AudioRun=false。Debug→Releaseの直列無配備ビルドは警告0/エラー0、両FoundationとEditorPreviewコンパイルも成功。
+  58本のビルド入力のSHA固定、43参照の存在と新規外部依存なしを確認。旧UIは維持。
+  原本PSD 3D898F20…、開始時作品0E2B28DC…、配備auf2 52BD3487…、実共有metadata E90514A5…は終了時SHA一致。
+  音声fixture/decode/再生/waveOut、配備、アップロード、commit/pushは実行していない。AviUtl2内での母音修正版操作と実モニターDPIは未検証。
+- 証拠: Temp/EditorStage1/psd-mouth-report/final-status.json、before-correct-mouth.log、final-mouth.log、final-noaudio/noaudio-result.json、
+  final-mouth/psd-mouth-{DF415CDF-24F3-4E5E-B4A8-4A455A82CC24}/actual/の通常/あ/再オープンPNG、artifacts.json、protected-final.json。
+
+最新ローカルRelease: 5955584 bytes / SHA256=4C69EA830EAF2A3E3FEEB1EF1A9692267F35E1063FEC69186DFC71222066BFF1。未配備。
+### 母音設定の独立レビューP2: 読込直後の割当行選択
+
+- FillLayersが一覧先頭を選び、割当行への同期がコンボ変更時にしか行われないため、再オープン直後の「選択を割当」が通常口を無関係なグループへ上書きできた。
+  新しいGUIテストでコンボのOnChangeも行選択も呼ぶ前にassertし、指定実PSDの旧実装を再現した。
+- PsdLayersFrameに割当行選択の共通処理を追加し、FillLayersの読込完了とSelectMouthの両方から使う。
+  保存済みキーが欠損している場合は選択を解除し、先頭行へ誤割当しない。排他処理本体/PSD/JSON形式は変更していない。
+- 実PSD・合成PSDで初回表示→そのまま割当→再読込→そのまま割当→12枠→OK保存を検証。
+  別Storeの再オープンもイベント未操作で割当行をassertし、そのまま割当/OK保存後の12キーを再読込で確認。
+  さらに再オープン→smallO解除→キャンセルでrevision/metadata不変を確認。未知JSON項目と原本/管理コピーも保持。
+  合成PSDを4×2とし、非'*'の体/髪/装飾を重ならない位置へ置き、全12枠とsmallO fallbackの実プレビューを固定RGBA画素値で独立assertした。
+  指定実PSDの再オープン直後のPNGを実際に閲覧し、通常口の階層行が選択され、チェックとキャラ表示も対応することを確認。
+- 全無音回帰は22:42:36～22:42:57UTCに成功（AudioRun=false）。Debug→Releaseは同じPCで直列、警告0/エラー0。
+  両FoundationとEditorPreviewコンパイルも成功。58入力はビルド後不変、43参照存在、新規本体依存なし、不要ファイルなし、旧UI保持。
+  原本PSD、実作品、現配備auf2、実共有metadataはこのレビュー対応の開始/終了SHA一致。
+  無断配備/アップロード/commit/push/音声実行なし。AviUtl2内の母音修正版操作と実モニターDPIは未検証。
+- 証拠: Temp/EditorStage1/psd-mouth-selection-review/final-status.json、before-mouth.log、after-mouth.log、full-noaudio/noaudio-result.json、
+  after/psd-mouth-{AD9DD00D-E67C-4F38-A607-3D9AD59CA691}/actual/loaded-row-True-2.png、protected-final.json、artifacts.json、dependency-cleanup-audit.json。
+
+最新ローカルRelease: 5956096 bytes / SHA256=A54CB37708BE5B519C215EDEB65C5317DB8C86C8EC1031876BFB8431B1A977D3。未配備。
+### 母音UI入口の確認: 「通常 / 閉じ口」が母音選択欄
+
+- ユーザーから母音UIが見えないとの報告。親が実添付を確認し、歌唱PSD設定上部の「通常 / 閉じ口」コンボと割当/解除が表示されていることを最終確認。
+  これはPsdMouthComboそのもので、通常/a/i/u/e/o/n/smallA/I/U/E/Oの12枠。UI欠落は再現していない。
+  本体kind=psdで母音欄を表示し、表情/楽器姿勢では隠す。右のトラック/スロット設定とは別の入口。誤った初期画像判断に基づく再配置は行わない。
+- 現配備とローカルReleaseはSHA256=3112141AC01463DE6085AF61C160B82F50254282CD338C73C0C032DDED432A38で一致。
+  前回レビュー後に利用者側で生成/配備された版を今回の保護基準とした。58本の本体入力は前回レビュー版と変化なし。
+  今回は本体ソース/レイアウト/配備/ビルドを変更していない。テストとREADME/DEVELOPMENT/note/HISTORYのみ更新。
+- PsdMouthChecksに統合画面からの実入口を追加。Temp共有root→PSDトラック割当→歌唱PSDスロット選択→左一覧ダブルクリックで開く。
+  指定実PSDと合成PSDの96/144DPIで、12項目と割当/解除コントロールのShowing、枠内配置、12割当、実プレビュー、OK保存/共有再読込を成功確認。
+  作品JSON不変、音声エンジン未確保、音声decode数0をassert。直接ShowEditorだけで入口確認を代替しない。
+  144DPIの撮影では拡大後のテストウィンドウをモニター内へ移し、画面外の黒い切れ込みを除去して撮り直した。本体の配置は変更していない。
+  統合画面の入口PNGと144DPIの「あ」設定PNGを実際に閲覧し、母音コンボ、割当/解除/再読込、設定行と全下端が見えることを確認。
+- 最新全無音回帰は23:21:08～23:21:33UTCに成功（AudioRun=false）。現在ReleaseのFoundationも成功。
+  原本PSD/実作品/実共有設定/現配備は開始・終了SHA一致。追加本体依存なし、不要ファイルなし、旧UI保持。
+  音声実行、配備、アップロード、commit/pushなし。AviUtl2内の実操作と実モニターDPIは未検証。
+- READMEに操作を明記: 「通常 / 閉じ口」右端▼→母音選択→口の行選択→「選択を割当」→OK。
+  証拠: Temp/EditorStage1/psd-mouth-entry-report/final-status.json、final-integrated-actual.log、final-noaudio/noaudio-result.json、
+  final-actual/psd-mouth-{EF61BBEF-9D33-4255-96A2-6E934577421D}/actual/integrated-96/integrated-before-open.png、integrated-144/modal-True-a.png、protected-final.json。
+## 2026-10-10 PSDのレイヤー先選択・母音割当ポップアップ
+
+- ユーザー要望に合わせ、先にレイヤーを選び、右クリックまたは「母音へ割当…」から12枠を選んで即割当・プレビューする操作へ変更。
+  母音コンボの先選択は不要で「確認: …」として表示確認用に残す。メニューのチェックと選択ラベルに同レイヤーの登録済み母音を表示。
+  「確認母音を解除」は1枠、メニュー末尾は選択レイヤーへ割り当てた全枠を解除。既存12枠/small fallback/祖先排他/未知JSON項目/安定キーを維持。
+- チェック一覧は大規模ツリーへ置換せず、各行をローカル実名、親グループを太字、子を最大3段×6pxの浅い字下げで描画。
+  フルパスの繰返しを除き、完全な階層はツールチップへ。同階層の重複名だけ元レコード番号を添える。PSD実名と内部IDは変更しない。
+  右クリック座標をhit-testしてその行を選択してから開く。↑↓で行選択、Enter/Shift+F10/メニューキーで開く。
+  EnterはチェックリストのCM_DIALOGKEYでも処理し、フォームの既定OKへ流して閉じることを防ぐ。
+  狭幅では確認コンボと再読込/取消を2段目へ置き、フォント/DPIに応じて行高・下部表示も調整。
+- PsdMouthChecksは全初回/再オープン/統合入口でコンボを先に変更せず、レイヤー→実際のネイティブポップアップ→12枠割当を検証。
+  指定実PSDで右クリック対象の完全キーとメニューチェック、Enter CM_DIALOGKEY、Shift+F10/メニューキー、↑↓選択、保存/別Storeの再読込が成功。
+  メニューキャンセル不変、normal/n同一レイヤーの全解除、smallO単独解除時のO fallback、最終キャンセル時のmetadata/revision不変を確認。
+  統合画面のPSDスロット→左共有一覧ダブルクリックから、最小ウィンドウ幅/狭い170px一覧/96・144DPIで同じ流れを通した。
+  合成PSDには80文字の長い実名と別階層の同名を追加し、短い行表示と完全パスのツールチップ、非'*'体/髪/装飾の固定画素不変も確認。
+  指定実PSDの96/144DPI「あ」設定PNGと合成の長い名前PNGを実際に閲覧。実名の識別部分、割当済み表示、ボタン/下端が表示されることを確認。
+- 全無音回帰は23:35:37～23:36:07UTCに成功（AudioRun=false）。Debug→Release直列ビルドは警告0/エラー0、両FoundationとEditorPreviewコンパイルも成功。
+  本体変更はPsdLayersFrame.pasとPsdLayerFrameUI.pasだけ。58入力のビルド前後SHA一致、43参照存在、追加外部依存なし、旧UI保持。
+  この作業が作成した失敗検証フォルダfinal-actualだけを絶対パス/境界確認のうえ削除し、最終成功とログは残す。
+  原本PSD、実作品、実共有設定、開始配備auf2（3112141A…）は終了時SHA一致。音声実行/配備/アップロード/commit/pushなし。
+  AviUtl2内での修正版実操作と実モニター間DPIは未検証。README/DESIGN/DEVELOPMENT/noteを現在の操作へ更新。
+- 証拠: Temp/EditorStage1/psd-layer-first-report/final-status.json、final2-actual.log、full-noaudio/noaudio-result.json、artifacts.json、protected-final.json。
+  実画像はfinal2-actual/psd-mouth-{CF2D8699-EE37-4E93-AA02-F65136B86597}/actual/integrated-96・144/modal-True-a.png。
+
+最新ローカルRelease: 5963776 bytes / SHA256=C44389BE2E64D0F39D57D810AAEB6F5747553FF6D26C9173BE27796424AE71C2。未配備。
+
+## 2026-10-11 PSD行選択プレビュー・母音列・拡縮移動
+
+- 歌唱PSDは行選択だけでその部位/表情をプレビューする。選択キーを保存configとは別に保持し、母音割当/visibility/未知JSON項目を変更しない。
+  選択レイヤーと全祖先の'*'排他を適用し、非'*'体/髪/装飾を維持する。確認母音の切替は一時選択を解除し、既存割当とsmall fallbackを確認する。
+- 歌唱PSD一覧のチェックを固定幅84px（フォント/DPI換算）の母音列へ変更。通常/あ～ん/小あ～小おを複数表示し、全文はツールチップへ。
+  未割当でも同じ幅を予約し、名前のX座標は割当で変わらない。親太字/浅い字下げ、右クリックと12枠/解除メニュー、安定キーを維持。
+  表情/姿勢は明示的なvisibilityチェックを維持。クリック領域を描画と同じフォント倍率へ揃え、144DPIのnativeクリック/Spaceと実画素を検証。
+- 合成中は直前のbitmapを保持。世代一致の完成bitmapを差し替え、実overrideをキャッシュキーへ含める。
+  プレビューを背景消去抑制・ダブルバッファのnative controlへ変更。合成失敗/取消は古いbitmapが残っても適用不可にする。
+  既存画素検証は親DCではなくプレビュー自身のDCへ更新。折返しツールバーの検証は上下別段も認識する。
+- ホイールはカーソル下の画像座標を保った10～3200%のfit相対倍率。左ドラッグは画像外と負座標へも移動でき、mouse-up/capture loss/cancelで解放。
+  全体表示/ダブルクリックでfitへ戻す。選択/割当と同一PSD再読込では倍率/移動量を維持し、表示操作は合成を起動しない。
+  リサイズでcaptureを解放し、DPI変更では移動量を倍率換算する。PSD設定だけ最低高さ640px（DPI換算）を確保して最小幅のプレビューを改善。
+- 指定paperdolls実PSDをTemp隔離ライブラリへコピーし、統合画面のPSDスロット→左一覧ダブルクリックから96/144DPI・最小幅を検証。
+  native行クリック、保存JSON不変、連続選択の最後の世代、カーソル固定ズーム/座標往復/上下限/負座標パン/capture解除/fit/表示位置保持が成功。
+  未割当→小さい母音割当のnative名前領域の画素一致と母音領域の変化、全文ツールチップを確認。
+  12枠の実ポップアップ/キーボード/保存/別Store再読込/単独解除/全解除/最終取消も継続して成功。
+  合成PSDの非'*'体/髪/装飾は独立した固定画素で確認。指定実PSDの最終96/144DPI PNGを実際に閲覧した。
+- 全無音回帰は01:27:35～01:28:01UTCに成功（AudioRun=false）。最終Debug→Releaseは警告0/エラー0、両FoundationとEditorPreviewコンパイルも成功。
+  本体変更はPsdLayersFrame/PsdLayerFrameUI/PatternSettingsFormの3ファイル。58入力のビルド前後SHA一致、他55入力不変、43参照存在、追加外部依存なし。
+  Vcl.CheckLstの不要importを整理し、継承UI/参照元は保持。今回だけの中間fixture20ディレクトリを絶対パス/境界確認後に削除。成功検証とログは保持。
+  原本PSD、sample.aup2、実共有asset.json、開始配備auf2（EA14790A…）は終了時SHA一致。音声実行/他PCビルド/配備/アップロード/commit/pushなし。
+  AviUtl2稼働内の実操作・体感ちらつきと実モニター間DPIは未検証。仕様/README/DESIGN/DEVELOPMENT/noteを更新。
+- 証拠: Temp/EditorStage1/psd-select-view-report/final-status.json、actual-final-build.log、noaudio-final6/noaudio-result.json、
+  artifacts.json、protected-final.json、dependency-audit.json、cleanup.json。
+  実画像: actual-final-build/psd-mouth-{42AE50A6-942E-4E53-A720-6C3DFC9ED58A}/actual/integrated-96/selection-zoom-pan.png、
+  integrated-144/assigned-small-vowel-fixed-column.png。
+
+最新ローカルRelease: 5964800 bytes / SHA256=519FFA68F550E20CA49ABD61B99D695B914D9778C0C0199DD088C372DB6AAF24。未配備。
+
+## 2026-10-11 母音列の縮小・統合再生プレビューの空白防止
+
+- 母音列を基準84pxから36px（フォント/DPI換算、約2文字）へ縮小。単独は通常/小あ等、複数は通+/あ+等へ省略し、全文tooltipと割当の有無によらない名前X座標を維持。
+  実paperdolls PSDを隔離コピーし、統合一覧から設定を開いて最小幅・96/内部144DPIでnative名前領域の画素一致と小さい母音表示を検証。
+  96DPIの複数割当と144DPIの小おPNGを実際に閲覧し、短い母音列・実名・ボタン・下端が見えることを確認。
+- ちらつき原因は設定ポップアップとは別の統合SceneCache経路。母音/時刻の要求キー更新時にTrack.Imageを破棄し、非同期合成まで背景だけになる。
+  修正前の統合無音ホストで再現し、seek時にbackground-only frameのassertが失敗。修正後は同一ソースの直前の完成画像を保持する。
+  bind/source/request世代と要求キーの既存一致条件を維持して完成画像を一括交換。ソース更新・別キャラ・作品切替・現世代エラーでは旧画像を消す。
+  Stageは既存共通の背景消去抑制/DoubleBuffered native surfaceを再利用。SettingsFormの公開PreviewBox型も揃え、描画/JSON/音声の境界は維持。
+- 新規PsdPlaybackChecksはあいうえお125ms間隔の実MIDIをSilentVisualModeで統合再生。SceneCacheの完成像だけでなく実Stage DCの固定体/髪画素を毎描画確認。
+  連続再生・seek・30回の高速seek・停止・再開・最終母音の独立6画像hash一致、破損ソース/未対応合成/別キャラ/作品切替/復旧・再オープンを成功確認。
+  原本/管理PSD/共有JSON/作品JSON不変、音声エンジン未確保・waveform decode数0をassert。合成素材166描画/19画像更新/空白0、指定実PSD116描画/15画像更新/空白0。
+- 設定ポップアップの旧自動操作はメニューループ内で直接Clickし、断続的に次のポップアップが終了するケースが発生した。
+  検証側をnative popupの表示/12チェック確認後のWM_COMMAND通知とループ外のdispatchへ変更し、ownerのactivationも確保。
+  実PSDの初回/再読込/再オープン/取消/統合96・144DPIで右クリック/Enter/Shift+F10/メニューキー/12割当・保存が成功。再試行で失敗を成功へ置き換える処理は追加していない。
+- 最終全無音回帰は02:16:28～02:17:01UTC成功（AudioRun=false）。Debug→ReleaseのこのPC直列ビルドは警告0/エラー0、両FoundationとEditorPreviewコンパイル成功。
+  58本体入力のビルド前後hash一致、変更4/他54不変、43参照存在、追加外部依存なし。共通surfaceを再利用し、継承UI/参照元は保持。
+  今回だけの不要な中間fixture15ディレクトリを絶対パス/境界/reparse確認後に削除し、失敗ログと最終成功素材を保持。
+  原本PSD、sample.aup2、今回開始時の実共有asset.jsonは終了hash一致。58本体入力も不変。
+  作業ビルド完了後の02:19:27UTCにローカルReleaseと配備auf2が77DEBF68…へ更新されたことを終了監査で検出。開始配備55EF0710…からの変化を隠さず記録する。
+  本作業のビルドログにはDeployDirectory/PLUGIN_DEPLOYEDなし。別途のビルド・配備と見られるが実行者は未確認。現ファイルを保持し、現在ReleaseのFoundationも追検する。
+  音声実行/他PCビルド/配備/アップロード/commit/pushなし。AviUtl2稼働内の体感ちらつきと実モニター間DPIは未検証。
+- 証拠: Temp/EditorStage1/playback-flicker-report/final-status.json、before.log、full-noaudio-final4/noaudio-result.json、
+  actual-mouth-final2.log、actual-playback-final2.log、artifacts.json、protected-final.json、dependency-audit.json、cleanup.json。
+  実画像: actual-mouth-final2/psd-mouth-{D8EDAED5-DFE2-4D01-A3BA-FEC4EA21926E}/actual/integrated-96/modal-True-normal.png、
+  integrated-144/assigned-small-vowel-fixed-column.png、actual-playback-final2/psd-playback-{38FFFF89-6401-408C-A1B9-2AEBCBF8395C}/integrated-playing-vowels.png。
+
+本作業生成・検証Release: 5965312 bytes / SHA256=0D0ED2CA4830FDF941FB3F36A284932C256680DA53BE2BCC12E7ACA69AB36EF8。無配備ビルド。
+終了時現在Release/配備: 5965312 bytes / SHA256=77DEBF68AF4798183F00594E4426DD0841545DE3ED2F1FFFC479733BB578538B。別途更新を保持。
+
+## 2026-10-11 歌唱ピアノロールのフレーズ別音域
+
+- ユーザーが前段の母音列/再生修正の成功を確認後、歌唱オブジェクトの音域表示改善を実装。
+  選択MIDIトラック全体の一つの音域から、休符で区切るフレーズごとの音域へ変更。音符/時間位置/配置/歌詞/JSON形式は変更しない。
+  開始秒順に累積最大終了秒を使い、連続音・重なり和音・持続音で橋渡しされる音符を同じ群にする。丸め誤差以外の短い実無音は分割。
+  各群のmin/maxと上下各1音余白/最小5音/0～127内の表示音域、音符から群への索引をワーカーで一度作る。
+  同じソース/選択MIDIトラックの配置とタイルが共有し、可視部分・ズーム・スクロール・配置途中切断では再分割や再解析をしない。
+  フレーズ内は同一倍率で相対音程を維持し、一音ずつ同じ高さへ正規化しない。低い本文では既存の最低太さ/余白を縮める。
+- 新規PhraseRollChecksは実SMF1/2トラック/19音符の隔離fixtureで8フレーズを検証。
+  低音48～52・高音84～86がそれぞれ本文高を使い、独立画素assertで音程差が大きく表示されることを確認。
+  連続/重なり和音/長い持続音/1tick休符/単音/音高0・127、高さ1/2/8/26/64px、96/144DPIを成功確認。
+  タイル境界の同音画素一致、横スクロール/ズーム/途中切断の音域不変、100回描画のdecode/raster増加0、トラック切替の解析共有、同サイズ更新時の世代/群再生成を検証。
+  同じデータを統合編集の歌唱パターン/配置クリップへ登録。折りたたみ/選択MIDIトラック変更/100回再描画/96・144DPI、作品JSON・MIDI hash不変と音声未確保/decode0を確認。
+  144DPIの撮影はテスト窓を物理デスクトップ内へ収め、縦スクロールで歌唱本文全体を表示。最終96/144DPIとトラック切替PNGを実際に閲覧した。
+- 全無音回帰は02:28:59～02:29:29UTC成功（AudioRun=false）。旧音域fit/空/全音域/PSD/MIDI/共有設定/GUI回帰も成功。
+  前段の統合PSD再生は168描画/20画像更新/空白0で継続成功。撮影位置だけの調整後も個別フレーズ検証を再コンパイルして成功。
+  Debug→ReleaseはこのPCで直列・無配備ビルド、警告0/エラー0。両Foundationと独立EditorPreviewコンパイル成功。
+  本体変更はVisualCache.pasのみ。58入力のビルド前後hash一致、他57入力不変、43参照存在、追加外部依存なし。継承UI/参照元は保持。
+  不要な初回fixture1ディレクトリを絶対パス/境界/reparse確認後に削除し、ログと最終試用データは保持。
+  原本PSD、sample.aup2、実共有asset.json、今回開始配備auf2（77DEBF68…）は終了hash一致。
+  音声実行/他PCビルド/配備/アップロード/commit/pushなし。AviUtl2稼働内の実操作と実モニター間DPIは未検証。
+- 証拠: Temp/EditorStage1/phrase-roll-report/final-status.json、full-noaudio/noaudio-result.json、targeted-final.log、
+  artifacts.json、protected-final.json、dependency-audit.json、cleanup.json。
+  試用JSON/画像: targeted-final/phrase-roll-{B4D9130C-942B-4674-A666-3D4007BAE6BC}/phrase-roll-demo.json、
+  phrase-roll-pixels.png、phrase-roll-integrated-96.png、phrase-roll-integrated-track-switch.png、phrase-roll-integrated-144.png。
+
+最新ローカルRelease: 5988864 bytes / SHA256=72A707AF667FFC763206CB355C2CBC6EFCCBA14D55229ABD7B089CEF297374FE。未配備。
+
+## 2026-10-11 AviUtl2の最小映像出力
+
+- ユーザーがちらつき/歌唱ピアノロールの成功を確認後、映像のみの最小表示を実装。SYNC/演奏スタジオ/2設定項目は維持。
+  JSONで割り当てた先頭4PSDを透明・等幅・中央・下揃えで元映像へ重ねる。OBJECT_INFO.time（オブジェクト内秒）を使い、既存SceneCacheの母音/表情/姿勢/motionを評価する。
+  全楽器エンジン、歌声/音声出力、手動キャラ配置/サイズUIは追加していない。4人はこの最小段階の明示上限。
+- 新規VideoRendererはSDK func_create/func_destroyの個別userdataが所有。ワーカーはSDKポインタを保持せずJSON/時刻/サイズを値コピーする。
+  初回/JSON変更/設定画面終了で素材snapshotを準備し、以降のフレームでファイル監視や再読込を行わない。
+  書出し/逆シークは指定時刻の合成を完了待ちし、編集プレビューの直前画像保持と区別する。共有設定の変更は同JSONでも設定終了で再Bind。
+  PSDは本来の解像度で合成して配置へfit、BGRA→RGBA/source-over変換。既存編集プレビューの512px/バッファ描画は維持。
+- 公式SDK https://spring-fragrance.mints.ne.jp/aviutl/aviutl2_sdk.zip をTempへ取得し、filter2.hのWin64 ABIを照合。
+  table=72B、button=32B、video=328B、userdata offset=280B。最新の未使用描画関数は呼ばず、既存のget/set_image_dataと所有APIだけを使う。
+  SDK履歴の所有API追加2026/7/25は、本体に付属するaviutl2.txtではver2.1.2。
+  このPCにD:/aviutl2_v2.1.3a/（本文2.1.3、同日3a履歴あり）とD:/aviutl2_v2.1.6a/を読取確認。どちらもAPI追加後。最新版への更新は前提にしない。
+  起動プロセスはなく、直近ini更新が2.1.3a側という推測と、実際の稼働ターゲット確定を区別する。実AviUtl2内のGPU表示は未検証。
+- TestVideoOutput.ps1は音声未実行の独立ホスト。合成PSD/歌詞MIDI/隔離共有rootで固定RGBA・透明/半透明・上下/RB・通常/a/i・resizeを確認。
+  30往復の逆seek/stop/end、複数キャッシュ/再オープン、同JSONの共有母音更新、broken MIDI fallback、bad JSON/PSD/欠損/nil/サイズ境界を検証。
+  snapshot読込後に隔離PSD/MIDIを移動しても次の母音を描けることをassertし、フレーム中の再読込がないことを確認した。
+  Debug/Releaseの実DLLをLoadLibraryし、独立SDKレイアウトでcallback/lifecycleを呼出。透明箇所の背景保持、半透明source-overを独立画素で確認。
+  実共有きりたんPSDは読取だけで通常/a/iの異なる画像と15往復のseek/end/stop再現を確認。SDKのframe番号を故意に変えてもtime基準で評価。
+  callbackから出した実PSDのPNGを実際に閲覧した。DLLを跨ぐDelphiクラス/managed配列の共有は行わず、SDKのコピー境界を使う。
+- このPCのDelphi37でDebug→Release直列・無配備ビルド、警告0/エラー0。両Foundationと独立EditorPreviewコンパイル成功。
+  全NoAudioは04:46:36～04:47:07UTC成功（AudioRun=false）、統合PSD再生171描画/20画像更新/空白0。フレーズ別ピアノロール/母音GUI/96・144DPI/共有保存競合も維持。
+  59ビルド入力hash不変。開始58入力のうち必要な6だけ変更、他52不変。新本体unit1、44DCC参照全存在、追加外部runtime依存0。
+  継承UIと参照元を保持。不要な失敗fixture2ディレクトリを絶対パス/境界/reparse確認後削除し、展開済みSDKの元zipも削除。最終ログ/デモ/PNGは保持。
+- 原本PSD、実共有asset.json、sample.aup2、配備auf2の開始/終了SHA256一致。管理source.psdも原本/contentHashの3D898F20...と一致。
+  今回開始sample.aup2は266D9E00...（前段終了後のユーザー側変更を新baselineとして保護）。配備は77DEBF68...のまま。
+  音声/他PCビルド/実機起動/配備/アップロード/commit/pushなし。
+- 証拠: Temp/EditorStage1/video-output-report/final-status.json、host-compatibility.json、artifacts.json、protected-final.json、dependency-audit.json、cleanup.json。
+  SDK成功ログはsdk-debug-verified/video-tests.log、sdk-release-verified/video-tests.log、full-noaudio/noaudio-result.json。
+  試用JSONと通常/a/i PNG: sdk-release-verified/video-{2AE96E03-DCC4-4089-BD8E-67D68B381937}/sdk-real-video-demo.json、sdk-real-normal.png、sdk-real-a.png、sdk-real-i.png。
+  デモMIDIは無音の口形評価だけに使い、実共有PSD参照は変更していない。
+
+最新ローカルRelease: 5999616 bytes / SHA256=4B6FC08A46B6DCCDC73BC5FF9F13D664BD5F2903BCE2A65C9D45359FEC9DDBA3。未配備。
+## 2026-10-11 設定画面のAviUtl2入力背景・不要生成物整理
+
+- 同層SYNC_LyricsのSource/Common/Render/SYNC_Lyrics_LastFrameCapture.pasを読取参考にした。参考元のSHA256不変。
+  描画前の取得/コピー受渡しを、既存GetImageData入力RGBAとエフェクト所有の不変snapshotへ適応。追加GPU読戻し/デスクトップ背景なし。
+  FindObject、オブジェクト/シーン/JSON照合、排他・世代付きUIコピー、破棄時解除。2.1.3のeffect_layerを版番号で制限し、9月追加のID APIは使わない。
+- 背景の比率/透明度と実出力の等幅・中央・下揃えを共通計算。背景はJSONへ保存しない。
+  ホスト描画の静止画を表示し、編集のシークはPSD/MIDIのみ。ホストカーソルと取得フレーム不一致は旧背景を表示しない。
+  未取得/識別失敗/独立EXEは既存の黒背景。破損JSON/PSD未設定でも入力背景を取得する。
+- このPCのDebug→Release無配備ビルドは警告0/エラー0。SDK両DLLで設定ボタン、背景、半透明一回分、再オープン/取消無反映を確認。
+  500回並行コピー、別対象/シーン/曖昧対象、破棄、背景更新30回、上下色画素、リサイズ/内部144DPI、破損JSON、API未取得/旧版fallbackも合格。
+  144DPIの背景ラベル重なりを画像確認で修正。native設定画面PNGを実際に閲覧した。内部DPI検証は実モニター間移動とは区別する。
+- 全NoAudioは06:44:02～06:44:36UTC完走（AudioRun=false）。173描画/20画像更新/空白0。
+  母音GUI/PSD描画/歌唱フレーズ別ピアノロール/JSON/共有保存/GUI回帰維持。Foundation両DLLと独立EditorPreviewコンパイルも成功。
+  59開始入力の必要6だけ変更、他53不変。最終60入力drift0、45DCC参照全存在、新unit1、追加外部runtime依存0。
+- 途中の失敗を保持: テスト隠蔽起動のnative画素読取を明示表示で修正、設定入口の逐次GetPixelが遅くタイムアウトしたため一括BitBltで修正。
+  無音ホストのSDK型参照不足を修正。D容量0で最終Release検証が書込失敗し、Cの許可Tempへ検証出力を変更。
+  EXE相対のSamples参照がC移動で失敗したため、検証用runroot/Tests/Win64と同一内容Samplesコピーへ補正して完走。失敗結果を成功に置換していない。
+- 容量対応の先行削除は今回生成の失敗/旧fixture6フォルダーのみ（正確なパスはcleanup.json、削除前バイト数は未集計）。
+  再生成可能DCUのみと確認したTests/Win64/DCU=70件10,936,173B、Win64/Debug/DCU=46件9,071,703B、Win64/Release/DCU=46件8,450,556Bも削除。
+  C側compiler-cache-cleanup.jsonに対象/サイズを記録。製品DLL/auf2/RSM、ソース/JSON/aup2/原本/共有設定は保持。
+- 続くユーザー明示の不要物整理で28ファイル133,863,429Bを削除。Tests/Win64の旧6EXE、AssetTrialの12DCU/1RSM、旧比較EXE1、
+  旧Foundation画像7、原本SHA一致の旧隔離keyboard PSDコピー1。原本/最新版real-keyboard-finalコピー/素材試作/PSD変換群は残す。
+  削除パス/カテゴリ/サイズ/hash/再生成方法はproject-cleanup-manifest.json。対象はすべて本プロジェクト内の未追跡生成物で、Git/履歴は走査/削除していない。
+  削除直前に別操作でD空きが8,503,844,864Bへ増加。今回整理後8,637,751,296B、今回回収133,906,432B（約128MiB）。別操作分を回収量へ加算しない。
+  Dots 529MiB/PSD変換545MiB等は素材関連なので保持。音声fixtureは生成/実行していない。
+- 原本/管理PSD、実asset.json、sample.aup2は開始hash不変。配備auf2は06:56:29UTCに別ビルドで更新されたことを検出し、保護して保持。
+  同時更新のReleaseもソース60入力一致。タスクビルドRelease=70453A90...、現在Release/配備=A9F8B47D...（6,028,800B）。
+  新ReleaseをCへ検証コピーし、その実DLLのSDK設定入口/描画とFoundationも再合格。タスクからの配備/他PCビルド/音声/実機起動/commit/pushなし。
+- 証拠root: C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-background-20261011/。
+  complete-sdk-debug/video-result.json、complete-sdk-release/video-result.json、external-release-verified/video-result.json、full-noaudio-final/noaudio-result.json。
+  Release画面: complete-sdk-release/video-{FB1386FC-A74C-43DF-B91E-A950804DA72D}/loaded-dll-background-settings.png、host-background-144dpi.png。
+  削除範囲: cleanup.json、compiler-cache-cleanup.json、project-cleanup-manifest.json。既存差分/保護開始記録/無配備ビルドログはTemp/EditorStage1/background-report/。
+  整理で旧Tests/Win64のEXEを削除。現行独立EditorPreviewはC側runroot/Tests/Win64、再生成は各Scripts/Tests dprから行う。
+  実AviUtl2の背景表示・シーク/保存再読込は今回の隔離SDK検証とは区別して、ユーザー確認を残す。
+## 2026-10-11 実ホスト設定背景の非表示に対する修正
+
+- ユーザー実機では前段の設定背景が非表示だった。稼働AviUtl2（PID 27228、D:/aviutl2_v2.1.3a、sample.aup2）と読み込まれたProgramDataのMusicStudioモジュールを読取確認。作品操作/終了/配備は行わない。
+- 前段の隔離SDKは不透明なGetImageData、描画/設定共通EDIT_INFO、設定前の強制描画、固定FindObjectを与え、実機経路の成立を保証していなかった。
+  新しい「透明オブジェクト＋色付きD3D framebuffer＋描画EDIT_INFO=nil」の条件で、開始時の実配備同版82E91432...をコピーして再試験し、設定の背景画素0/半透明画素0を再現した。
+  実ホストの個別値をプロセスメモリから読み取ったものではなく、SDKの取得対象/参照section仕様と失敗再現に基づく修正である。
+- SYNC_Lyrics_LastFrameCaptureと同じ描画前GetFramebufferTexture2Dをエフェクト所有stagingへ読戻す専用unitを追加。
+  RGBA/BGRA/16bit UNORM/half-float、行pitch、device/format/size変更を処理。GPU/SDKのborrowed pointerはcallback内だけ、設定へは所有コピーだけを渡す。
+  GetImageDataと既存source-over出力は別に維持し、framebuffer取得不能時だけ旧入力画像へfallback。Windows標準D3D11/DXGIのみ、配布DLL追加なし。参照元を変更しない。
+- 描画EDIT_INFO=nilはscene不明として同一の生存OBJECT_HANDLEだけへ対応付け、既知の別scene/別対象/曖昧対象の拒否は維持。
+  カーソル不一致だけで直近の静止背景を破棄せず、取得フレームとの差をtooltipへ表示。対象未描画は「背景未取得」の待機表示。
+  取得API/形式/alpha/対象照合失敗理由/host/object/effect/scene/frame/cursorをtooltipへ記録。設定からホスト再描画や作品変更を強制しない。
+- このPCの無配備Debug→Releaseビルドは警告0/エラー0。両実DLLの設定入口で透明obj＋色付きframebuffer＋nil EDIT_INFO、初回未取得、再描画なし再オープン/カーソル差、取消無反映を合格。
+  D3D WARPの4形式/row pitch/alpha/20resize、500並行snapshot、既存30更新/リサイズ/144DPI/破損/寿命/実共有PSD描画も合格。
+  全NoAudioは177描画/20更新/空白0。Foundation両DLLと独立EditorPreviewコンパイルも成功。音声fixture/decode/Play/waveOutなし。
+  nativeの背景成功画面と初回未取得画面を実際に閲覧した。実AviUtl2の修正版表示は未配備なので未確認、物理モニターDPI/音声は保留。
+- 最終61ビルド入力drift0。既存60の必要5だけ変更、他55不変。46DCC参照全存在。原本/共有PSDとasset.json、sample.aup2、参照元、現在配備の開始/終了hashは6件すべて一致。
+  未配備Release=6,041,088B、SHA256=29B651A2E1A21601BC6B1583D542937354A9ECC064ACC0DB915CD2205D8FE2C2。配備は82E91432...のまま。commit/push/他PCビルドなし。
+- 証拠: C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-background-fix-20261011/。red-old-dll/video-result.jsonは期待する旧DLL失敗。
+  sdk-debug/video-result.json、sdk-release/video-result.json、noaudio/noaudio-result.json、foundation-debug/release.logは成功。
+  実DLL画像はsdk-release/video-{3140175D-6BF7-4E11-9EAA-AA87D5B1F574}/loaded-dll-background-settings.png、loaded-dll-no-capture-yet.png。
+  小さい最終manifestはTemp/EditorStage1/background-fix-report/final-status.json、詳細/BuildLocal.ps1はC証拠root。
+- 別件のD:/DelphiProg広域整理は、実機不具合の優先指示で削除開始前に保留（今回削除0/回収0）。プロジェクト別surveyと保留記録はC:/Users/zan12/AppData/Local/Temp/DelphiProg-cleanup-20261011/。
+  IDE/実行中のMapRaku、RIGMMaker、MusicStudio、バックアップ/履歴/参照ライブラリは対象から除外。素材やテストソース/唯一fixtureの削除はしていない。現在D空き約8.04GiB。
+
+## 2026-10-11 D:/DelphiProg広域整理の再開・完了
+
+- ユーザー明示の不要生成物整理を再開し、52 rootの安全範囲を確認。20プロジェクトで14,783 DCU、990,754,389B（944.86MiB）を削除。
+  SYNC_ScreenLayout 10,642件/726,740,188B、Syncroh2 2,216件/172,623,811Bが主な対象。残り18件のプロジェクト別結果はproject-results.md。
+- 保持した同名Pascalソースとビルド入口があり、Git未追跡・非稼働・2時間以上経過・サイズ/時刻/hash不変・排他を確認できたDCUだけを採用。
+  絶対パスのプロジェクト境界とD:/DelphiProg境界、全祖先のreparse不在を確認し、各ファイルをLiteralPathで削除。再帰ディレクトリ削除は行わない。
+  全20件で保持ソース/仕様/JSON等5,427ファイルの内容hash、保持全14,114ファイルのパス/サイズ/更新時刻、Git追跡状態が削除前後一致。削除対象の現在不在も全件確認。
+- 32 rootは保持。稼働中のMapRaku/RIGMMaker、作業・背景修正対象MusicStudio、指針でRSM/DCU保持指定のSYNC_Graphを除外。
+  rootビルド入口を特定できない旧プロジェクト/共通ライブラリ、バックアップ/履歴/リンク、今回の条件に合うDCUがないプロジェクトも保持。
+  テストソース、唯一fixture、PSD/MIDI/WAV素材、JSON/aup2、EXE/auf2/DLL/RSM、配布物/最新版/参照データは削除しない。
+- D空き観測は8,627,761,152B→9,654,161,408B（差1,026,400,256B）。削除ファイルの論理サイズ990,754,389Bと別記し、割当丸め/並行操作の可能性を含むドライブ差を今回削除量へ加算しない。
+  先行MusicStudio整理の回収量も合算しない。今回ビルド/音声/アプリ起動/配備/commit/pushなし。再生成ビルド自体は未実施。
+- 背景修正の61ビルド入力drift0。原本PSD/管理PSD/実asset.json/sample.aup2/配備auf2/参考元ソースの6件も前段終了hashと一致。
+  DESIGN.mdのカーソル差で背景を隠す旧記述を、最新静止画保持と差のtooltip表示へ補正。note.mdは広域整理完了と現在の容量へ更新。
+- 証拠root: C:/Users/zan12/AppData/Local/Temp/DelphiProg-cleanup-20261011/。
+  project-results.mdは全52 rootの処理/保持理由、final-status.jsonは総量/保持検証/背景修正保護hash。
+  各*-plan.jsonは削除前の相対パス/サイズ/SHA256/元ソース/再生成方法、各*-result.jsonは実削除一覧/前後検証/容量観測。保留時の記録も履歴として保持。
+
+## 2026-10-11 統合画面のtransportとPSDサムネイル
+
+- インジケータ上の重複秒数を削除し、下部の秒数/フレーム表示を維持。再生/一時停止を状態連動の1ボタンに統合し、停止・seek・自然終了・再開とSpaceの押し続けを確認。
+- 固定列のキャラ画像を親トラック見出しからPSDを受け入れるスロット行へ移動。折りたたみ時は非表示、展開で復元。左の歌唱PSD一覧は画像＋名前、既存の選択/ダブルクリック/ドラッグ操作を維持。
+- 一覧も既存VisualCacheを共有。安定した素材パス・共有revision/設定hash・サイズ/更新時刻で世代を識別し、PSD読込/合成はworkerで実行。可視範囲のみ遅延要求、欠損/読込中placeholder、古い結果破棄を実装。
+  画像64件/bitmap128件のLRUと同時2ジョブ上限。共通の名前/色・属性設定UIとJSON形式を維持し、実共有設定をテストで変更しない。
+- 同じPCのDelphi37 Win64で.dprojから無配備Debug/Releaseビルド、各警告0/エラー0。184ビルド入力の終了時drift0、配布DLL依存の追加なし。
+  両DLLのFoundationとSDK映像/背景回帰が成功。透明オブジェクト＋色付きframebuffer＋nil EDIT_INFO、再オープン/resize/世代破棄等を維持。EditorPreviewコンパイル成功。
+- 最終全NoAudioは09:25:52〜09:26:28 UTCに完全成功。120行全域スクロール、100回再描画でdecode/raster増加なし、LRU64/128、worker2、共有設定連続更新、同サイズPSD更新、欠損復旧、96/144DPI・最小幅、toggle/seek/Spaceを確認。
+  統合無音PSD再生は179paint/20母音更新/空白0。音声エンジン未確保、音声decode/fixture/waveOutなし。
+- 全回帰途中に既存native母音popupが複数回取消された。診断付き再現で16msで終了、foregroundが所有者外のwindow、own active=0を記録。50msのactivation待ちは改善せず撤回し、成功条件は変更しない。
+  ユーザー操作デスクトップと競合しない使い捨てWindowsデスクトップ上で同じ最終ホストを実行し、全popup経路/全回帰が成功。画面の切替やユーザーアプリ操作は行わない。
+  一度の45秒全体timeoutを保持し、120行LRUケース追加に合わせ総予算90秒へ変更（各waitは1秒）。隔離desktop作成のsandbox拒否は承認された同PC実行で解決。各失敗ログ/結果と再現用runnerを証拠rootに保持。
+- 実paperdolls_kiritan_800pxの一覧/PSDスロット画像と再生中トグルをnativePNGで取得して実画素を確認。原本/管理PSD/asset.json、sample.aup2、現行配備auf2、参照元の6保護hashは開始/終了一致。
+  Release: Win64/Release/SYNC_MusicStudio_Filter.auf2、6,053,888B、SHA256=872FDFCE6AF30A0923ADDCDFEC73339AD4DD8BEB1313EFC97F3D471EE8C019B0。
+- 証拠root: C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-ui-thumbnails-20261011/。
+  full-noaudio.log/noaudio-result.json、sdk-debug/release.log、debug/release-local-build.log、real-character/real-character-integrated.png・real-character-playing.png。
+  RunIsolatedNoAudio.ps1/IsolatedUiHost.csは画面非切替の再現runner。最終依存/保護/成果物/不要検証fixture・重複DCU整理manifestは同root/final-status.jsonとTemp/EditorStage1/transport-thumbnails-report/final-status.json。
+  最新成功のfixture/EXE/PNGと失敗ログは保持し、旧自己生成fixtureと重複コンパイラキャッシュだけを絶対境界/reparse確認後に整理（71対象、20,632,380B）。
+- 今回UI版の実AviUtl2操作、aup2保存再読込、物理モニター間DPIは未検証。音声回帰はユーザーの再開連絡まで保留。無断配備・他PCビルド・実作品変更・commit/pushなし。
+## 2026-10-11 PSDサムネイルreview P2修正
+
+- 初回からsource.psd欠損の一覧はVisible要求が抑止され、asset.jsonのみの監視では本体だけを戻してもMissing表示・ドラッグ禁止が解除されなかった。
+  LibraryThumbnailsの監視へPSD本体の不存在/時刻/サイズを追加。metadata不変の復元・再欠損・再復元で一覧を再Bindし、画像要求とドラッグ可否を自動再評価する。PaintにIOを追加しない。
+- 元のTrimPsdImagesは全候補が可視の場合に退避できず64画像を超えていた。可視実体へタイムライン→一覧の安定順で64枠だけを予約し、現在のPSDジョブも枠に数える。
+  開始前に予約外の画面外画像をLRUで解放。超過可視行はPSD placeholder、表示要求の変更でのみ次へ枠を渡し、毎paintで画像を入れ替えない。取消済みジョブを含む同時2件・bitmap128件・旧世代破棄を維持。
+- 回帰追加: 初回欠損でフォームを開く→metadata無変更の本体復元→再欠損→復元。Missing画像とdrag-over可否の自動追従、復元後の別トラックへ実ドロップ、自動監視で作品JSON/asset.json不変を確認。
+  70実体を同時可視要求し、毎pollで画像＋ジョブ64枠以内、同時2件、bitmap128以内。先頭64の優先/超過placeholder、異なるvisibility設定の画像hash識別、100描画/10再Bindでdecode/raster/serial不増、枠解放・実行途中の要求切替・100poll安定を確認。
+- このPCのDelphi37 .dprojで無配備Debug/Releaseビルド、両方警告0/エラー0。最終184入力drift0、47明示unit参照が存在、配布DLL追加なし。
+  最終全NoAudioは09:48:55〜09:49:36 UTCに完全成功。従来120行/100paint/96・144DPI/transportと追加2条件を含む。無音PSD再生179paint/20更新/空白0。
+  両DLLのSDK映像/背景/500並行snapshot/30更新/20resize/nil EDIT_INFO/再オープンが成功。Foundation両DLL・EditorPreview再コンパイル成功。
+  GUI実行はすべて前回の検証ホスト専用Windowsデスクトップ、ユーザー画面への切替なし。初回のテスト出力ディレクトリ未作成によるコンパイル失敗は修正しログ/結果を保存。前回のfocus競合等の失敗履歴も元証拠rootに維持。
+- 初回欠損/復元後の一覧と最終Release DLLの色付き背景nativePNGを実画素で確認。原本PSD/管理PSD/共有asset.json/sample.aup2/配備auf2/参照元の6保護hashは前後一致。
+  Release=6,055,424B、SHA256=268CE0ECBDCD30168348B09449DA80424A3C9CB1C8E76FD8450E1D5299258338。
+- 証拠root: C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-ui-review-20261011/。
+  noaudio-result.json/full-noaudio.log、targeted-result.json/targeted.log、video/foundation/editor-result.json、debug/release-local-build.log、RunIsolatedNoAudio.ps1/RunVerification.ps1/IsolatedUiHost.cs。
+  最終保護・依存・成果物・整理manifestは同root/final-status.json、Temp/EditorStage1/transport-thumbnails-review-report/final-status.json。
+  最終完全実行のfixture/PNG/EXEと全ログを保持し、重複する独立ケースfixtureのみ絶対パス境界とreparse確認後に整理。
+- 実作品・共有設定・配備は変更せず、音声fixture/decode/waveOutなし。commit/push/他PCビルドなし。実AviUtl2の今回版/aup2保存再読込/物理モニター間DPIと音声回帰は前回同様未検証・保留。
+## 2026-10-11 表情合成画像・クリップ端編集・作品内PSD配置（無配備）
+
+- 左の表情一覧とタイムライン表情クリップへ、割当PSDの基本状態＋対応presetの実合成画像を追加。
+  PSD identity/revision/preset ID/設定hashと既存ファイルstamp・世代で結果を区別し、共通VisualCacheを利用。
+  本体/共有基本設定は不変。64画像＋job予約・最大2job・128 rasterを維持し、PaintにI/O/PSD合成を追加しない。
+- 選択表情clipの左右端は開始/長さを変更し、中央は従来移動。拍snap、開始0、秒/拍の最小長さ、隣clip優先の狭い幅hitを実装。
+  仮表示だけを更新してMouseUpで確定。最小0.001秒を引き算で下回る丸めを全回帰で発見し修正。
+  捕捉喪失は遅延処理し、VCL自身のMouseUp捕捉解除を誤取消しない。
+- 歌唱PSDスロット選択で統合previewの選択枠/4角。内側移動、対角固定で縦横比維持拡縮、左右/上下反転メニュー。
+  作品ごとのtrack.psd.transformへ正規化x/y/width/heightとflipX/flipY。矩形未設定/flipだけは旧等幅・下揃え。
+  x/y有限[-4,4]、size有限[0.001,4]、通常の負座標/はみ出し可。灰色24DIP余白と四隅トンボ、範囲外の可視キャラ/角も編集可能。
+  映像callbackも共通矩形を使用しUVを保って出力canvasでclip。編集gray/トンボ/枠は出力しない。PSD間snapは将来。
+  原PSD/共有正本とは独立。EditHistoryが32操作、Escape、Ctrl+Z/Y、安定IDでの選択復元を担当。
+- 追加無音回帰: 実きりたんの保存済み表情presetのthumbを直接合成画素と比較し一致、元PSD hash不変。
+  合成PSDの表情2種類、一覧/clipのcache共用、50paintでdecode/raster不増、非同期要求30世代/退役job上限/古い結果の不混入。
+  両端/中央/拍snap/0/最小長さ/隣clip/仮表示/Escape/UndoRedo、他キャラ選択隔離、4角の比率、144DPI、範囲外角/反転、JSON再読込が成功。
+  映像sessionの全画素反転/範囲外切抜き・原本/共有config保護・zero audioを確認。
+- 全NoAudioは短いTemp root C:/Users/zan12/AppData/Local/Temp/MS-exp-final-all/ で完全成功。
+  従来PSD layer/母音popup/無音再生/beat/timing/shared保存/120行/70可視/cache予約64/transport/96・144DPIと実PSD読込も含む。
+  長い証拠root下の既存母音テストが深い共有保存パスで失敗したため、fixture先だけ短くして再実行。失敗ログは同証拠rootへ保持。
+- このPCのDelphi37、元.dprojのIDEイベントを維持し呼出時だけ配備指定なしへ上書きしたDebug→Releaseが成功、両方警告0/エラー0。
+  Foundationは両DLL、独立EditorPreview再コンパイルも成功。追加実装に配布用DLLは不要。
+  SDKホストで実際にロードした両DLLのtransform全画素反転、負xのUV/clip、ゼロsize拒否/旧画像出力なし、legacy復帰を確認。
+  両DLL背景回帰のRGBA/BGRA/UNORM16/FLOAT16/WARP/row pitch/500並行/30更新/20resize/nil EDIT_INFO/cached reopen/modal cancelも成功。
+  raw背景の隅画素測定では選択ハンドルだけを外し、配置UIの別検証でハンドルを確認している。
+- 自身の検証ウィンドウだけを専用Windows desktopで実行し、ユーザーデスクトップへ切替なし。
+  screenshotは所有clientのnative BitBlt。144DPIの全clientが収まる位置へ所有windowだけ移動し、採用済み画像を明示Repaintして取得。
+  初期PrintWindow/PaintToが空/不足画素だった出力は採用せず、最終96/144DPIの表情thumb、枠、gray、トンボ、範囲外キャラを実画素で確認。
+- 原本PSD、実共有source.psd/asset.json、ユーザー差分付きsample.aup2、配備auf2、参照元sourceの6保護hashは前後一致。
+  主DPRの明示50unit参照が全て存在、ビルド入力drift0。不要な今回のearly EXE/DCUを証拠root内の絶対パスを検証して整理。
+  Release 6,114,304B / SHA256 7C31CE0D505A843D874BB4998630A7E15733D0DF1EE55AC306981894EBAB848D。
+- 証拠: C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-expressions-placement-20261011/。
+  noaudio-result.json/full-noaudio.log、delivery-ui-result.json/delivery-ui.log、sdk-debug/sdk-release video-result.json、foundation-debug/release.log、build logs、protected-after.json/final-status.json。
+  完全無音fixtureはMS-exp-final-all、ユーザー試行用JSON/libraryと最終PNGはMS-exp-delivery/expressions-placement。
+  独立EXEは証拠root/editor-bin/SYNC_MusicStudio_EditorPreview.exe。--silentでdemo JSONと--library-rootを指定できる。
+- RIGMMaker停止を継続し、今回の参照/変更/ビルドなし。音声fixture/decode/再生/waveOut/TestEditorStage1なし。
+  実AviUtl2への今回版配備/aup2保存再読込と物理モニター間DPIは未確認。音声再開待ち、未配備、commit/push/他PCビルドなし。
+
+## 2026-10-11 演奏レイヤーstep・小節軸・MIDIテンポスロット（無配備）
+
+- 歌唱PSDトラックにも演奏スロットを追加。新規performanceはlayerStepsの拍区間＋共通PSD表示チェック、旧notesのみは旧ピアノロールを維持。
+  共通名前/色をPatternSettings、専用grid/step長/レイヤー状態をLayerStepFrame/Dataへ分離。共有PSD IDと階層キーを保持し、原本/共有基本設定へ書かない。
+  非グリッド位置・notes/velocity・拡張情報を保持し、既存イベントを消すパターン短縮は拒否する。配置時の初期長以降はpattern/clip長が独立、暗黙loopなし。
+  基本/表情・姿勢→performance→歌唱母音。同時打撃、*排他、休符復帰、別PSD拒否、取消/保存/UndoRedo/再オープンを無音確認。
+- タイムラインを小節・拍へ統一。軸/hit/scroll/drag/両端/playhead/wheelをTimelineMetricsで共通変換する。
+  4/4・6/8・7/8、ズーム時のグリッド変更、未操作の秒/拍データ不変、音声両端と反対秒端の固定を検証。
+  audio/singingは秒固定、performance/tempoは拍固定。既存MIDI内tempoは独立。高BPM999.99×1/64拍の1ms未満演奏を許し、秒clipの0.001秒最小長を維持。
+  可視波形/MIDI/performanceタイルは有効tempo境界で分割して描画し、Paintへファイル読込・JSON解析・音声decodeを加えない。巨大な画面外座標の整数overflowも制限。
+- 小節ルーラーの実native右クリックで手動点追加/設定/削除を提供。小節頭へ配置、0拍削除不可。BPMボタンは既存の後続手動点を保持する。
+  テンポスロットを音声/PSDトラックに追加。MIDI参照＋取得済みsnapshot、拍長、元PPQ/format/tick/microseconds/orderを作品JSONへ保存する。
+  SMF0/1の複数track/点・同tick後イベント・初期6/8/途中7/8警告、tempoなし/SMPTE/途中破損の拒否を検証。MIDI拍子は参考表示、曲meterは固定。
+  再オープンはsnapshot、明示再読込だけworker。取消/失敗/30世代切替は旧データを維持し、最新世代だけ採用する。
+  起動前TerminateでExecuteの完了eventが出ないケースを追加stressテストで発見。TThread.Finishedも回収条件へ含め、最大2枠を永久占有しない修正後に成功。
+- Root.timingは手動正本、Document.Timingは拍ベースで合成した有効map。active tempo clipが手動より優先し、開始拍が新しいclip、同時は後のtrack/slot/clip順。
+  終了/移動/短縮/削除で下のclip/手動へ復帰し、手動mapを平坦化しない。変更拒否時はJSONを復元する。
+  テンポclipの実中央/左右端/メニュー削除とUndoRedo、左一覧から設定取消/名前色保存/再オープンを通した。反映失敗時も設定画面へ戻って修正できる。
+- 最終全NoAudioは23:10:46〜23:11:30 UTCに成功（MS-final4）。PSD・母音popup・共有保存競合・表情画像/配置・120行/70可視/cache64/128/job2・無音PSD再生172paint/20更新/空白0を維持。
+  別途最終tempo単独GUIで96/内部144DPI画像を取得。所有Windows desktop上でnative client BitBlt、ユーザー画面の切替なし。
+  旧歌唱moveテストの0.5秒期待を小節・拍snapの秒逆変換へ更新。初期frameの親未設定、JSON nested値のテストlookup、BPM上限1000の誤った試験値、
+  一覧の未対応表示/ファイルボタンのanchorずれ/内部DPIの自動復帰を検出して修正。各失敗ログを保持し、成功条件を省略していない。
+- 同じPCのDelphi37 .dprojでDebug→Releaseを直列無配備ビルド。各警告0/エラー0、198入力drift0、dproj/resの開始hash一致。
+  Foundation両DLL、独立EditorPreview再コンパイルが成功。主DPRの58明示unit参照は全て存在し、PE importの追加0、配布用DLL追加なし。
+  最終両DLLのSDKで実共有PSDを読取のみ使用し、performance stepの全RGBA比較、tempo由来の開始/終端/移動/削除と逆seekを確認。
+  既存transform/反転/はみ出し/legacy・色付き背景/nil EDIT_INFO/再オープン/500並行/30更新/20resize/RGBA・BGRA・16bit・WARPも成功。
+- 原PSD/実共有source.psd・asset.json/sample.aup2/配備auf2/参照元sourceの6件は今回の新しい開始baselineとSHA256一致。
+  Release=6,318,592B、SHA256=130ED6B06E515220AC3029875C3059B0996A6E274ACFEE3CD2FB0B266BB97D37。
+  今回だけ生成したearly EXE/DCU 80ファイル、19,361,952Bを絶対境界とreparseを確認して整理。継承UI・最新fixture/EXE・失敗ログを保持。
+- 証拠root: C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-step-performance-20261011/。
+  full-noaudio-final3.log/result.json、tempo-stress/tempo-delivery-final、sdk-debug/release-tempo-final、foundation logs、debug/release-local-build.log、dependency-audit.json、cleanup-result.json、final-status.json。
+  演奏試行用JSON/libraryはMS-final4/layer-steps、最終小節/テンポJSONとPNGはMS-tempo-deliver/tempo-timeline。独立EXEは証拠root/editor-bin。
+  OpenSilentDemo.ps1は演奏、OpenSilentTempoDemo.ps1はテンポ試行。--silentで音声を停止し、演奏は隔離libraryを指定する。
+- RIGMMakerは停止継続、参照/変更/ビルドなし。音声fixture/decode/試聴/waveOut・実作品変更・配備・commit/push・他PCビルドなし。
+  実AviUtl2の今回版表示/aup2保存再読込、物理モニター間DPIと音声回帰は未検証。途中拍子/楽器別自動演奏は今回の範囲外。
+  添付Library参考PNGの取得403は未解決・未閲覧。今回もローカル仕様と文章要件、実装した所有UIの実画素に基づく。
+
+## 2026-10-11 独立review P2 4件の修正と最終再検証
+
+- tempo clip/slot/track削除とslot並替へ共通ApplyTimingMutation。Rootと有効tempo mapを同時に退避し、再合成失敗時は両方復元。
+  手動1 BPM、10000拍fast/slow clip、後方16000拍performanceを配置し、4操作すべてが604800秒上限で拒否されてもJSON/有効map/clipが不変と確認。
+- 演奏は先に新しい優先clipを決定し、そのclipのstepだけを評価。新しいclipの休符は基本/表情へ戻り、古いclipのstepを復活させない。
+  2.6秒で新しいclipが休符、2.7秒でそのclipが終了して下のstepへ戻る独立固定画素を確認。実DLLでも逆seek/全RGBAと期待値が一致。
+- クリップ中央/端のdragは水平移動がOS/倍率に応じたしきい値を超えてから開始。単純クリックと1pxの揺れは選択だけ。
+  120 BPM、開始1.123秒の非グリッドaudioをクリック/小さな揺れ/端クリックしてJSON不変、実dragは拍snapする再現テストを追加。
+- 手動tempoダイアログの初期値をManualTimingJSONから取得し、現在有効BPMは説明へ別表示。
+  手動120をclip60が覆う実nativeメニュー/ダイアログを開き、入力120と無変更OK後の手動map不変/有効60維持を確認。
+- 最終全NoAudioは23:20:25〜23:21:09 UTCに成功（MS-review4-full）。4件の再現に加え既存全無音回帰を維持。
+  最終Debug/Releaseは警告0/エラー0。両Foundation、両SDK映像/背景、独立EditorPreview再コンパイルが成功。198ビルド入力drift0、dproj/resは開始値を保持。
+  最終Release=6,323,200B、SHA256=8B0C12E9B460FD516662EEF73EFE8B8F41E5779118CF13D4E0121D79B10822A4。
+  Debug SHA256=D24BC131DBAD35BF5073D28E35B70D3977ADD28318DD7FB910E5FA6FA357CBC2。
+- 最終保護照合で原本/管理PSD/共有JSON/sample.aup2/参考元の5件は開始値一致。
+  配備auf2だけ23:16:17 UTCに更新され、8FCCDC...から0B27F90F062E0959503140A78094FC3E179E96825502281515EA2E3B3E7764C2へ変化していた。
+  今回のBuildLocal全ログはDeployDirectory引数なし/PLUGIN_DEPLOYEDなし、スクリプトの既定配備値もなし。更新元は特定できず、現在の配備ファイルを保護して戻さない。
+  配備済みファイルの変更を今回の配備成功や全6件不変として報告しない。実作品・音声・RIGMMaker・他PC・commit/pushは今回から操作していない。
+- 同証拠rootのreview4-tempo-target.log、review4-full-noaudio.log/result.json、最新sdk-debug/release-tempo-final.log/result.json、protected-after.json、final-status.json。
+  artifactsへ最終auf2/試行JSON/96・内部144DPI画像をコピーし、OpenSilentDemo.ps1/OpenSilentTempoDemo.ps1で最終EditorPreviewを起動できる。
+  試行参照素材はMS-review4-full/layer-steps/library・tempo-timelineを保持。最新ソースは実AviUtl2/aup2再読込/物理DPI/音声を未検証、無断配備なし。
+
+## 2026-10-12 カーソル区間BPM TEdit・小節アンカー（無配備）
+
+- 再生/一時停止と停止を104×28 DIPへ統一し、右へBPM TEdit。新規120、有効区間の値を表示する。
+  入力開始時の拍を記憶し、再生中の境界横断でもテキストを上書きしない。Enter/欄離脱で確定、Esc取消、BPM欄のCtrl+Z/Yは作品UndoRedo。
+  空/負/0/不正/1000/NaNは保存せず、欄を離れると現在値へ復帰。カーソルの拍と再生状態を確定/UndoRedoで保持する。
+- 変更点なしは全体、手動点があれば現在点の区間。MIDI tempo clip優先中は勝つ配置のtempoOverridesへ相対拍/BPM補正を保存する。
+  元MIDI・取込pattern/snapshot・同じpatternの別配置・影の手動mapは不変。source次点/配置位置/長さも保持し、終了後の手動復帰を維持する。
+  音声/歌唱の秒位置・長さ、MIDI内時刻、演奏/clipの拍位置を変えず、time stretchは実装しない。
+- 手動tempoPointsは小節measure（1始まり）/beatInMeasure、四分拍beatは互換値。旧beatだけのJSONも保持・移行する。
+  MeterMapはmeterChangesの小節頭を保持し、3/4・7/8等を含む小節表示/右クリックに反映。先頭拍子変更でも手動点の小節アンカーを保持する。
+  新拍子へ収まらないoffsetは原子的に拒否。途中拍子の専用表GUIは未実装、JSON/読込保存/表示は対応。MIDIの途中拍子は引き続き参考/未適用。
+- 個別/全無音で境界ちょうど/最終区間・配置補正・元MIDI hash・手動/取込/別配置不変・無効入力・Enter/blur/Esc/UndoRedo・再生中入力/変更点横断を確認。
+  初期の空作品にpatterns配列がない読込違反を修正。途中の既存固定拍期待は新しい小節保持へ更新し、重複/不正/失敗時の原子性は維持。
+  拍子コンボ後に旧拍入力を再適用する経路も修正し、新拍表示/入力エラー維持を確認した。
+  単独ホスト初回96DPIのBitBltがGDI6で失敗しWM_PRINTに代替した画像はEdit不足のため採用しない。
+  最終全回帰の96/内部144DPIは所有windowのnative BitBlt成功、BPM欄/ボタン/境界/範囲外表示を実画素確認。ユーザーdesktop切替なし。
+- 独立review追加P2 2件を修正。素材秒終端とプレビュー音楽範囲を分け、10秒音声・9秒/18拍→60 BPMで18秒を保持。
+  停止/再生/Undo/Redoで18拍と再生状態を保持し、音声10秒を伸ばさず0へ戻らない再現が成功。
+  4+0.1拍境界は絶対拍と共通ULP比較で扱い、直前/ちょうど/直後・重複clip・配置補正を確認。固定の大きなepsilon/グリッドへ丸めない。
+- 最終全無音は01:27:01〜01:27:49 UTC（MS-bpm-review-final）に成功。前回P2 4件・PSD共有/母音・表情サムネイル/配置/範囲外・cache/無音再生も維持。
+  このPCのDebug→Releaseは警告0/エラー0、呼出時だけ配備イベントを上書き、200入力drift0、dproj/resの開始値一致。
+  最終EditorPreview再コンパイル、両Foundation、両SDKの配置補正/演奏開始終端・小数境界/逆seek・従来背景を検証。
+  SDK小数境界の最初の固定rest期待に同時刻の母音が混入したため、そのテストだけ歌唱配置を外した。全RGBA期待は同じVideoSessionによる整合性検証であり、独立したtempo/合成実装の基準ではない。従来の歌唱/母音・優先順のSDKケースは維持。
+- Release=6,391,808B、SHA256=8E06FDDCFDF446CF579E777A7EAE9A562DF008718621EBF4DEFD459DEBC9EBD3。
+  現行配備hash=7517E459841632901B5C23543E3EF045370C8840640EEFF8EA90BA41990CC85D、今回開始から不変、成果物とは不一致。今回配備なし。
+  原本/管理PSD/共有JSON/sample.aup2/参考元も開始hash一致。音声fixture/decode/waveOut・強制終了・RIGMMaker・他PC・commit/pushなし。
+- 証拠root C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-cursor-bpm-20261012/。
+  review-full-noaudio-final.log/result.json、cursor-bpm-review-target、sdk-debug/release-tempo-final、foundation logs、build logs、protected-after/final-status。
+  artifactsにJSON/96・内部144DPI画像/最終auf2、editor-binに独立EXE。OpenSilentDemo.ps1で無音起動できる。
+  実AviUtl2/aup2再読込/物理モニター間DPI/音声回帰は未確認。途中拍子表編集UIは未実装。
+
+## 2026-10-12 カーソルBPM上限review修正・SDK期待値の区別（無配備）
+
+- 正規の秒clip長604800/手動120 BPMで終端1209600拍となり、BPM60確定後のRestoreMusicalCursorが
+  1000000拍制限へ当たる旧版の例外を隔離ホストで再現。upper-repro-before.log/result.jsonを保持した。
+- 保存するtempo点/拍配置の上限は1000000拍のまま、実行時の拍変換/参照/スナップを
+  604800*999.99/60+1024拍、秒参照をその60倍へ拡張。素材の604800秒上限と音楽navigation範囲を分離し、復元時に素材上限へ切詰めない。
+  BPM変更では新mapのカーソル/終端変換をUI変更前に検証し、UI復元完了後だけUndoへ記録する。
+  復元例外では旧JSON/memo/map/カーソル/再生状態を戻す。共通CommitMutationの失敗復帰も変更前JSONへ修正。
+- 停止/再生の9秒カーソル、600000秒カーソル、120→60、120→999.99→1 BPM、Undo/Redoを確認。
+  最大BPMから1 BPMでは9999900拍/599994000秒カーソルを保持し、音声clip長604800秒は不変。
+  OnPositionChangeへ一度だけ例外を注入し、失敗後JSON/カーソル/再生状態が復元され、新Undo履歴がないことも確認。
+  upper-target-final.logと全NoAudioのCURSOR_BPM_REVIEW_LEGAL604800...ATOMIC_OKに記録。
+- 小数tempoの全RGBA比較は同じVideoSessionを期待値にする整合性検証と明記した。
+  別経路としてtempo clipのない固定手動120 BPMの実DLL active/rest画素を凍結し、手計算時刻で比較する期待値を追加。
+  4+0.1拍source境界/配置補正90 BPM後の開始2.366666...秒・終端2.7秒に対し、2.3/2.45/2.8秒と逆seek/反復を検証。
+  元180 BPMの2.25秒activeも同じ固定基準へ一致。両SDKログのVIDEO_DECIMAL_ANALYTIC_TIMES_MATCH_FROZEN_MANUAL120...OK。
+  これはtempo区間選択の別経路であり、PSD合成器自体は共通。独立合成実装の全画素基準とは主張しない。
+- 最終全NoAudioは02:05:05〜02:05:50 UTC（MS-upper-full）に成功。既存P2/共有PSD/母音/表情/配置/cache/無音時計回帰を維持。
+  所有desktopの96/内部144DPI native画像を確認。実モニターDPIとは区別する。
+  このPCでDebug→Releaseを直列無配備ビルドし、警告0/エラー0。200ビルド入力drift0、dproj/resは新しい開始hash一致。
+  最終EditorPreview再コンパイル、両Foundation、両SDK映像/背景（02:06:23〜02:06:47 UTC）も成功。
+- 主DPRの60参照は全て存在し、PEの14 importは現行配備DLLと同じ、追加DLL依存0。継承UIを保持。
+  今回の4検証コンパイラだけが生成したflat DCU 260件/44879085Bを絶対境界/reparse/拡張子確認後に整理。
+  最終EXE/失敗ログ/fixture/ユーザーsourceを保持、cleanup-plan/result.jsonで記録。
+- Release=6392832B、SHA256=D8B6D0479F4E5D6951E4F2C52F362564B3661938CB421F24B1CCEDB0F1083FE0。
+  今回の新しい開始baselineの配備hash=E28A0F0733F977785D8F0D6FD24166A2F99482FE177C1047F15562A4AE6275ADを保持し、成果物とは不一致。
+  原PSD/管理source.psd/共有asset.json/sample.aup2/配備auf2/参照元の6件は開始SHA256一致。
+  音声fixture/decode/waveOut・実作品変更・配備・強制終了・RIGMMaker・他PC・commit/pushなし。
+- 証拠root C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-cursor-upper-20261012/。
+  full-noaudio-final.log/result.json、upper-repro-before、upper-target-final、sdk-debug/release-tempo-final、foundation/build logs、protected-after/final-status.json。
+  artifactsに最新auf2/試行JSON/96・内部144DPI PNG、editor-binに独立EXE、OpenSilentDemo.ps1で無音起動。
+  実AviUtl2/aup2再読込/物理DPI/音声回帰は未確認。途中拍子表GUIは未実装、参考Library PNGの取得403/未閲覧も継続。
+
+## 2026-10-12 演奏設定点・四角区間操作・無音ループ（無配備）
+
+- 小節1始まりとカーソル/30fps表示位置。ラインクリックは移動だけ、左チェック変更で設定点を作成/更新する。
+  新規holdUntilNext点は次開始点/末尾まで、旧stepは明示長/休符/非グリッド/音符/velocity/未知属性/IDを保持する。
+  基本/表情→演奏→母音と作品clipの暗黙loopなしを維持。設定画面だけを33msの無音時計でパターン長内にloopする。
+  一時停止は位置保持、停止は先頭、hide/destructorで時計停止。同じ設定では再合成せず既存8画像/64MiBキャッシュを使う。
+- 実操作フィードバックを反映。固定76 DIP列と時間領域を描画/hit/zoom/panで分離。
+  四角中央move、右端resize、空白pan、通常wheelzoom。drag中は候補だけ、mouseupだけを保存。grid snap/範囲/重複拒否/隣接を検証。
+  保持型moveは次点までを導出し、resizeで明示長へ変更。明示長moveは長さ保持。他の開始/明示長/設定/IDを変更・削除しない。
+  最小長/逆drag/小さい揺れ/Esc/capture喪失/局所UndoRedo/zoompan後座標/100万拍画面外座標を無音確認。
+  再読込/読込取消はこの画面から非表示、内部の世代取消・破棄を維持。欠損/非対応合成/取消はstatusへ表示し保存拒否、復旧後に通常表示へ戻す。
+- 上部説明/transport/区間設定/共通確定行をwindow DPIと拡大済みfontから配置し直す。96/144・初期144・最小寸法/DPI変更のnative画像を確認。
+  追加reviewの1/1024拍・低24/最大1536zoomは選択後の独立上ハンドルでresize可能、中央moveと分離。最小144寸法1326×863、preview高さ151を確認。
+  旧経路のtiny resize不可をreview-tiny-beforeで再現。旧最小寸法860×560のDPI非追従も記録した（単独ホストのpreviewは107pxで表示されており、消失の再現とは主張しない）。
+  テストのScaled=falseがDPI変更を止める経路を検出し、実際の96/144値のassertと変更前後の別画像で検証した。
+- 初回review P2の末尾7.9998拍が7.9990234375へ切られるケース、小数4+0.1拍で前設定が残るケースは隔離失敗ログを保持して修正。
+  正確な末尾選択/編集/削除/Undo/right-delete、絶対拍の少数ULP比較、直前/一致/直後・逆seekの独立固定RGBAが成功。
+  SDKにも固定manual120の保存画素を使う保持/小数境界期待値を追加。VideoSession全RGBAは整合性検証、PSD合成器自体は共通と区別する。
+- 局所Undoの再読込はJSON既知項目の順序を一定にして安定化。fourthの作品Undo失敗はfixtureのDocument配置追加後JSONMemo同期漏れと切り分け。
+  LoadDocumentで同期後、完全JSON比較の取消/保存/Undo/Redo/再読込を維持して成功。検証を弱めていない。
+  単独native捕捉のGDI6失敗はログ保持。所有ホスト表示＋互換DC/DIBで最新画像を取得し、WM_PRINT代替は使っていない。
+- 最終無音回帰は04:42:57〜04:43:51 UTC（MS-step-review-final）に成功。
+  **強制終了禁止によりPsdStorageChecks suite全体を除外**。全NoAudio項目実施とは扱わない。その他既存全無音ケースと新操作/共有競合/PSD/キャッシュを維持。
+  所有隔離desktopのみ、画面切替なし。C#ホストのtimeout強制終了も外した。音声fixture/decode/waveOut・強制終了は実行していない。
+- 同じPCのDelphi37でDebug→Releaseを直列無配備ビルド、警告0/エラー0。200入力drift0、dproj/resは開始hash一致。
+  最終両SDKは04:44:07〜04:44:39 UTCに成功。保持点/小数境界/逆seek・従来映像/背景/WARP/500並行/30更新/resize/nil/reopenを維持。
+  両Foundation/独立EditorPreview再コンパイル成功。実PSDはTempコピーで最終96/144画像・cached無音loopを確認し原本SHA256一致。
+- 最終Release=6417408B、SHA256=98AACDAE130ACCD11B94F342881F85CEFC868BF624F0809BB90B61D2C2DF1402。
+  配備先読取hash=DA4F393A46330D2FEF6FC779D79DD4DDF58FD11A58C3E99F1DC488561704631C、成果物と不一致。今回配備なし。
+  初期から原PSD/管理source.psd/asset.json/参照元4件は一致。sample.aup2は03:38:50 UTC、配備先は03:38:55 UTCに外部更新されたものを保持。
+  追加フィードバック時baselineからは6件すべて一致。更新元を断定せず、今回の成功/全6件初期不変と混同しない。AUP/配備への書込・巻戻しなし。
+- DPR60参照全在、PE14 import・追加DLL0。継承UIを保持。今回生成した4検証compilerのflat DCU260件/45206971Bだけを境界/reparse確認後に整理し最新EXE/log/fixtureを保持。
+  RIGMMakerの参照/変更/ビルド、他PCビルド、commit/pushなし。
+- 証拠root C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-layerstep-loop-20261012/。
+  full-noaudio-review-final、sdk-debug/release-tempo-final、foundation/build/editor logs、review-tiny/minimum、review-real-final、protected-after、cleanup-plan/result、final-status.json。
+  artifactsに最新auf2/実PSDコピー試行JSON/最新96・内部144画像/最小DPI画像。OpenSilentDemo.ps1から独立EXEを--silentで起動し、演奏スロット→左パターンを開いて試行する。
+  実AviUtl2/aup2再読込/物理モニターDPI/音声回帰は未検証。旧ピアノロール等の全UI操作統一は今回の範囲外で現行操作を保持。
+  添付3PNGはprepare成功、consumer-localのPython helperが実行不能でPC上の画像取得/閲覧は未了。親側の実画素所見を反映し、自身の最新GUI画像を別途確認。

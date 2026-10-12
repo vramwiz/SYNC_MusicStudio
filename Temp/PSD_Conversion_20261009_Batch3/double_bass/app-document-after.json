@@ -1,0 +1,198 @@
+{
+  "documentId": "{FD10FE5E-D61E-4E95-B385-2EA27772EB72}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_コントラバス.psd",
+  "selectedLayerId": "{BC696DE7-0F4B-4A46-851D-3F9F6D4C9065}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{BC696DE7-0F4B-4A46-851D-3F9F6D4C9065}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{B0A34865-AA76-44AC-9043-6485FCE1FEDD}",
+      "parentId": "{BC696DE7-0F4B-4A46-851D-3F9F6D4C9065}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{8D02D090-48EA-4197-90A9-2E3564DFBD18}",
+      "parentId": "{B0A34865-AA76-44AC-9043-6485FCE1FEDD}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "4629b506b632928bead0a2cf40147e79df7b369f53189987d4f3d1e297e4dea8"
+    },
+    {
+      "layerId": "{CFC661EE-7155-4C8D-912A-7BF4DE392CB1}",
+      "parentId": "{BC696DE7-0F4B-4A46-851D-3F9F6D4C9065}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{8901A2E5-A0AB-4E28-AE2A-B451962EC208}",
+      "parentId": "{CFC661EE-7155-4C8D-912A-7BF4DE392CB1}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "27d39d88d20131aa9f77f01d92b9bcc1646435736841615af334125fade42425"
+    },
+    {
+      "layerId": "{B8470B72-F08E-4337-9266-F75CDCF1B821}",
+      "parentId": "{CFC661EE-7155-4C8D-912A-7BF4DE392CB1}",
+      "name": "*演奏01_01_A_lower_contact_低め_右指接触",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "cfede113d01d476ece91edfd495e95b20dcbf1504ccf033a1fd96bca9bedceca"
+    },
+    {
+      "layerId": "{B16B7618-2A3D-4EFF-A7EE-1ABED677E313}",
+      "parentId": "{CFC661EE-7155-4C8D-912A-7BF4DE392CB1}",
+      "name": "*演奏02_02_B_ready_右指離し_準備",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "9359bea1ec1aa6006c2bc185a588aa9a114dbc09f8dee54e470684dffde80730"
+    },
+    {
+      "layerId": "{A80CDAA7-D357-4389-90D6-991224F6A3FC}",
+      "parentId": "{CFC661EE-7155-4C8D-912A-7BF4DE392CB1}",
+      "name": "*演奏03_03_C_left_lower_左押弦手_低位置",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "0d2aab85e6ace34bbadc4068fc9619d033a4fb1f409e360e63c4d8ee466a536a"
+    },
+    {
+      "layerId": "{1122A05A-2F16-429D-96D2-87127928F3A4}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{A6FF54FF-899E-40A8-881C-02163962E396}",
+      "parentId": "{1122A05A-2F16-429D-96D2-87127928F3A4}",
+      "name": "撥弦",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{809EFAD3-7EC0-44C6-A490-FC667D2D0834}",
+      "parentId": "{A6FF54FF-899E-40A8-881C-02163962E396}",
+      "name": "コントラバス",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 11,
+  "hasMore": false
+}

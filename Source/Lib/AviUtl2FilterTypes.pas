@@ -26,13 +26,14 @@ type
   TGetObjectItemValueFunc = function(Obj: OBJECT_HANDLE; Effect: LPCWSTR;
     Item: LPCWSTR): PAnsiChar; cdecl;
   TGetFocusObjectFunc = function: OBJECT_HANDLE; cdecl;
+  TFindObjectFunc = function(Layer,Frame: Integer): OBJECT_HANDLE; cdecl;
   TSetObjectNameFunc = procedure(Obj: OBJECT_HANDLE; Name: LPCWSTR); cdecl;
 
   // ボタンコールバックで、選択中オブジェクトのGUI項目と表示名を変更する編集API。
   TEDIT_SECTION = record
     Info: Pointer;
     CreateObjectFromAlias: Pointer;
-    FindObject: Pointer;
+    FindObject: TFindObjectFunc;
     CountObjectEffect: TCountObjectEffectFunc;
     GetObjectLayerFrame: TGetObjectLayerFrameFunc;
     GetObjectAlias: Pointer;
@@ -85,6 +86,19 @@ type
     Num: Integer;
     FrameS: Integer;
     FrameE: Integer;
+    // Added 2026/8/2 (2.1.3). Read only after the InitializePlugin version gate.
+    EffectLayer: Integer;
+  end;
+
+  PEDIT_INFO = ^TEDIT_INFO;
+  TEDIT_INFO = record
+    Width,Height,Rate,Scale,SampleRate,Frame,Layer,FrameMax,LayerMax,
+      DisplayFrameStart,DisplayLayerStart,DisplayFrameNum,DisplayLayerNum,
+      SelectRangeStart,SelectRangeEnd: Integer;
+    GridBpmTempo: Single;
+    GridBpmBeat: Integer;
+    GridBpmOffset: Single;
+    SceneID: Integer;
   end;
 
   TPIXEL_RGBA = packed record
@@ -101,10 +115,26 @@ type
     SetImageData: procedure(Buffer: PPIXEL_RGBA; Width, Height: Integer); cdecl;
     GetImageTexture2D: TFILTER_PROC_VIDEO_GET_TEX2D;
     GetFramebufferTexture2D: TFILTER_PROC_VIDEO_GET_TEX2D;
+    // SDK 2026/10/10: userdataまでの全ポインタを同じ順序で保持する。
+    Edit: PEDIT_SECTION;
+    Param, GetOutputImageParam, GetImageObject, DrawImage, DrawPoly,
+      SetDefaultAnchor, SetBlendMode, SetMaterialShine, SetSamplerMode,
+      SetCullingState, SetBillboardMode, CreateImageResource,
+      GetImageResourceTexture2D, CopyImageResource, ClearImageResource,
+      DrawImageToResource, DrawPolyToResource, ExecPixelshaderFile,
+      ExecComputeshaderFile, GetBlendState, GetSamplerState,
+      ExecPixelshaderData, ExecComputeshaderData, GetImageResourceSize,
+      GetImageResourceData, SetImageResourceData, DeprecatedGetFont,
+      SetFilterItemDataSize: Pointer;
+    UserData: Pointer;
+    ReleaseImageResource, ExecEffect, SetBlendModeForce,
+      GetGroupControlObject, GetGroupMatrix: Pointer;
   end;
 
   TFuncProcVideo = function(Video: PFILTER_PROC_VIDEO): Byte; cdecl;
   TFuncProcAudio = function(Audio: Pointer): Byte; cdecl;
+  TFuncCreate = function(EffectID: Int64): Pointer; cdecl;
+  TFuncDestroy = procedure(EffectID: Int64; UserData: Pointer); cdecl;
 
   // AviUtl2が1行のUnicode文字列を保持する文字列項目。
   PFILTER_ITEM_STRING = ^TFILTER_ITEM_STRING;
@@ -160,6 +190,7 @@ type
     ItemType: LPCWSTR;
     Name: LPCWSTR;
     Callback: TFilterItemButtonCallback;
+    Callback2: Pointer; // SDKの新しい呼出形式。従来callbackを使うためnil。
   end;
 
   // SDK配置はB,G,R,X。Xは予約領域であり、描画アルファには使用しない。
@@ -188,11 +219,14 @@ type
     Items: ^Pointer;
     Func_Proc_Video: TFuncProcVideo;
     Func_Proc_Audio: TFuncProcAudio;
+    Func_Create: TFuncCreate;
+    Func_Destroy: TFuncDestroy;
   end;
 
 const
   FILTER_FLAG_VIDEO = 1;
   FILTER_FLAG_FILTER = 8;
+  FILTER_FLAG_USERDATA = 16;
 
 implementation
 

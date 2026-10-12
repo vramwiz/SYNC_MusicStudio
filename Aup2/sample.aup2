@@ -1,6 +1,6 @@
 [project]
 version=2010301
-file=D:\DelphiProg\SYNC_Lyrics\Aup2\sample.aup2
+file=D:\DelphiProg\SYNC_MusicStudio\Aup2\sample.aup2
 display.scene=0
 preview.scene=0
 [scene.0]
@@ -11,12 +11,12 @@ video.height=1080
 video.rate=30
 video.scale=1
 audio.rate=44100
-cursor.frame=112
-cursor.layer=3
+cursor.frame=625
+cursor.layer=0
 preview.frame=0
 display.frame=0
 display.layer=0
-display.zoom=20000
+display.zoom=10000
 display.order=0
 display.camera=
 display.grid.x=16,-16
@@ -25,13 +25,13 @@ display.grid.width=200
 display.grid.height=200
 display.grid.step=200.000000
 display.grid.range=10000.000000
-display.tempo.bpm=120.000000,120.000000
-display.tempo.beat=4,4
-display.tempo.start=0.000000,3.200000
-display.tempo.offset=0.000000,0.000000
+display.tempo.bpm=120.000000
+display.tempo.beat=4
+display.tempo.start=0.000000
+display.tempo.offset=0.000000
 [0]
 layer=0
-frame=0,698
+frame=0,901
 [0.0]
 effect.name=画像ファイル
 ファイル=C:\Users\zan12\Pictures\東北きりたん\freepik__text-to-image__96899.png
@@ -53,63 +53,23 @@ X軸回転=0.00
 Y軸回転=0.00
 Z軸回転=0.00
 Group2=1
-拡大率=148.000
+拡大率=152.000
 縦横比=0.000
 透明度=0.00
 合成モード=通常
 [1]
 layer=1
-frame=0,618
-[1.0]
-effect.name=音声ファイル
-再生位置=0.000,20.634,再生範囲,0
-再生速度=100.00
-ファイル=D:\DelphiProg\SYNC_Lyrics\Samples\sample.wav
-トラック=0
-ループ再生=0
-[1.1]
-effect.name=音声再生
-音量=100.00
-左右=0.00
-[2]
-layer=2
 focus=1
-frame=40,698
-[2.0]
+frame=0,901
+[1.0]
 effect.name=フィルタオブジェクト
-[2.1]
-effect.name=歌詞テロップ
-音楽ファイル=D:\DelphiProg\SYNC_Lyrics\Samples\sample.mid
-トラック (-1=全て)=-1
-音楽オフセット (秒)=0.00
-曲同期設定=
-同期演出=通常カラオケ
-表示設定=
-事前表示=0.50
-前 動作=ズーム
-前 表示=ブラインド
-前 方向=標準
-前 奥行き=奥から
-前 時間=0.30
-同期 動作=拡縮ウェーブ
-同期 表示=色変え
-色塗り=なめらか
-通過後=維持
-同期 形=自動
-同期 色=ffff00
-同期 サイズ=100.00
-オフセットX=0
-オフセットY=0
-非同期 種類=なし
-非同期 速さ=1.00
-表示維持=0.50
-後 動作=弾性スライド
-後 表示=なし
-後 方向=標準
-後 奥行き=奥へ
-後 時間=0.30
-歌詞データ=SLD1,45,0,U0wzfDMwNTY4RjI0fDB8MCwyODksNDE1MkUzODJCNEUzODJCN0UzODM4M0UzODJBRkU0QkQ5MzUzLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw5OSwzNiwxLDEsRkZGRkZGLEZGNTVGNSwxMCwyLDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwxLDgwMDAsMCwxLDkwMDAsMTAwMDAsNDAwMCww,U0wzfDMwNTY4RjI0fDB8MCw0MjMsNDE1MkUzODJCNEUzODJCN0UzODM4M0UzODJBRkU0QkQ5MzUzLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw5OSwzNiwxLDEsRkZGRkZGLEZGNTVGNSwxMCwyLDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwxLDgwMDAsMCwxLDkwMDAsMTAwMDAsNDAwMCww,U0wzfDMwNTY4RjI0fDB8MCwxMDgsNDE1MkUzODJCNEUzODJCN0UzODM4M0UzODJBRkU0QkQ5MzUzLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw5OSwzNiwxLDEsRkZGRkZGLEZGNTVGNSwxMCwyLDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwxLDgwMDAsMCwxLDkwMDAsMTAwMDAsNDAwMCww|L,45,1,1,0.5,0.5,45,179,60,164,0,W+acnV0o44GC44GVKeOBrlvlhYldKOOBsuOBi+OCiinjgYw=,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPTEsMCwy,,0|L,46,1,1,0.5,0.5,165,292,180,277,7,W+eqk10o44G+44GpKeOCklvnhaddKOOBpinjgonjgZk=,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPTEsMCwwLDAsMA==,,0|L,47,1,1,0.5,0.5,285,404,300,389,13,W+aYn10o44G744GXKeOBruODoeODreODh+OCow==,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPTEsMCwwLDAsLTE=,U0wzfDMwNTY4RjI0fDZ8MCwwLDU5NzUyMDQ3NkY3NDY4Njk2MzIwNTU0OSw1OTc1MjA0NzZGNzQ2ODY5NjMyMDU1NDksNjQsMjgsMSwxLEZGRkZGRixGRkZGMDAsMCwwLDAsMjU1LDI1NSwwMDAwMDAsMDAwMDAwLDI1NSwyNTUsMDAwMDAwLDAwMDAwMCwxNjAsMTYwLDAwMDAwMCwwMDAwMDAsMjU1LDI1NSwwLDgwMDAsMCwwLDEwMDAwLDEwMDAwLDQwMDAsMHwwLC0xNDYsMCwxMDAwLDEwMDAsMCwsLDAwMDAwMCwwMDAwMDAsMCwwLDAsMCwwLDAsMCwwLDB8MSwtNzYsMCwxMDAwLDEwMDAsMCwsLDAwMDAwMCwwMDAwMDAsMCwwLDAsMCwwLDAsMCwwLDB8MiwtMTUsMCwxMDAwLDEwMDAsMCwsLDAwMDAwMCwwMDAwMDAsMCwwLDAsMCwwLDAsMCwwLDB8Myw0MiwwLDEwMDAsMTAwMCwwLCwsMDAwMDAwLDAwMDAwMCwwLDAsMCwwLDAsMCwwLDAsMHw0LDEwMiwwLDEwMDAsMTAwMCwwLCwsMDAwMDAwLDAwMDAwMCwwLDAsMCwwLDAsMCwwLDAsMHw1LDE1OCwwLDEwMDAsMTAwMCwwLCwsMDAwMDAwLDAwMDAwMCwwLDAsMCwwLDAsMCwwLDAsMA==,0|L,48,1,1,0.5,0.5,405,622,420,607,19,W+epul0o44Gd44KJKeOBuFvmrYxdKOOBhuOBnynjgpJb5bGKXSjjgajjgakp44GR44KI44GG,U1lOQ19MWVJJQ1NfU1lOQy8xO21vZGU9bXVzaWM7c3RhZ2VzPTEsMCwxLDAsMQ==,,0
-表示設定=
+[1.1]
+effect.name=演奏スタジオ
+設定=
+JSONデータ={"schemaVersion":1,"previewAudio":null,"materials":[],"characters":[],"tracks":[{"id":"{F52FD9B7-7E95-425B-BFD3-F0D96BEC7F03}","kind":"audio","name":"\u97F3\u58F0\u30C8\u30E9\u30C3\u30AF 1","color":"#6FBFAD","slots":[{"id":"{9DC0605C-CF65-4A38-96E3-60E462ED3BE1}","kind":"audio","name":"\u97F3\u58F0","color":"#6FBFAD","order":0,"accepts":["audio"],"clips":[{"id":"{B9DDD277-3F97-4AFF-A9D2-65D6C1F20E8C}","patternId":"{B500DD15-A983-41A1-ACCB-2C9E6E53D965}","slotId":"{9DC0605C-CF65-4A38-96E3-60E462ED3BE1}","startSeconds":0.0,"lengthSeconds":224.484580498866}]}]},{"id":"{085340E4-0AB3-4B3F-9AC1-3DD4A2D39ABE}","kind":"psd","role":"singing","name":"\u6B4C\u5531\u30C8\u30E9\u30C3\u30AF 2","color":"#CC8CE0","slots":[{"id":"{2CD62841-98E4-468C-8076-43BB240F37DB}","kind":"psd","name":"\u6B4C\u5531PSD","color":"#6FBFAD","order":0,"accepts":["psd"],"clips":[]},{"id":"{F11F1335-3893-445C-B917-10D1B013094F}","kind":"singing","name":"\u6B4C\u5531 / \u53E3\u30D1\u30AF","color":"#CC8CE0","order":1,"accepts":["singing"],"clips":[{"id":"{820473E5-362D-46A9-BD9F-2092A7FA5168}","patternId":"{F7DD92DB-44B8-451F-B367-934F1E6F5DAC}","slotId":"{F11F1335-3893-445C-B917-10D1B013094F}","startSeconds":0.0,"lengthSeconds":221.103675}]},{"id":"{BC3ABE50-3FD3-4EC5-B942-E929E6FADB70}","kind":"emotion","name":"\u8868\u60C5","color":"#6FBFAD","order":2,"accepts":["emotion"],"clips":[{"id":"{CAD3D0CB-388A-4BB9-8A8D-00459F3136EC}","patternId":"{FA1F6025-857E-41F4-B6C7-BCB161EDD559}","slotId":"{BC3ABE50-3FD3-4EC5-B942-E929E6FADB70}","startSeconds":34.0,"lengthSeconds":4.0}]},{"id":"{B4B232E6-F680-4E34-ADCB-F76F13CAEC29}","kind":"animation","name":"\u30A2\u30CB\u30E1\u30FC\u30B7\u30E7\u30F3","color":"#6FBFAD","order":3,"accepts":["animation"],"clips":[]}],"psd":{"assetId":"6720ffb6-68b1-4b4a-9582-da424493c9bc","filePath":"","transform":{"x":0.00401606425702811,"y":0.353571428571429,"width":0.309236947791165,"height":0.589285714285714,"flipX":false,"flipY":false}}},{"id":"{6656C80A-087F-451F-9DC5-382C070AAF4B}","kind":"psd","role":"instrument","name":"\u697D\u5668\u30C8\u30E9\u30C3\u30AF 3","color":"#CC8CE0","slots":[{"id":"{88737CDC-BD13-4F36-9CF8-915E9E318ECE}","kind":"psd","name":"\u6B4C\u5531PSD","color":"#6FBFAD","accepts":["psd"],"clips":[],"order":0},{"id":"{C963FB13-4671-4DDD-925A-B89115D2D1D3}","kind":"singing","name":"\u6B4C\u5531 / \u53E3\u30D1\u30AF","color":"#CC8CE0","accepts":["singing"],"clips":[],"order":1},{"id":"{FBAE4F7A-7CDE-4038-B1D2-BDC62A95542F}","kind":"emotion","name":"\u8868\u60C5","color":"#6FBFAD","accepts":["emotion"],"clips":[],"order":2},{"id":"{EC852D3B-DFB7-4A81-8319-F0D7A0D657CE}","kind":"animation","name":"\u30A2\u30CB\u30E1\u30FC\u30B7\u30E7\u30F3","color":"#6FBFAD","accepts":["animation"],"clips":[],"order":3},{"id":"{680AAB94-0503-4A16-868C-B46278A00B0D}","kind":"instrument","name":"\u697D\u5668","color":"#6FBFAD","accepts":["instrument"],"clips":[],"order":4},{"id":"{4817CE55-4A1F-46F0-9AD4-51EAB62F39BE}","kind":"performance","name":"\u6F14\u594F","color":"#6FBFAD","accepts":["performance"],"clips":[{"id":"{77F784B5-3471-4BF0-9C3E-3D585BA5D2A5}","patternId":"{9447AF86-2005-46B8-BD7D-5E7EC9E68D2E}","slotId":"{4817CE55-4A1F-46F0-9AD4-51EAB62F39BE}","timeBase":"beats","startBeat":0.0,"lengthBeats":16.0,"startSeconds":0.0,"lengthSeconds":6.23376623376623}],"order":5}],"psd":{"assetId":"20ec99ac-5761-4236-9db5-c5bb8e1d40e2","filePath":""}}],"patterns":[{"id":"{B500DD15-A983-41A1-ACCB-2C9E6E53D965}","kind":"audio","audio":{"filePath":"D:\\VoiceroidProj\\main_04\\32\\music\\FL_Gingaman_09.wav","volume":1.0,"durationSeconds":224.484580498866},"name":"FL_Gingaman_09","color":"#6FBFAD"},{"id":"{F7DD92DB-44B8-451F-B367-934F1E6F5DAC}","kind":"singing","singing":{"filePath":"D:\\VoiceroidProj\\main_04\\32\\midi\\CeVIO_GIngaman_all2.mid","trackIndex":1,"durationSeconds":221.103675},"name":"CeVIO_GIngaman_all2","color":"#CC8CE0"},{"id":"{FA1F6025-857E-41F4-B6C7-BCB161EDD559}","kind":"emotion","name":"\u8868\u60C5","color":"#CC8CE0","reference":{"assetId":"6720ffb6-68b1-4b4a-9582-da424493c9bc","sharedPatternId":"40089200-5ab7-4315-8afe-2dbdee469ada"}},{"id":"{9447AF86-2005-46B8-BD7D-5E7EC9E68D2E}","kind":"performance","name":"\u6F14\u594F 4","color":"#EDBA70","performance":{"notes":[],"lengthBeats":16.0,"layerSteps":{"version":1,"assetId":"20ec99ac-5761-4236-9db5-c5bb8e1d40e2","steps":[{"id":"{B906069A-A717-43F9-81FF-634BC226EC43}","startBeat":0.5,"lengthBeats":0.5,"config":{"version":1,"visibility":{"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/3:*\u57FA\u672C#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/20:*\u6F14\u594F01_A_\u30BF\u30E0\u524D\u306E\u4F4E\u3044\u69CB\u3048\u3068\u30B9\u30CD\u30A2#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/11:*\u6F14\u594F02_B_\u4E21\u30BF\u30E0#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/18:*\u6F14\u594F03_C_\u5DE6\u30AF\u30E9\u30C3\u30B7\u30E5\u3068\u30B9\u30CD\u30A2#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/20:*\u6F14\u594F04_D_\u53F3\u30CF\u30A4\u30CF\u30C3\u30C8_\u63A5\u89E6\u672A\u6210\u7ACB#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/19:*\u6F14\u594F05_C2_\u5DE6\u30AF\u30E9\u30C3\u30B7\u30E5\u4E88\u5099\u52D5\u4F5C#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/18:*\u6F14\u594F06_F_\u5DE6\u624B\u5927\u632F\u308A_\u4E88\u5099\u52D5\u4F5C#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/15:*\u57FA\u672C_\u30B9\u30C6\u30A3\u30C3\u30AF\u4E0A\u3052_\u975E\u6253\u6483#1":true,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1":true,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1":true},"mouthLayers":{}}},{"id":"{80C468A9-1F84-4678-AEA6-F4F86EDCFACA}","startBeat":0.0,"lengthBeats":0.5,"holdUntilNext":true,"config":{"version":1,"visibility":{"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/3:*\u57FA\u672C#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/15:*\u57FA\u672C_\u30B9\u30C6\u30A3\u30C3\u30AF\u4E0A\u3052_\u975E\u6253\u6483#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/20:*\u6F14\u594F01_A_\u30BF\u30E0\u524D\u306E\u4F4E\u3044\u69CB\u3048\u3068\u30B9\u30CD\u30A2#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/11:*\u6F14\u594F02_B_\u4E21\u30BF\u30E0#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/20:*\u6F14\u594F04_D_\u53F3\u30CF\u30A4\u30CF\u30C3\u30C8_\u63A5\u89E6\u672A\u6210\u7ACB#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/19:*\u6F14\u594F05_C2_\u5DE6\u30AF\u30E9\u30C3\u30B7\u30E5\u4E88\u5099\u52D5\u4F5C#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/18:*\u6F14\u594F06_F_\u5DE6\u624B\u5927\u632F\u308A_\u4E88\u5099\u52D5\u4F5C#1":false,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1/18:*\u6F14\u594F03_C_\u5DE6\u30AF\u30E9\u30C3\u30B7\u30E5\u3068\u30B9\u30CD\u30A2#1":true,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1/4:\u6F14\u594F\u59FF\u52E2#1":true,"/6:\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC#1":true},"mouthLayers":{}}}]}}}],"timing":{"meter":{"numerator":4,"denominator":4},"version":1,"tempoPoints":[{"beat":0.0,"measure":1,"beatInMeasure":0.0,"bpm":154.0}]},"arrangementVersion":3}
 [plugin.0]
 plugin.name=Syncroh2_Extension2
-SpeechSynthesisProjectID={695485B7-6F65-4825-B63C-A51C515E584A}
+SpeechSynthesisProjectID={A331CBF7-6911-482C-AA9C-330E8AE92E0D}
+[plugin.1]
+plugin.name=MMDAnimationStudio
+SpeechSynthesisProjectID={A331CBF7-6911-482C-AA9C-330E8AE92E0D}

@@ -1,0 +1,368 @@
+{
+  "documentId": "{95AA12CB-ABE1-4CA7-969D-A40636A43E98}",
+  "revision": "0",
+  "fileName": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\keyboard\\assembled.psd",
+  "selectedLayerId": "{7C9A94B9-490B-435D-BF71-2EA9E2AD5004}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{7C9A94B9-490B-435D-BF71-2EA9E2AD5004}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{FD74DD6D-6E86-47CF-9678-4C19E72A9543}",
+      "parentId": "{7C9A94B9-490B-435D-BF71-2EA9E2AD5004}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{17910CEB-7BB7-497A-95E7-B61102C0B79D}",
+      "parentId": "{FD74DD6D-6E86-47CF-9678-4C19E72A9543}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "100175112671aec9eba8f2ef54d83f54ec6eb9acda02f9bdea0425372914c7af"
+    },
+    {
+      "layerId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "parentId": "{7C9A94B9-490B-435D-BF71-2EA9E2AD5004}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{447D1802-7B83-4435-A598-327C23F82CD4}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "283a745e3a68879d85f01d5262f770da95ceb6adde66165b0b811cafc6eb81b8"
+    },
+    {
+      "layerId": "{41932D28-A971-40FC-8F25-D8A93C7FBC80}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏01_02_画面左手を中央へ",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f7c70f93e4ae9c4f8b4cdc1d5157486f2076d9a57501c0d869d072fa288665c4"
+    },
+    {
+      "layerId": "{CBCEE283-8CDB-409C-920B-F0AE83B35CB7}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏02_03_画面右手を中央へ",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "0b431b8393738d2836c4dcb36667381756025faa82e57e007b50b41fa588e779"
+    },
+    {
+      "layerId": "{D45D691C-BA33-45B6-B11B-86CD73D78EA3}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏03_04_画面左手を外側へ",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "9bf9218b169aafee4ba428e7b8d6a674f98bf4edc3a732c2eb866543edd01b87"
+    },
+    {
+      "layerId": "{2FF4B82E-C5FC-461C-9E1D-D2DC658072D0}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏04_05_画面右手を外側へ",
+      "index": 4,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "3b2706a39bccb9a506600e3b008030fe87637d204746c330db7a37274bdf097d"
+    },
+    {
+      "layerId": "{0305443B-89D0-4866-8D5F-D321E4C24909}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏05_06_両手を中央寄りへ",
+      "index": 5,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "0e19113b1cb8f4709af02844fd881790e96bdc82b41175168ded72a7c23a2ea0"
+    },
+    {
+      "layerId": "{1FBD25EA-F026-4848-8F8A-F8ACC337FE4A}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏06_07_両手を広めへ",
+      "index": 6,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "cf0624437fc917fd9afeeb8c020840ddbb7bf5d680d555b4524c2805aee30e2b"
+    },
+    {
+      "layerId": "{E5E70A51-50D9-4301-8761-FF0E80D9C147}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏07_08_画面左手_大きい離鍵",
+      "index": 7,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "73e212e41e8fe99dddbd88dd9e4d5fa556fd7ebf943a242873a811e24539bdd2"
+    },
+    {
+      "layerId": "{5023DE9E-2C40-4FA2-BB14-89400F583C9A}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏08_09_画面右手_大きい離鍵",
+      "index": 8,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "3004089b1221971360f2cc25f040483231c09b4a185dcac89073c34e99bfc0b4"
+    },
+    {
+      "layerId": "{9672A483-A3CD-44CA-87E8-2E06829F1DED}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏09_10_両手待機_鍵盤直上",
+      "index": 9,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "1150ade16a2e745ed2b243a161db2d77c753c1466b55f216435492db89eaded1"
+    },
+    {
+      "layerId": "{16747A5D-4DEB-46A3-AFDF-356CBE648B37}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏10_11_両手を画面左寄り",
+      "index": 10,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "41781142c0adce0ea8b204158e96605b66eb85a0ed6ccec4adf4f6ea4182428d"
+    },
+    {
+      "layerId": "{066235F9-55B3-4145-96CD-9B262768FB3F}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏11_12_両手を画面右寄り",
+      "index": 11,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "8f0f581802021479f5f79e01717e06efbf4a19f7d62466bd17fa3689f100baaa"
+    },
+    {
+      "layerId": "{E7C82178-80BB-48DA-AC08-761BC244AFD5}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏12_13_画面左手_小さい離鍵",
+      "index": 12,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "e5b71f99a9b95b2eb065a3a852bfd7443352a352c19bcd400ef5ecc29c1961af"
+    },
+    {
+      "layerId": "{A9333CC4-E7E0-43E8-B9DA-18C502750EFB}",
+      "parentId": "{98D300E5-1870-41D9-95DF-4F0C612480F1}",
+      "name": "*演奏13_14_画面右手_小さい離鍵",
+      "index": 13,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "c92eab9d1b96959462cebced230e707c66e958567755ed1ab4d8fc0acc41fab4"
+    },
+    {
+      "layerId": "{1E3AA32E-45CA-4449-B2AF-4B1708BB641D}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{E6EBE71B-C046-4276-8937-8E83A0A6F156}",
+      "parentId": "{1E3AA32E-45CA-4449-B2AF-4B1708BB641D}",
+      "name": "鍵盤",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{E2A13613-BE0E-47CE-9205-37BB11FB5DDB}",
+      "parentId": "{E6EBE71B-C046-4276-8937-8E83A0A6F156}",
+      "name": "キーボード",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 21,
+  "hasMore": false
+}

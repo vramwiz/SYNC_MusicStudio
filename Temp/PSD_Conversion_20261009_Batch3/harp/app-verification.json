@@ -1,0 +1,31 @@
+{
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "passed": true,
+  "file_sha256": "8f6d5f0d7d1274c54b570e897a297bb28aefeff1d9ec1e5dde41b0231a1fa44d",
+  "default_restored": true,
+  "saved_and_reloaded": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ハープ.psd",
+  "pid": 16284,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "checks": [
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{F9FA066A-E69A-41CB-80FB-2C14BC309B6E}",
+      "name": "*演奏01_01_A_high_right_右手_高め"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{EC5EEDF2-E246-4950-8439-09184D6E4AC9}",
+      "name": "*演奏02_02_B_low_left_左手_低め"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{6B5DA498-B6B5-4625-ADD1-016656AF22A7}",
+      "name": "*演奏03_03_C_right_rest_右手_響板保持待機"
+    }
+  ],
+  "selected_pose_count": 4
+}

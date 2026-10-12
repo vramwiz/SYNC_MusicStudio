@@ -1,0 +1,181 @@
+{
+  "documentId": "{78B8A674-D343-4422-8320-06F4022606C4}",
+  "revision": "0",
+  "fileName": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\normal_marimba\\assembled.psd",
+  "selectedLayerId": "{B54C8A44-4FD7-4400-B416-5B7447B05A89}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1536,
+  "height": 1024,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{B54C8A44-4FD7-4400-B416-5B7447B05A89}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{7F64BB0D-453E-4A97-81E0-8BF4816B42EE}",
+      "parentId": "{B54C8A44-4FD7-4400-B416-5B7447B05A89}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{CE32B21D-448C-41AD-B398-DC4C30FE691D}",
+      "parentId": "{7F64BB0D-453E-4A97-81E0-8BF4816B42EE}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "8fce612ee9b211799e5675f9b0fea912eedb671b7e02ac6c7bbf16c7e19ecb16"
+    },
+    {
+      "layerId": "{F0575BB3-FD2C-40AD-9CD2-031BD59FBF7D}",
+      "parentId": "{B54C8A44-4FD7-4400-B416-5B7447B05A89}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{6863B663-736B-4275-AADC-5049B61C58B4}",
+      "parentId": "{F0575BB3-FD2C-40AD-9CD2-031BD59FBF7D}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "fa198ab2787bf9f1d1de1c136304d5fdb687cb86dc777cd005dc94fd7b421a49"
+    },
+    {
+      "layerId": "{ADDD6EAC-D452-430F-8F04-3606F346C7B2}",
+      "parentId": "{F0575BB3-FD2C-40AD-9CD2-031BD59FBF7D}",
+      "name": "*演奏01_02_A_画面左上げ_画面右低め",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "f6b339861c71929949af77a57de1c3b697dd84ecb87f8dc4c6a38bc90bc6698a"
+    },
+    {
+      "layerId": "{1BFF7538-4FEA-4608-99CF-8506898A23E8}",
+      "parentId": "{F0575BB3-FD2C-40AD-9CD2-031BD59FBF7D}",
+      "name": "*演奏02_03_B_両側上げ_構え",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "73e1a23b7ee020e09410b0fd6e087108397c52794221f791fd84264ea75a0566"
+    },
+    {
+      "layerId": "{66D214B0-451D-49E2-8C58-FA66933C410C}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{26F1C5A6-A06E-4E5A-983A-973D5516888F}",
+      "parentId": "{66D214B0-451D-49E2-8C58-FA66933C410C}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{6FF6A2A7-06DA-44EB-8973-E8507D9A5AA4}",
+      "parentId": "{26F1C5A6-A06E-4E5A-983A-973D5516888F}",
+      "name": "マリンバ_通常配置",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 10,
+  "hasMore": false
+}

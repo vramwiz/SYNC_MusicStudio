@@ -1,0 +1,198 @@
+{
+  "documentId": "{97C66884-5726-4F49-BBDB-DE044BD24B13}",
+  "revision": "0",
+  "fileName": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\taiko\\assembled.psd",
+  "selectedLayerId": "{5F5C6BA3-FD7D-4DF2-9617-3BA80FB65E24}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1152,
+  "height": 1664,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{5F5C6BA3-FD7D-4DF2-9617-3BA80FB65E24}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{AFA64C75-0750-4217-BD91-DB28E2221DCB}",
+      "parentId": "{5F5C6BA3-FD7D-4DF2-9617-3BA80FB65E24}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{3152C5ED-2BCE-4278-BF10-327E18ABF27D}",
+      "parentId": "{AFA64C75-0750-4217-BD91-DB28E2221DCB}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1152,
+        "bottom": 1664
+      },
+      "hasMask": false,
+      "pixelSha256": "1cdc3d0daaf2f539e83211b8181a3b90eb26e90976713460b11469219efa3135"
+    },
+    {
+      "layerId": "{407E9B12-443C-4A7D-BC3C-7AF2E41C2126}",
+      "parentId": "{5F5C6BA3-FD7D-4DF2-9617-3BA80FB65E24}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{048BD925-ED8D-4BFA-B30F-FA4F7B6E7996}",
+      "parentId": "{407E9B12-443C-4A7D-BC3C-7AF2E41C2126}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1152,
+        "bottom": 1664
+      },
+      "hasMask": false,
+      "pixelSha256": "e9ff51774eb59c9b4bf9439719b2c5dc64a443ad32fa9456f822f60c75b2de01"
+    },
+    {
+      "layerId": "{108AE5F1-8734-4A75-818A-1DEB1C6EE8AE}",
+      "parentId": "{407E9B12-443C-4A7D-BC3C-7AF2E41C2126}",
+      "name": "*演奏01_01_A_右鼓面側・左上げ",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1152,
+        "bottom": 1664
+      },
+      "hasMask": false,
+      "pixelSha256": "6db5add665cf7aa70e21b9405ae08d2b397d99909400ec6b6c7ddafd74991c29"
+    },
+    {
+      "layerId": "{D245E248-F217-4810-BAA5-2ACE6EEDBD33}",
+      "parentId": "{407E9B12-443C-4A7D-BC3C-7AF2E41C2126}",
+      "name": "*演奏02_02_B_両撥上げ準備",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1152,
+        "bottom": 1664
+      },
+      "hasMask": false,
+      "pixelSha256": "b95bc07d782523b5e13cc65407b92b0330cecdc080ba1b4d2632d0223ebac36f"
+    },
+    {
+      "layerId": "{890A84FE-B2C7-4D6F-89E1-9B40690C1AA5}",
+      "parentId": "{407E9B12-443C-4A7D-BC3C-7AF2E41C2126}",
+      "name": "*演奏03_03_C_両撥低位置_待機",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1152,
+        "bottom": 1664
+      },
+      "hasMask": false,
+      "pixelSha256": "c1ace14199d844477a06785b278cf5018905bcd032821fe214fccc9bbf4cd466"
+    },
+    {
+      "layerId": "{7D4D7853-497B-4D84-AAAA-AF684845D467}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{5840E5C0-ECFF-4A19-84D2-29CD24C361C3}",
+      "parentId": "{7D4D7853-497B-4D84-AAAA-AF684845D467}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{DF7771D3-7AB3-4F3D-84F2-254872A9CE71}",
+      "parentId": "{5840E5C0-ECFF-4A19-84D2-29CD24C361C3}",
+      "name": "和太鼓",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 11,
+  "hasMore": false
+}

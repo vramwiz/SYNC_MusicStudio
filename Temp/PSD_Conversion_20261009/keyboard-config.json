@@ -1,0 +1,206 @@
+{
+  "width": 1024,
+  "height": 1536,
+  "output": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009\\keyboard",
+  "layers": [
+    {
+      "key": "character",
+      "name": "キャラクター",
+      "parent": "",
+      "visible": true
+    },
+    {
+      "key": "head_group",
+      "name": "頭部",
+      "parent": "character",
+      "visible": true
+    },
+    {
+      "key": "head",
+      "name": "固定頭（付属PNG）",
+      "parent": "head_group",
+      "visible": true,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\keyboard_bass.png"
+    },
+    {
+      "key": "poses",
+      "name": "演奏姿勢",
+      "parent": "character",
+      "visible": true
+    },
+    {
+      "key": "pose_00",
+      "name": "*基本",
+      "parent": "poses",
+      "visible": true,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\01\\body.png"
+    },
+    {
+      "key": "pose_01",
+      "name": "*演奏01_02_画面左手を中央へ",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\02\\body.png"
+    },
+    {
+      "key": "pose_02",
+      "name": "*演奏02_03_画面右手を中央へ",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\03\\body.png"
+    },
+    {
+      "key": "pose_03",
+      "name": "*演奏03_04_画面左手を外側へ",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\04\\body.png"
+    },
+    {
+      "key": "pose_04",
+      "name": "*演奏04_05_画面右手を外側へ",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\05\\body.png"
+    },
+    {
+      "key": "pose_05",
+      "name": "*演奏05_06_両手を中央寄りへ",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\06\\body.png"
+    },
+    {
+      "key": "pose_06",
+      "name": "*演奏06_07_両手を広めへ",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\07\\body.png"
+    },
+    {
+      "key": "pose_07",
+      "name": "*演奏07_08_画面左手_大きい離鍵",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\08\\body.png"
+    },
+    {
+      "key": "pose_08",
+      "name": "*演奏08_09_画面右手_大きい離鍵",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\09\\body.png"
+    },
+    {
+      "key": "pose_09",
+      "name": "*演奏09_10_両手待機_鍵盤直上",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\10\\body.png"
+    },
+    {
+      "key": "pose_10",
+      "name": "*演奏10_11_両手を画面左寄り",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\11\\body.png"
+    },
+    {
+      "key": "pose_11",
+      "name": "*演奏11_12_両手を画面右寄り",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\12\\body.png"
+    },
+    {
+      "key": "pose_12",
+      "name": "*演奏12_13_画面左手_小さい離鍵",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\13\\body.png"
+    },
+    {
+      "key": "pose_13",
+      "name": "*演奏13_14_画面右手_小さい離鍵",
+      "parent": "poses",
+      "visible": false,
+      "file": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\14\\body.png"
+    },
+    {
+      "key": "instrument_metadata",
+      "name": "楽器名",
+      "parent": "",
+      "visible": true
+    },
+    {
+      "key": "attribute",
+      "name": "鍵盤",
+      "parent": "instrument_metadata",
+      "visible": true
+    },
+    {
+      "key": "formal_name",
+      "name": "キーボード",
+      "parent": "attribute",
+      "visible": true
+    }
+  ],
+  "states": [
+    {
+      "key": "pose_00",
+      "id": "01"
+    },
+    {
+      "key": "pose_01",
+      "id": "02"
+    },
+    {
+      "key": "pose_02",
+      "id": "03"
+    },
+    {
+      "key": "pose_03",
+      "id": "04"
+    },
+    {
+      "key": "pose_04",
+      "id": "05"
+    },
+    {
+      "key": "pose_05",
+      "id": "06"
+    },
+    {
+      "key": "pose_06",
+      "id": "07"
+    },
+    {
+      "key": "pose_07",
+      "id": "08"
+    },
+    {
+      "key": "pose_08",
+      "id": "09"
+    },
+    {
+      "key": "pose_09",
+      "id": "10"
+    },
+    {
+      "key": "pose_10",
+      "id": "11"
+    },
+    {
+      "key": "pose_11",
+      "id": "12"
+    },
+    {
+      "key": "pose_12",
+      "id": "13"
+    },
+    {
+      "key": "pose_13",
+      "id": "14"
+    }
+  ]
+}

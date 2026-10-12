@@ -1,0 +1,215 @@
+{
+  "documentId": "{55C259B4-A19E-4615-B993-5440A8AA488D}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\東北きりたん_マリンバ_非標準配置.psd",
+  "selectedLayerId": "{1F639A6F-250E-45FD-927D-9150B8FE3C9F}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1536,
+  "height": 1024,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{1F639A6F-250E-45FD-927D-9150B8FE3C9F}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{4473E9E9-444A-4453-B48E-42A958793114}",
+      "parentId": "{1F639A6F-250E-45FD-927D-9150B8FE3C9F}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{CC0A3DDD-C868-4796-88DE-77926233A33B}",
+      "parentId": "{4473E9E9-444A-4453-B48E-42A958793114}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "653aed372d62cbaca742bf44cd9ce258315ffe50efd6e4c0eb605a563240168c"
+    },
+    {
+      "layerId": "{385D2F77-6CE2-4E44-AB4F-0F620D961962}",
+      "parentId": "{1F639A6F-250E-45FD-927D-9150B8FE3C9F}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{DC24474C-5E7D-4B76-80E3-D667A891B35B}",
+      "parentId": "{385D2F77-6CE2-4E44-AB4F-0F620D961962}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "62ff4fb2588477d402dafdb7b8b7a3eeb0b79ca0978072b4a9b9b971cd6dd8c3"
+    },
+    {
+      "layerId": "{7E86D9DC-6904-4B65-94DC-027833777037}",
+      "parentId": "{385D2F77-6CE2-4E44-AB4F-0F620D961962}",
+      "name": "*演奏01_01_A_左離脱_黒窓群",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "715ea78822c2e31e66b5c9894b237115feb23d15fb7f3df94cbd112527c39307"
+    },
+    {
+      "layerId": "{319E834B-C1D3-4135-8434-B1B942A74DFD}",
+      "parentId": "{385D2F77-6CE2-4E44-AB4F-0F620D961962}",
+      "name": "*演奏02_02_B_右離脱_透明窓群",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "0b85e12ddfa3374a2717c551689f2def61ea4efc307cb34dcca8179a12092d7f"
+    },
+    {
+      "layerId": "{98EFE78D-BB36-4AE7-B9E6-9C56B63A6A29}",
+      "parentId": "{385D2F77-6CE2-4E44-AB4F-0F620D961962}",
+      "name": "*演奏03_03_C_両手待機_透明窓群",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "bacae610da0e9ac27ef0ed47eed00a338422aeebd110d6f45bda917974992fff"
+    },
+    {
+      "layerId": "{C983B040-DE0C-4304-B374-D15AC5A4A42C}",
+      "parentId": "{385D2F77-6CE2-4E44-AB4F-0F620D961962}",
+      "name": "*演奏04_04_D_左低域接触_透明窓群",
+      "index": 4,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "a9104e2886ad73d71ac401e36db0c3e78251099af4c8c8cdfa9da85ea87ad9e5"
+    },
+    {
+      "layerId": "{1374825A-F888-4542-8701-2CF8C35E8C2F}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{6B363A59-A1AD-4BDF-9079-B9B38CAA2B5F}",
+      "parentId": "{1374825A-F888-4542-8701-2CF8C35E8C2F}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{7F08364A-BC66-49ED-AA6F-803D0D4DDD98}",
+      "parentId": "{6B363A59-A1AD-4BDF-9079-B9B38CAA2B5F}",
+      "name": "マリンバ_非標準配置",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 12,
+  "hasMore": false
+}

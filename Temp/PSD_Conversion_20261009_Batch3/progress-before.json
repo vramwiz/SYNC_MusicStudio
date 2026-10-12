@@ -1,0 +1,138 @@
+{
+  "updated_at": "2026-10-09",
+  "batch_1": [
+    {
+      "instrument": "keyboard",
+      "name_ja": "キーボード",
+      "pose_count": 14,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_鍵盤_キーボード.psd",
+      "psd_sha256": "e150f34a928d217177a4bf15ece3e81345d905bd848bca78300d9325369cf86d",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "鍵盤"
+    },
+    {
+      "instrument": "guitar",
+      "name_ja": "エレキギター",
+      "pose_count": 8,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_エレキギター.psd",
+      "psd_sha256": "eae6e27895faf56c22645ae45df568b0eae9f21f6d39d9b781def8fe35f4355f",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\02_エレキギター\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "撥弦"
+    },
+    {
+      "instrument": "bass",
+      "name_ja": "ベース",
+      "pose_count": 7,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ベース.psd",
+      "psd_sha256": "7eeea61aedee98b962c6e0e16e31b5cd40890efcdc87075a53b19c51e3a0a693",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "撥弦"
+    },
+    {
+      "instrument": "drums",
+      "name_ja": "ドラム",
+      "pose_count": 7,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム.psd",
+      "psd_sha256": "ecd110fe69c057aedb5b4d0f4cfc34558c3cc41261c17d42816e1e3b68cc7402",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\04_ドラム\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "打撃"
+    }
+  ],
+  "completed_core_instruments": 10,
+  "completed_core_poses": 61,
+  "remaining_core_instruments": 9,
+  "remaining_core_poses": 36,
+  "next": "11_トライアングル以降のcore9楽器36姿勢。補修候補・任意頭・箏構図用は別枠。",
+  "remaining_requirements": "既存ボーカル頭部・表情レイヤーの移植、原素材の不整合判断。第2段階部位分割は未実施。",
+  "source_files_unchanged": true,
+  "batch_2": [
+    {
+      "instrument": "accordion",
+      "source_group": "core",
+      "name_ja": "アコーディオン",
+      "pose_count": 5,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_鍵盤_アコーディオン.psd",
+      "psd_sha256": "cd0f03f5dea1053c52db4479f6a2d0563c801f05b3cdc3794f72b01dbd55c8f9",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\05_アコーディオン\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "鍵盤"
+    },
+    {
+      "instrument": "tambourine",
+      "source_group": "core",
+      "name_ja": "タンバリン",
+      "pose_count": 4,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_タンバリン.psd",
+      "psd_sha256": "b9658e8f394bfc442942f77f47b1ac98ed7e953ad4ed608b9a438cbb66a97d1c",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\06_タンバリン\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "打撃"
+    },
+    {
+      "instrument": "violin",
+      "source_group": "core",
+      "name_ja": "バイオリン",
+      "pose_count": 3,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_弓奏_バイオリン.psd",
+      "psd_sha256": "77d4bd5512a1e3c6c0f534b7983f8af57b51682d44667e24517db856e4b728e0",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\07_バイオリン\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "弓奏"
+    },
+    {
+      "instrument": "acoustic_guitar",
+      "source_group": "core",
+      "name_ja": "アコースティックギター",
+      "pose_count": 5,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_アコースティックギター.psd",
+      "psd_sha256": "057f08ea326f8a36c9710974fe877dffdce7cab56959f09a780a0798e081884b",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\08_アコースティックギター\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "撥弦"
+    },
+    {
+      "instrument": "marimba",
+      "source_group": "core",
+      "name_ja": "マリンバ_非標準配置",
+      "pose_count": 5,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_マリンバ_非標準配置.psd",
+      "psd_sha256": "e54e15baef75db803c8b09390fe4d94ea85c5b14f371a7a4fdae1cc877b38285",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\09_マリンバ_非標準配置\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "打撃"
+    },
+    {
+      "instrument": "cello",
+      "source_group": "core",
+      "name_ja": "チェロ",
+      "pose_count": 3,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_弓奏_チェロ.psd",
+      "psd_sha256": "94b7967860b462e15c650bb13b899591233794947160271b697774d5d1ded347",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\10_チェロ\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "弓奏"
+    },
+    {
+      "instrument": "normal_marimba",
+      "source_group": "normal_marimba",
+      "name_ja": "マリンバ_通常配置",
+      "pose_count": 3,
+      "psd": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_マリンバ_通常配置.psd",
+      "psd_sha256": "a34d31cfd9785dbec5e342b448b55bcce8c32e6969a642183be822e5a0ca38d4",
+      "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\05_マリンバ_通常配置\\PSD変換記録",
+      "status": "一体差分PSD保存・全姿勢切替検証済み。表情移植は未完了",
+      "attribute": "打撃"
+    }
+  ],
+  "completed_supplement_psds": 1,
+  "completed_supplement_poses": 3,
+  "total_verified_psds": 11,
+  "total_verified_poses": 64,
+  "psd_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD",
+  "psd_filename_format": "人名_属性_楽器名.psd",
+  "location_change_record": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Relocation_20261009\\verification.json"
+}

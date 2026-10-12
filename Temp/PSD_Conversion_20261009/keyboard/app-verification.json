@@ -1,0 +1,91 @@
+{
+  "selected_pose_count": 14,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\01_キーボード\\東北きりたん_キーボード.psd",
+  "checks": [
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏01_02_画面左手を中央へ",
+      "jobId": "{92D8EDFB-C653-4890-B2A6-5C2666DCFB59}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏02_03_画面右手を中央へ",
+      "jobId": "{E661C823-8889-4D34-87D5-AF9C571BBFB2}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏03_04_画面左手を外側へ",
+      "jobId": "{D7FD3B65-C378-440C-B775-0ABE4270E456}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏04_05_画面右手を外側へ",
+      "jobId": "{38CC4413-3239-4637-86B2-483C0BA5AC9B}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏05_06_両手を中央寄りへ",
+      "jobId": "{B567D60C-6827-4C13-9C96-AD193B8A3BF3}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏06_07_両手を広めへ",
+      "jobId": "{F12365CF-E551-4629-B6E4-C2AF5F9F041D}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏07_08_画面左手_大きい離鍵",
+      "jobId": "{D4784574-0C0C-4423-AD98-21F8B5AACB80}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏08_09_画面右手_大きい離鍵",
+      "jobId": "{D529F8C1-A4E7-495C-BF56-F8951A961A89}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏09_10_両手待機_鍵盤直上",
+      "jobId": "{E56F5C24-A99F-427B-837E-D5ABFC09CCEE}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏10_11_両手を画面左寄り",
+      "jobId": "{C02C35B3-3BC2-457D-965C-9103131B9427}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏11_12_両手を画面右寄り",
+      "jobId": "{DC2844B2-F1F6-4494-A62E-8E76A6BA35B2}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏12_13_画面左手_小さい離鍵",
+      "jobId": "{00C4E981-407F-4B7D-8EE3-DF90F12C806F}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏13_14_画面右手_小さい離鍵",
+      "jobId": "{5E863296-2259-465E-997A-BAB1077ADF84}",
+      "visible_pose_count": 1
+    }
+  ],
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "saved_and_reloaded": true,
+  "pid": 22372,
+  "file_sha256": "e150f34a928d217177a4bf15ece3e81345d905bd848bca78300d9325369cf86d",
+  "default_restored": true,
+  "passed": true
+}

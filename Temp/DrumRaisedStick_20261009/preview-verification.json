@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "accepted_basic_rgba_unchanged": true,
+  "raised_saved_rgba_identical": true,
+  "changed_pixels": 26211,
+  "changed_pixels_outside_mask": 0,
+  "fixed_head_other_hand_drumkit_unchanged_outside_local_patch": true
+}

@@ -1,0 +1,49 @@
+{
+  "selected_pose_count": 7,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\03_ベース\\東北きりたん_ベース.psd",
+  "checks": [
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏01_01_A_low_frets_低フレット",
+      "jobId": "{B09080B0-5AD1-46DC-9CFB-E35AE75EE603}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏02_02_B_high_frets_高フレット",
+      "jobId": "{295350D7-E304-468F-8052-7C0A055B3AC6}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏03_03_C_mute_ミュート",
+      "jobId": "{4A9CB222-FFDA-4C4C-924A-1DED2C21E109}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏04_04_D_ready_待機_首境界要調整",
+      "jobId": "{4889F1C6-EB8C-41E2-A98A-1DA16E843D51}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏05_05_E_bridge_pluck_ブリッジ寄り",
+      "jobId": "{71D9C857-F7F2-46E2-8C19-256BDDFF16B7}",
+      "visible_pose_count": 1
+    },
+    {
+      "all_layer_pixels_unchanged": true,
+      "name": "*演奏06_06_F_thumb_accent_親指アクセント",
+      "jobId": "{221ACCC0-12BE-48A5-ABCC-D889580CA136}",
+      "visible_pose_count": 1
+    }
+  ],
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "saved_and_reloaded": true,
+  "pid": 19712,
+  "file_sha256": "7eeea61aedee98b962c6e0e16e31b5cd40890efcdc87075a53b19c51e3a0a693",
+  "default_restored": true,
+  "passed": true
+}

@@ -1,0 +1,1665 @@
+[
+  {
+    "instrument": "triangle",
+    "source_group": "core",
+    "name_ja": "トライアングル",
+    "attribute": "打撃",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\triangle-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\triangle",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_トライアングル.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\11_トライアングル\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\tambourine_triangle.png",
+    "head_sha256": "d8a3eec01c1c8d215393fd1dd2eb2a28ee2237f9a01e52048f1e213fbbef10fe",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_下辺接触・近接",
+        "source_label_ja": "下辺接触/近接",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\11_トライアングル\\00_base\\body.png",
+        "source_sha256": "1f2c8c88e4a3b01f51ef9f4cb125311523a6971ad88ccd60ef1180b9876eaa06",
+        "rgba_sha256": "b04b1573c33423b6796074942a2d6d9fa2eda98c86a8cc90db011675ced390b8",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A",
+        "label_ja": "ビーター上げ準備",
+        "source_label_ja": "ビーター上げ準備",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_ビーター上げ準備",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_ビーター上げ準備",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\11_トライアングル\\01_A\\body.png",
+        "source_sha256": "e9dec31dd56db95b73d88f8576a86195b0330d9a92bf73eb35742b48e005dec2",
+        "rgba_sha256": "594bd60b29b7df0ae877475f8532bff940a5bb3e89bfdf8754c680b2f23418dd",
+        "preview_file": "プレビュー/01_A.png"
+      },
+      {
+        "pose_id": "02_B",
+        "label_ja": "ビーター下方離し",
+        "source_label_ja": "ビーター下方離し",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_ビーター下方離し",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_ビーター下方離し",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\11_トライアングル\\02_B\\body.png",
+        "source_sha256": "31e2bd304e86f7e3cf4e319bf9de90a310104916740c965cc5a950cf36275b68",
+        "rgba_sha256": "4ec454417d5cf53b102acc179415100ccb09b5947617884cac5e480ac4e82edf",
+        "preview_file": "プレビュー/02_B.png"
+      },
+      {
+        "pose_id": "03_C",
+        "label_ja": "金属把持_ミュート待機",
+        "source_label_ja": "金属直接把持のミュート待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_金属把持_ミュート待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_金属把持_ミュート待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\11_トライアングル\\03_C\\body.png",
+        "source_sha256": "a6b161c14df212030d74f8a2351d8dbe6cb9e75bf43e3bb50567cdfcc06815d4",
+        "rgba_sha256": "5644bf6df9f7960ee51a9fa16c9ec1b14158d13417cd666fc8434fdf4d1693f1",
+        "preview_file": "プレビュー/03_C.png"
+      }
+    ],
+    "guide": {
+      "instrument": "triangle",
+      "name_ja": "トライアングル",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A",
+        "02_B",
+        "03_C"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "基本の下辺近接・A棒上げ・B下方離し・C金属直接保持ミュートの4姿勢。",
+      "limits_ja": [
+        "全4姿勢の首右うなじに髪色候補16〜20画素の微小露出があり、首境界は拡大用途で条件付き。基本は接触/極近接で、発音瞬間を断定しない。"
+      ],
+      "integrated_use_ja": "A→基本→Bの短い切替、Cは別のミュート待機。付属元頭または既存の頭合成PNGを使用。",
+      "separation_outlook_ja": "頭のみ分離。吊り輪・指・棒・楽器の重なりのため首下一体を推奨。",
+      "remaining_work_ja": [
+        "首境界と棒の細部を実寸確認。必要なら拡大用途の境界調整と中間コマ。"
+      ],
+      "head_policy": "original_supplied_head_default_with_limited_optional_193px_candidate",
+      "source_edition": "v2",
+      "fixed_head_path": "heads/tambourine_triangle.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。"
+  },
+  {
+    "instrument": "ukulele",
+    "source_group": "core",
+    "name_ja": "ウクレレ",
+    "attribute": "撥弦",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\ukulele-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\ukulele",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ウクレレ.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\12_ウクレレ\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\ukulele.png",
+    "head_sha256": "b27284619b46128164aabae55023677ed1930e0c05cf7f217b8d7c2c75d280f0",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_音孔付近接触",
+        "source_label_ja": "基準・音孔付近接触",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\12_ウクレレ\\00_base\\body.png",
+        "source_sha256": "1480d28603446118073317b05d90b58777c032b827fad3676d260b9e3919ced4",
+        "rgba_sha256": "3a8ad3f2335e2a2d05ee2daaea476b58e19de2306a77809e0194fdefcbe4f56e",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A_down",
+        "label_ja": "下ストローク端",
+        "source_label_ja": "小さな下ストローク端",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_down_下ストローク端",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_down_下ストローク端",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\12_ウクレレ\\01_A_down\\body.png",
+        "source_sha256": "b28e29cb07a57028bc2cdcceab32a0676bf1eb8db24aea0505830342fd56b3a8",
+        "rgba_sha256": "7f1cd234ca137f0869dabc59b703323f4812490c3419266b40c2eeed7deee66a",
+        "preview_file": "プレビュー/01_A_down.png"
+      },
+      {
+        "pose_id": "02_B_up",
+        "label_ja": "上ストローク接触_改稿B",
+        "source_label_ja": "上ストローク接触（改稿B）",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_up_上ストローク接触_改稿B",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_up_上ストローク接触_改稿B",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\12_ウクレレ\\02_B_up\\body.png",
+        "source_sha256": "95a57abe41254c08840599347b818216620d0379aa3e0af58ce47dae633d5ac6",
+        "rgba_sha256": "13c176416d0376f78378f5360ed465fd710ccfc923593da649a8871fa1acc4b5",
+        "preview_file": "プレビュー/02_B_up.png"
+      },
+      {
+        "pose_id": "03_C_wait",
+        "label_ja": "ミュート待機",
+        "source_label_ja": "ミュート・待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_wait_ミュート待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_wait_ミュート待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\12_ウクレレ\\03_C_wait\\body.png",
+        "source_sha256": "07ab802a3fcdd1274598cc97baefc1f6658f91876d22e99b3bd89b40cad7face",
+        "rgba_sha256": "647ef15ffbf66be9c00555a175f03fdb2f729980e6a8c28401aee1c3831f394e",
+        "preview_file": "プレビュー/03_C_wait.png"
+      }
+    ],
+    "guide": {
+      "instrument": "ukulele",
+      "name_ja": "ウクレレ",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A_down",
+        "02_B_up",
+        "03_C_wait"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "4姿勢。一体切替用。首の3小領域に共通229画素の局所補修を適用した最終配布版。",
+      "limits_ja": [
+        "首補修対象3領域のalpha<128は128〜129→0画素。ただし顎下の細線、襟片、左髪束沿いの細い透過部は残る。首全域が無欠損という意味ではない。",
+        "Bは接触寄りの小さな上ストローク差。特定コードや正確な運指は未保証。初回の大きな手上げBは不採用。",
+        "楽器・袖・足に微細な生成揺れ。胸下〜上腹部寄りの構えで、もっと高く抱える姿勢は別調整が必要。"
+      ],
+      "integrated_use_ja": "完成PNGの姿勢切替を優先。00/A/Bを穏やかに切替え、Cをミュート/休符に使う。高速ループの完成版とは扱わない。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "実際の表示倍率・白黒背景で顎下、左髪束〜襟の細い透過部を確認。",
+        "00/A/Bを音楽に合わせて切替え、手の微差と楽器・足の揺れが許容範囲か確認。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "ukulele_head_common_fixed.png",
+        "sha256": "b27284619b46128164aabae55023677ed1930e0c05cf7f217b8d7c2c75d280f0",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source_dimensions": [
+            1024,
+            1536
+          ],
+          "nominal_scale": 0.9,
+          "resize_dimensions": [
+            922,
+            1382
+          ],
+          "paste_xy": [
+            10,
+            4
+          ],
+          "resampling": "Pillow Image.Resampling.LANCZOS",
+          "compositing": "RGBA alpha_composite onto transparent 1024x1536 canvas",
+          "same_transform_all_poses": true
+        }
+      },
+      "source_edition": "v3",
+      "fixed_head_path": "heads/ukulele.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。"
+  },
+  {
+    "instrument": "double_bass",
+    "source_group": "core",
+    "name_ja": "コントラバス",
+    "attribute": "撥弦",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\double_bass-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\double_bass",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_コントラバス.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\13_コントラバス\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\double_bass.png",
+    "head_sha256": "bd46997dfb053337f4e6c5890076373cf768c6e9e4d4f45a7bc8c6e50ee010ae",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_右指接触",
+        "source_label_ja": "基本・右指接触",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\13_コントラバス\\00_base\\body.png",
+        "source_sha256": "23fa3891eeca9fda60b7c2c621927e6148365cc95947a8246c5019e6cd457e1a",
+        "rgba_sha256": "27d39d88d20131aa9f77f01d92b9bcc1646435736841615af334125fade42425",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A_lower_contact",
+        "label_ja": "低め_右指接触",
+        "source_label_ja": "少し低めの右指接触",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_lower_contact_低め_右指接触",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_lower_contact_低め_右指接触",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\13_コントラバス\\01_A_lower_contact\\body.png",
+        "source_sha256": "db4001fd3f78c84fe02cea0bf273286019b829d1f69c180b920314e9d340e490",
+        "rgba_sha256": "cfede113d01d476ece91edfd495e95b20dcbf1504ccf033a1fd96bca9bedceca",
+        "preview_file": "プレビュー/01_A_lower_contact.png"
+      },
+      {
+        "pose_id": "02_B_ready",
+        "label_ja": "右指離し_準備",
+        "source_label_ja": "右指を離した準備",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_ready_右指離し_準備",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_ready_右指離し_準備",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\13_コントラバス\\02_B_ready\\body.png",
+        "source_sha256": "bd1ba8b9e1434726e65e4314ba4b72872f3a44b0428dc912811be5f9e48a3f7a",
+        "rgba_sha256": "9359bea1ec1aa6006c2bc185a588aa9a114dbc09f8dee54e470684dffde80730",
+        "preview_file": "プレビュー/02_B_ready.png"
+      },
+      {
+        "pose_id": "03_C_left_lower",
+        "label_ja": "左押弦手_低位置",
+        "source_label_ja": "左押弦手を低い位置へ",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_left_lower_左押弦手_低位置",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_left_lower_左押弦手_低位置",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\13_コントラバス\\03_C_left_lower\\body.png",
+        "source_sha256": "bddf62752c2a8c47c44324be222cc9341e0fb3d500f474f595aeb73b8afbeae3",
+        "rgba_sha256": "0d2aab85e6ace34bbadc4068fc9619d033a4fb1f409e360e63c4d8ee466a536a",
+        "preview_file": "プレビュー/03_C_left_lower.png"
+      }
+    ],
+    "guide": {
+      "instrument": "double_bass",
+      "name_ja": "コントラバス",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A_lower_contact",
+        "02_B_ready",
+        "03_C_left_lower"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "4姿勢。ピチカート接触3種＋非接触準備1種の一体セット。",
+      "limits_ja": [
+        "Aの人差し指/中指の使い分けや特定音高は断定しない。Bは発音接触コマではない。",
+        "弦・糸巻き機構は様式化され、遠側金具は一部隠れる。顎右襟際6〜9画素の微小透過は自然開口か欠けか保留。髪と肩の間22〜25画素は自然開口と判断。",
+        "主な静止部の平行移動推定は0〜1pxだが、色・線の再描画差が残る。"
+      ],
+      "integrated_use_ja": "00/Aを接触位置のゆるい切替、Bを準備・休符、Cを左手位置変更に。体・手・楽器・エンドピンを一体で使用。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "右指の接触、Bの離れ、4弦の走行を実寸で確認。",
+        "首際の小領域の透過と、スクロール/エンドピン/足元の切替揺れを確認。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "double_bass_common_head.png",
+        "sha256": "bd46997dfb053337f4e6c5890076373cf768c6e9e4d4f45a7bc8c6e50ee010ae",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source": "head_boundary_review/delivery_193px_strictRGB/heads/common_1x_for_keyboard_bass.png",
+          "source_sha256": "98d561b3fee574f0150017f8681f112b67c21920aa32feb3f37f5255176fea84",
+          "scale_nominal": 0.66,
+          "resized_canvas": [
+            676,
+            1014
+          ],
+          "offset": [
+            30,
+            128
+          ],
+          "rotation": 0,
+          "operation": "One uniform LANCZOS scale and fixed translation directly from corrected original; preliminary positioning guide is not final transformed artwork. No redraw.",
+          "fixed_sha256": "bd46997dfb053337f4e6c5890076373cf768c6e9e4d4f45a7bc8c6e50ee010ae"
+        }
+      },
+      "source_edition": "v3",
+      "fixed_head_path": "heads/double_bass.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "提供素材はピチカート4姿勢のため撥弦。弓奏は未収録。"
+  },
+  {
+    "instrument": "bongo",
+    "source_group": "core",
+    "name_ja": "ボンゴ",
+    "attribute": "打撃",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\bongo-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\bongo",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ボンゴ.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\bongo_handbells.png",
+    "head_sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_両掌接触",
+        "source_label_ja": "両掌接触",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\00_base\\body.png",
+        "source_sha256": "bc782aafd839c34c45465acf2fff2383aa0bb4e81330f55be4dc31ad25f6488e",
+        "rgba_sha256": "32d01c6ddf701514f931b2f42ff1971f03fb1b74fb161e95dde5dd4ea492040f",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A",
+        "label_ja": "右手_画面左_上げ",
+        "source_label_ja": "右手（画面左）上げ",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_右手_画面左_上げ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_右手_画面左_上げ",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\01_A\\body.png",
+        "source_sha256": "35ace66ff1b20d3675175e09cced428b1b01ba92e3cf1e47490b77487d292b12",
+        "rgba_sha256": "0f0738059f29b0210c81db47f5d2ca8ad7925d05e6feb9e9d8e18108ccf24786",
+        "preview_file": "プレビュー/01_A.png"
+      },
+      {
+        "pose_id": "02_B",
+        "label_ja": "左手_画面右_上げ",
+        "source_label_ja": "左手（画面右）上げ",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_左手_画面右_上げ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_左手_画面右_上げ",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\02_B\\body.png",
+        "source_sha256": "0307413b9da190d9e1752227860ca5659d2c3567a27347a263bd6811c5f8eb12",
+        "rgba_sha256": "a05f1a33bae91cf1cab6921386926e6c296223ea99b7c9ec32e782faf192a37f",
+        "preview_file": "プレビュー/02_B.png"
+      },
+      {
+        "pose_id": "03_C",
+        "label_ja": "両手上げ待機",
+        "source_label_ja": "両手上げ待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_両手上げ待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_両手上げ待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\03_C\\body.png",
+        "source_sha256": "aafc054bf3ef4f23787966fc9f19999b541319a3d258a046afc8fc42bf2fb923",
+        "rgba_sha256": "99e38f818331ea7292bb1c2ec6d0c97daf7c2d554ecb940bd1c849972488af57",
+        "preview_file": "プレビュー/03_C.png"
+      }
+    ],
+    "guide": {
+      "instrument": "bongo",
+      "name_ja": "ボンゴ",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A",
+        "02_B",
+        "03_C"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "4姿勢。大小一対のボンゴと立奏スタンドを含む一体セット。首境界の拡大使用は条件付き。",
+      "limits_ja": [
+        "画面左の髪束〜襟間の96〜100画素の透過部は、独立QAで自然な開口に見えると判断。面積値であり長さではない。拡大時は見え方を確認。",
+        "画面右うなじの濃茶の二重折返し線は生成した襟側にあり、固定頭の描き直しではない。境界には微小な生成色の重なりも残る。",
+        "鼓・衣装・スタンド・足に微細な生成揺れ。打点と打音の正確な時間関係は保証しない。"
+      ],
+      "integrated_use_ja": "A→00→B→00を左右の打ち分け候補に、Cを両手待機へ。鼓・手・袖・スタンドを分けず一体で使う。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "白黒背景の実表示サイズで左髪束〜襟の透過部、右うなじの襟線を確認。",
+        "接触と離しの順番を曲に合わせ、鼓/スタンド/足の揺れが許容範囲か確認。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "bongo_head_fixed.png",
+        "sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source": "head_boundary_review/delivery_193px_strictRGB/heads/common_1x_for_keyboard_bass.png",
+          "source_original": "shared/head_common_1024x1536.png",
+          "source_cleaning": "193 shoulder-line pixels made transparent; face/hair RGB preserved before scaling",
+          "resize": [
+            860,
+            1290
+          ],
+          "uniform_scale": 0.83984375,
+          "paste_xy": [
+            102,
+            0
+          ],
+          "resampling": "Lanczos",
+          "per_pose_change": false,
+          "spatial_neck_cut_points": [
+            [
+              0,
+              455
+            ],
+            [
+              390,
+              455
+            ],
+            [
+              402,
+              443
+            ],
+            [
+              419,
+              447
+            ],
+            [
+              439,
+              449
+            ],
+            [
+              448,
+              441
+            ],
+            [
+              458,
+              436
+            ],
+            [
+              480,
+              430
+            ],
+            [
+              495,
+              426
+            ],
+            [
+              510,
+              421
+            ],
+            [
+              528,
+              415
+            ],
+            [
+              544,
+              414
+            ],
+            [
+              562,
+              408
+            ],
+            [
+              579,
+              402
+            ],
+            [
+              591,
+              410
+            ],
+            [
+              601,
+              416
+            ],
+            [
+              609,
+              436
+            ],
+            [
+              623,
+              434
+            ],
+            [
+              641,
+              433
+            ],
+            [
+              654,
+              438
+            ],
+            [
+              678,
+              438
+            ],
+            [
+              1024,
+              438
+            ]
+          ],
+          "central_neck_refinement": "For x390..678 use bottommost fixed-head alpha>=127; for x580..612 use first gap below y395 to preserve collar behind separated hair strands. Retain one pixel underlap. No face/hair edits.",
+          "cut_method": "Make generated pixels above geometric contour fully transparent; no color-key. Composite unchanged transformed fixed common head."
+        }
+      },
+      "source_edition": "v3",
+      "fixed_head_path": "heads/bongo_handbells.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。",
+    "png_encoding_compatibility_copies": [
+      {
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\bongo_handbells.png",
+        "source_sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+        "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\e77145ca601539598708.png",
+        "copy_sha256": "7b30bffa094efd207864c9306732c6fff114c1f90750b113d78d1934fba7484a",
+        "rgba_sha256": "6b3048fcec9db1602ab41284ca396945fcf14bbe1770b4dcde63ffbc6055acc7",
+        "canvas_wh": [
+          1024,
+          1536
+        ],
+        "rgba_exact": true,
+        "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+      },
+      {
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\00_base\\body.png",
+        "source_sha256": "bc782aafd839c34c45465acf2fff2383aa0bb4e81330f55be4dc31ad25f6488e",
+        "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\f56dee054048ea019ba9.png",
+        "copy_sha256": "d61493383cf4659b76403a669df07be12d01848473503678aa61f64034690cf1",
+        "rgba_sha256": "32d01c6ddf701514f931b2f42ff1971f03fb1b74fb161e95dde5dd4ea492040f",
+        "canvas_wh": [
+          1024,
+          1536
+        ],
+        "rgba_exact": true,
+        "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+      },
+      {
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\01_A\\body.png",
+        "source_sha256": "35ace66ff1b20d3675175e09cced428b1b01ba92e3cf1e47490b77487d292b12",
+        "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\cec58f56c4df7d4769a3.png",
+        "copy_sha256": "48945bb384ad1d09090111912cf784afe75c095fc4f55cf947cb143f23fd8b95",
+        "rgba_sha256": "0f0738059f29b0210c81db47f5d2ca8ad7925d05e6feb9e9d8e18108ccf24786",
+        "canvas_wh": [
+          1024,
+          1536
+        ],
+        "rgba_exact": true,
+        "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+      },
+      {
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\02_B\\body.png",
+        "source_sha256": "0307413b9da190d9e1752227860ca5659d2c3567a27347a263bd6811c5f8eb12",
+        "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\5e36868d5598e043bc25.png",
+        "copy_sha256": "9b95b0ca0e92e2719ce29a7f87fe0cf4c88765f00a32e09d6d4307c0bb8e1ed4",
+        "rgba_sha256": "a05f1a33bae91cf1cab6921386926e6c296223ea99b7c9ec32e782faf192a37f",
+        "canvas_wh": [
+          1024,
+          1536
+        ],
+        "rgba_exact": true,
+        "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+      },
+      {
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\14_ボンゴ\\03_C\\body.png",
+        "source_sha256": "aafc054bf3ef4f23787966fc9f19999b541319a3d258a046afc8fc42bf2fb923",
+        "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\d6529ead137b78e2f940.png",
+        "copy_sha256": "ba9223eacfe76723ad3de0a6ee9b7340e7f2069e6235ab5f2bc54a35de09a3c3",
+        "rgba_sha256": "99e38f818331ea7292bb1c2ec6d0c97daf7c2d554ecb940bd1c849972488af57",
+        "canvas_wh": [
+          1024,
+          1536
+        ],
+        "rgba_exact": true,
+        "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+      }
+    ]
+  },
+  {
+    "instrument": "shamisen",
+    "source_group": "core",
+    "name_ja": "三味線",
+    "attribute": "撥弦",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\shamisen-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\shamisen",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_三味線.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\15_三味線\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\shamisen.png",
+    "head_sha256": "1083c96ac7bf04208c31ecfa371528367faf7f06995840e4ee350136cf4e0b59",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_撥接触",
+        "source_label_ja": "基本・撥の接触",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\15_三味線\\00_base\\body.png",
+        "source_sha256": "fa21e5f8e6e26ee54453daba911fec4424974f3d3f3da1bdf1da57c29cf009ba",
+        "rgba_sha256": "566cebeb582059eff81ca8fcc6e50e329391e4142ab5ae5493604a09ba16bb13",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A_down",
+        "label_ja": "下げた撥",
+        "source_label_ja": "A・下げた撥",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_down_下げた撥",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_down_下げた撥",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\15_三味線\\01_A_down\\body.png",
+        "source_sha256": "4249183d5c8ec205d68a40316253a75c5645771d3c5b60179a7ea21ee1a73845",
+        "rgba_sha256": "8f4d63afb4dc2151c368ba2fc992180034c9d77c39618d8bd9d34b82fa10aec8",
+        "preview_file": "プレビュー/01_A_down.png"
+      },
+      {
+        "pose_id": "02_B_up",
+        "label_ja": "撥上げ_準備",
+        "source_label_ja": "B・撥を上げた準備",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_up_撥上げ_準備",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_up_撥上げ_準備",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\15_三味線\\02_B_up\\body.png",
+        "source_sha256": "631e152b3f1a055272d94c9890f531391d973805e2dcde096b64870493f5ec9d",
+        "rgba_sha256": "04c271f2be59cc8ed7ea2137845447d58f691184cb8a83455b7bbcd8d58d6d1f",
+        "preview_file": "プレビュー/02_B_up.png"
+      },
+      {
+        "pose_id": "03_C_wait",
+        "label_ja": "胴端_待機",
+        "source_label_ja": "C・撥を胴端に置く待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_wait_胴端_待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_wait_胴端_待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\15_三味線\\03_C_wait\\body.png",
+        "source_sha256": "75fd867dc00be840ac9af89be867c5d22acfd6c2ae5c7aa642bd4e4debb8d2a6",
+        "rgba_sha256": "1f1cdd9df3a81389684d7cb33c0c5c169e2bcea5341389a19ea0f910dc191985",
+        "preview_file": "プレビュー/03_C_wait.png"
+      }
+    ],
+    "guide": {
+      "instrument": "shamisen",
+      "name_ja": "三味線",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A_down",
+        "02_B_up",
+        "03_C_wait"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "基本/Aは胴上の弦付近に撥を置き、Bは控えめに上げた準備、Cは低く横向きに保持する待機。Cの演奏接触は保証しない。",
+      "limits_ja": [
+        "右首2画素の微小透過は判断保留。髪肩間の自然な開口と区別して確認。首パッチは使っていない。",
+        "静止部は局所推定0〜1pxでも線や色の微変化が残る。右端の可視余白は2〜4pxと狭い。",
+        "A/B/Cは背景をimagegenで再抽出。Bは過大な腕上げも控えめに修正した最終版。特定奏法・音高・弦の全長追跡は未保証。"
+      ],
+      "integrated_use_ja": "人物・撥・三味線・椅子・脚を一体で使用。基本/Aを接触候補、Bを準備、Cを待機として切り替える。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "実寸と白黒背景で右首の微小透過、撥と弦の接点、右端余白を確認。",
+        "曲に合わせた短い切替で糸巻き・椅子・足の揺れを確認。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "shamisen_head_common_fixed.png",
+        "sha256": "1083c96ac7bf04208c31ecfa371528367faf7f06995840e4ee350136cf4e0b59",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source_dimensions": [
+            1024,
+            1536
+          ],
+          "nominal_scale": 1.035,
+          "exact_uniform_scale": 1.03515625,
+          "resize_dimensions": [
+            1060,
+            1590
+          ],
+          "paste_xy": [
+            -86,
+            16
+          ],
+          "resampling": "Pillow Image.Resampling.LANCZOS",
+          "compositing": "RGBA alpha_composite onto transparent 1024x1536",
+          "same_transform_all_poses": true
+        }
+      },
+      "source_edition": "v4",
+      "fixed_head_path": "heads/shamisen.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": true,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。"
+  },
+  {
+    "instrument": "harp",
+    "source_group": "core",
+    "name_ja": "ハープ",
+    "attribute": "撥弦",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\harp-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\harp",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_撥弦_ハープ.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\PSD変換記録",
+    "canvas_wh": [
+      1536,
+      1024
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\harp.png",
+    "head_sha256": "8fc4879717fa6948e7b8097b78441d85cf5dcc4c98214d74f5d1556337422963",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_弦側の両手",
+        "source_label_ja": "基本・弦側の両手",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\00_base\\body.png",
+        "source_sha256": "bb0e17d470217efe04678699d6125c7a5f25ccd8b8216fc577303639ba353f2d",
+        "rgba_sha256": "0838bc183901cf0193546a5502caa196c79bbe3207f2ce07502cb3c7593e7db0",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A_high_right",
+        "label_ja": "右手_高め",
+        "source_label_ja": "A・右手を高めへ",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_high_right_右手_高め",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_high_right_右手_高め",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\01_A_high_right\\body.png",
+        "source_sha256": "b7d0759acd1388c7cc64d56576502db9623705279aace462821379b9578bf1a5",
+        "rgba_sha256": "c40e89adcd232bed551e298b62af993dc79d4baf46126bfec1ea325235a782d7",
+        "preview_file": "プレビュー/01_A_high_right.png"
+      },
+      {
+        "pose_id": "02_B_low_left",
+        "label_ja": "左手_低め",
+        "source_label_ja": "B・左手を低めへ",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_low_left_左手_低め",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_low_left_左手_低め",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\02_B_low_left\\body.png",
+        "source_sha256": "f35ba5d38f51fddd658b63e350422b5570bf9f7a0b22e6fb15aa4e26fdb5a3a7",
+        "rgba_sha256": "a52c108aacb54fdaef399b3307972e60666e3ad7f0e6efd3f86bff6abc8f1b2e",
+        "preview_file": "プレビュー/02_B_low_left.png"
+      },
+      {
+        "pose_id": "03_C_right_rest",
+        "label_ja": "右手_響板保持待機",
+        "source_label_ja": "C・右手を響板へ添える待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_right_rest_右手_響板保持待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_right_rest_右手_響板保持待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\16_ハープ\\03_C_right_rest\\body.png",
+        "source_sha256": "98e46d0426fac6b675e169ab0bc78e2ad1cbf2185871e47eefa3c964fa851efe",
+        "rgba_sha256": "47969f5b654a8677c5005b5a61dfc8b3d617bf6cab1ed657103bc7759da08f03",
+        "preview_file": "プレビュー/03_C_right_rest.png"
+      }
+    ],
+    "guide": {
+      "instrument": "harp",
+      "name_ja": "ハープ",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1536,
+        1024
+      ],
+      "display_order": [
+        "00_base",
+        "01_A_high_right",
+        "02_B_low_left",
+        "03_C_right_rest"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "基本/A/Bは弦側の手姿勢。Aは右手高め、Bは左手低め。Cは右手を響板に添え、左手を弦側へ置く待機に限定。",
+      "limits_ja": [
+        "左手は弦の奥側を回る描画で、各指の物理接触と正確な運指は未保証。Cは両手で弾く姿勢ではない。",
+        "弦窓3領域×4体はalpha最小0、alpha≤10が64〜83%。弦と半透明縁は残り、窓全域が完全透明という意味ではない。",
+        "静止ランドマークは局所推定0〜2px。椅子脚は特にB/Cで形の再描画差が比較的大きい。上余白4〜6px、下7〜8px。首1画素候補は判断保留。"
+      ],
+      "integrated_use_ja": "人物・手・衣装・椅子・ハープを一体使用。基本/A/Bを弦側姿勢のゆるい切替、Cを響板保持の待機に使う。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "手と弦の前後関係、首境界、実表示サイズでの弦窓の透過を確認。",
+        "B/Cの椅子脚変化と上下余白を特に確認。奏法の厳密さが必要なら人が再確認。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "harp_common_head.png",
+        "sha256": "8fc4879717fa6948e7b8097b78441d85cf5dcc4c98214d74f5d1556337422963",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source": "head_boundary_review/delivery_193px_strictRGB/heads/common_1x_for_keyboard_bass.png",
+          "source_sha256": "98d561b3fee574f0150017f8681f112b67c21920aa32feb3f37f5255176fea84",
+          "source_canvas": [
+            1024,
+            1536
+          ],
+          "nominal_uniform_scale": 0.62,
+          "resized_canvas": [
+            635,
+            952
+          ],
+          "integer_rounding": "round(source dimensions * 0.62)",
+          "effective_scale_xy": [
+            0.6201171875,
+            0.6197916666666666
+          ],
+          "offset_xy": [
+            282,
+            62
+          ],
+          "output_canvas": [
+            1536,
+            1024
+          ],
+          "rotation_degrees": 0,
+          "resampling": "PIL.Image.Resampling.LANCZOS",
+          "alpha_composite": "same head PNG over each neck-down sprite",
+          "head_file": "harp/head/harp_common_head.png",
+          "head_sha256": "8fc4879717fa6948e7b8097b78441d85cf5dcc4c98214d74f5d1556337422963",
+          "head_redrawn": false,
+          "per_pose_head_change": false,
+          "source_notes": "193-pixel shoulder-boundary alpha correction; source RGB unchanged before this requested scale transformation."
+        }
+      },
+      "source_edition": "v4",
+      "fixed_head_path": "heads/harp.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": true,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。"
+  },
+  {
+    "instrument": "taiko",
+    "source_group": "core",
+    "name_ja": "和太鼓",
+    "attribute": "打撃",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\taiko-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\taiko",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_和太鼓.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\17_和太鼓\\PSD変換記録",
+    "canvas_wh": [
+      1152,
+      1664
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\taiko.png",
+    "head_sha256": "1e91d6fea763de2b368679c22fb736dd6cfb28b0970d32c67d52c918d9d8f3ca",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_右上げ・左鼓面側",
+        "source_label_ja": "基本・右上げ/左鼓面側",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\17_和太鼓\\00_base\\body.png",
+        "source_sha256": "86592f92a0c0d806d2f047c6bc5357b45281a0d0655c1737c4efa99c1c7e4803",
+        "rgba_sha256": "e9ff51774eb59c9b4bf9439719b2c5dc64a443ad32fa9456f822f60c75b2de01",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A",
+        "label_ja": "右鼓面側・左上げ",
+        "source_label_ja": "A・右鼓面側/左上げ",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_右鼓面側・左上げ",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_右鼓面側・左上げ",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\17_和太鼓\\01_A\\body.png",
+        "source_sha256": "9915d6139da3b5484de92d935bd865f39d7dea854c64d8ec3eb2aca23137d468",
+        "rgba_sha256": "6db5add665cf7aa70e21b9405ae08d2b397d99909400ec6b6c7ddafd74991c29",
+        "preview_file": "プレビュー/01_A.png"
+      },
+      {
+        "pose_id": "02_B",
+        "label_ja": "両撥上げ準備",
+        "source_label_ja": "B・両撥上げ準備",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_両撥上げ準備",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_両撥上げ準備",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\17_和太鼓\\02_B\\body.png",
+        "source_sha256": "97cc5c8a851db2a540fa9678387bc07ccc8d1a2a05341485da3ce736c335de2f",
+        "rgba_sha256": "b95bc07d782523b5e13cc65407b92b0330cecdc080ba1b4d2632d0223ebac36f",
+        "preview_file": "プレビュー/02_B.png"
+      },
+      {
+        "pose_id": "03_C",
+        "label_ja": "両撥低位置_待機",
+        "source_label_ja": "C・両撥低い待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_両撥低位置_待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_両撥低位置_待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\17_和太鼓\\03_C\\body.png",
+        "source_sha256": "0bb53542f674817f505a2208a528d33a6b9ba6cb6267d0ee7f3a223f52f62f7e",
+        "rgba_sha256": "c1ace14199d844477a06785b278cf5018905bcd032821fe214fccc9bbf4cd466",
+        "preview_file": "プレビュー/03_C.png"
+      }
+    ],
+    "guide": {
+      "instrument": "taiko",
+      "name_ja": "和太鼓",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1152,
+        1664
+      ],
+      "display_order": [
+        "00_base",
+        "01_A",
+        "02_B",
+        "03_C"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "基本は人物右上げ/左鼓面側、Aは右鼓面側/左上げ、Bは両上げ、Cは両撥を低く鼓面側へ置く待機。鼓面側の先端は接触を表す絵。",
+      "limits_ja": [
+        "頭・首下4枚・完成4枚の全9枚に同じ全辺64pxの透明余白を適用。元領域のRGBAは不変。余白をもう一度付けない。",
+        "A/Bは挙上袖が半透明髪端の下へ入り、61画素の合成値が変化する。固定頭自体は不変。右首の小二重線、6画素以下の輪郭候補は拡大時に確認。",
+        "鼓胴・台・足は局所推定0〜1pxでも再描画差が残る。正確な打撃角度・打音タイミングは未保証。"
+      ],
+      "integrated_use_ja": "人物・撥2本・太鼓・木台・脚を一体使用。基本/Aを左右の鼓面側姿勢、Bを準備、Cを低い待機に。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "白黒背景で右首の折返し線とA/B髪端、撥先の鼓面接触を確認。",
+        "Aの足/台の変化を含め、実際の速度で静止部の揺れを確認。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "taiko_head_fixed.png",
+        "sha256": "1e91d6fea763de2b368679c22fb736dd6cfb28b0970d32c67d52c918d9d8f3ca",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source": "head_boundary_review/delivery_193px_strictRGB/heads/common_1x_for_keyboard_bass.png",
+          "source_original": "shared/head_common_1024x1536.png",
+          "source_cleaning": "193 shoulder-line alpha removals, source RGB unchanged",
+          "resize": [
+            832,
+            1248
+          ],
+          "uniform_scale": 0.8125,
+          "paste_xy": [
+            -83,
+            105
+          ],
+          "resampling": "Lanczos",
+          "per_pose_change": false,
+          "spatial_neck_cut_points": [
+            [
+              0,
+              545.186046511628
+            ],
+            [
+              195.6232558139535,
+              545.186046511628
+            ],
+            [
+              207.2325581395349,
+              533.5767441860464
+            ],
+            [
+              223.67906976744183,
+              537.446511627907
+            ],
+            [
+              243.0279069767442,
+              539.3813953488373
+            ],
+            [
+              251.73488372093027,
+              531.6418604651163
+            ],
+            [
+              261.4093023255814,
+              526.8046511627907
+            ],
+            [
+              282.69302325581396,
+              521.0
+            ],
+            [
+              297.2046511627907,
+              517.1302325581396
+            ],
+            [
+              311.71627906976744,
+              512.293023255814
+            ],
+            [
+              329.13023255813954,
+              506.48837209302326
+            ],
+            [
+              344.6093023255814,
+              505.52093023255816
+            ],
+            [
+              362.0232558139534,
+              499.71627906976744
+            ],
+            [
+              378.4697674418605,
+              493.9116279069767
+            ],
+            [
+              390.07906976744187,
+              501.6511627906977
+            ],
+            [
+              399.75348837209305,
+              507.45581395348836
+            ],
+            [
+              407.4930232558139,
+              526.8046511627907
+            ],
+            [
+              421.03720930232555,
+              524.8697674418604
+            ],
+            [
+              438.4511627906977,
+              523.9023255813953
+            ],
+            [
+              451.02790697674413,
+              528.7395348837209
+            ],
+            [
+              474.246511627907,
+              528.7395348837209
+            ],
+            [
+              1024,
+              528.7395348837209
+            ]
+          ],
+          "cut_method": "Geometric alpha clearing above original-head outline; no color-key; retain one-pixel underlap.",
+          "original_canvas": [
+            1024,
+            1536
+          ],
+          "final_canvas": [
+            1152,
+            1664
+          ],
+          "transparent_padding_each_side": 64,
+          "padding_integer_offset": [
+            64,
+            64
+          ],
+          "source_paste_xy_before_padding": [
+            -83,
+            105
+          ],
+          "source_paste_xy_after_padding": [
+            -19,
+            169
+          ],
+          "padding_preserves_source_rgba": true,
+          "per_pose_neck_cut_files": [
+            "cut_y_by_x_00_base.json",
+            "cut_y_by_x_01_A.json",
+            "cut_y_by_x_02_B.json",
+            "cut_y_by_x_03_C.json"
+          ],
+          "raised_arm_preservation": "For A and B, screen-right head cut follows fixed hair alpha outline x476..606; no clearing at x>=607, preserving raised arm and bachi."
+        }
+      },
+      "source_edition": "v4",
+      "fixed_head_path": "heads/taiko.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。"
+  },
+  {
+    "instrument": "steelpan",
+    "source_group": "core",
+    "name_ja": "スティールパン",
+    "attribute": "打撃",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\steelpan-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\steelpan",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_スティールパン.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\18_スティールパン\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\steelpan.png",
+    "head_sha256": "3b209acc559afc690e8355bb25d9fbc774c54db50a5b061db9e6f31b024ff4f5",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_両マレット低位置",
+        "source_label_ja": "両マレット低位置/近接",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\18_スティールパン\\00_base\\body.png",
+        "source_sha256": "88803f22f22f7e0f5652d87eeee845ba1edd8f852d7ef2777c9779b02b85d352",
+        "rgba_sha256": "7fb294e73877e2d8e57fc194e88e221e5a321d91ba3fb99b6ad976896e1d95f9",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A",
+        "label_ja": "右手_画面左上げ・左手低打点候補",
+        "source_label_ja": "人物右(画面左)上げ・人物左(画面右)低打点/接触候補",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_右手_画面左上げ・左手低打点候補",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_右手_画面左上げ・左手低打点候補",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\18_スティールパン\\01_A\\body.png",
+        "source_sha256": "c148fd6af3e8ed30db00b0cda76dc57a4da9564ee598d4e8de805fd14e90438a",
+        "rgba_sha256": "f9048e9511efa1fbf0d41f3de9d5971afcdc1d36e95b21ba25b5ebf41ee4a54e",
+        "preview_file": "プレビュー/01_A.png"
+      },
+      {
+        "pose_id": "02_B",
+        "label_ja": "左手_画面右上げ・右手近接",
+        "source_label_ja": "人物左(画面右)上げ・人物右(画面左)近接",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_左手_画面右上げ・右手近接",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_左手_画面右上げ・右手近接",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\18_スティールパン\\02_B\\body.png",
+        "source_sha256": "194d3ac821cb46f0a0a883d2638f061756607b6a1a0c2d7d271ff5c7f1e85575",
+        "rgba_sha256": "7f845fc8fead0626b630e115e79a5508ce7919e49e2182aa5a1422ed3e78c704",
+        "preview_file": "プレビュー/02_B.png"
+      },
+      {
+        "pose_id": "03_C",
+        "label_ja": "両マレット上げ_待機",
+        "source_label_ja": "両マレットを上げた待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_両マレット上げ_待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_両マレット上げ_待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\18_スティールパン\\03_C\\body.png",
+        "source_sha256": "27933f1eeeec1b743ab49e8dbbd66753aca580d3288ab9a816d6f6a141d86b70",
+        "rgba_sha256": "9170950afe1968df49e55d3b58fc4661d10083f9259a64ea7c9c7410450a6b78",
+        "preview_file": "プレビュー/03_C.png"
+      }
+    ],
+    "guide": {
+      "instrument": "steelpan",
+      "name_ja": "スティールパン",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A",
+        "02_B",
+        "03_C"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "凹面金属ボウルと音区・2本のマレットを保持。基本とBの低い先端は近接、Aの低い先端は打点候補、Cは両方を上げた待機。厳密な物理接触は保証しない。",
+      "limits_ja": [
+        "金属反射・音区・台・足・衣装に生成による小さな揺れが残る。静止部はピクセル固定ではない。",
+        "Aの上げた肩は全姿勢共通の首下境界を最小修正して保持。頭の変換/位置/元RGBAは固定で、首襟への生成パッチは不使用。",
+        "髪の間の自然な開口と画面右の襟折り返し線が残る。実αを確認し、背景のRGBだけで欠損と判定しない。",
+        "改稿Aの台脚は局所輪郭IoU約95.6–95.9%で小揺れが残る。立奏上余白は9px。"
+      ],
+      "integrated_use_ja": "人物・衣装・手・マレット・凹面・台を一体で使う。頭だけ付属の固定PNGを重ねる。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "実表示倍率の白黒背景でマレット先端と音区の近接、手の握り、A肩境界と首襟を確認。",
+        "短い切替で金属反射・音区・スタンド・足の揺れを確認し、必要な中間コマを決める。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "steelpan_head_fixed.png",
+        "sha256": "3b209acc559afc690e8355bb25d9fbc774c54db50a5b061db9e6f31b024ff4f5",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source": "head_boundary_review/delivery_193px_strictRGB/heads/common_1x_for_keyboard_bass.png",
+          "source_original": "shared/head_common_1024x1536.png",
+          "source_cleaning": "193 shoulder-line pixels made transparent; face/hair RGB preserved before scaling",
+          "resize": [
+            860,
+            1290
+          ],
+          "uniform_scale": 0.83984375,
+          "paste_xy": [
+            102,
+            0
+          ],
+          "resampling": "Lanczos",
+          "per_pose_change": false,
+          "spatial_neck_cut_points": [
+            [
+              0,
+              455
+            ],
+            [
+              390,
+              455
+            ],
+            [
+              402,
+              443
+            ],
+            [
+              419,
+              447
+            ],
+            [
+              439,
+              449
+            ],
+            [
+              448,
+              441
+            ],
+            [
+              458,
+              436
+            ],
+            [
+              480,
+              430
+            ],
+            [
+              495,
+              426
+            ],
+            [
+              510,
+              421
+            ],
+            [
+              528,
+              415
+            ],
+            [
+              544,
+              414
+            ],
+            [
+              562,
+              408
+            ],
+            [
+              579,
+              402
+            ],
+            [
+              591,
+              410
+            ],
+            [
+              601,
+              416
+            ],
+            [
+              609,
+              436
+            ],
+            [
+              623,
+              434
+            ],
+            [
+              641,
+              433
+            ],
+            [
+              654,
+              438
+            ],
+            [
+              678,
+              438
+            ],
+            [
+              1024,
+              438
+            ]
+          ],
+          "central_neck_refinement": "For x390..678 use bottommost fixed-head alpha>=127; for x580..612 use first gap below y395 to preserve collar behind separated hair strands. Retain one pixel underlap. No face/hair edits.",
+          "cut_method": "Make generated pixels above geometric contour fully transparent; no color-key. Composite unchanged transformed fixed common head.",
+          "shoulder_boundary_revision": {
+            "reason": "Preserve lifted screen-left shoulder clipped by original shared y455 boundary; all four poses use identical revision",
+            "x_range": [
+              360,
+              389
+            ],
+            "new_upper_limit": "min(original, piecewise linear [(360,455),(375,445),(390,445)])",
+            "unchanged": "Fixed head scale, position and RGBA; raw art; all retained body RGBA",
+            "original_cut_file": "exact_cut_y_by_x_v1_original.json"
+          }
+        }
+      },
+      "source_edition": "v5",
+      "fixed_head_path": "heads/steelpan.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "提供された演奏方法に基づく素材整理用属性。"
+  },
+  {
+    "instrument": "handbells",
+    "source_group": "core",
+    "name_ja": "ハンドベル",
+    "attribute": "振奏",
+    "config": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\handbells-config.json",
+    "staging": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\handbells",
+    "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_振奏_ハンドベル.psd",
+    "record_directory": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\19_ハンドベル\\PSD変換記録",
+    "canvas_wh": [
+      1024,
+      1536
+    ],
+    "pose_count": 4,
+    "head_source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\bongo_handbells.png",
+    "head_sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+    "poses": [
+      {
+        "pose_id": "00_base",
+        "label_ja": "基本_画面右高・左低",
+        "source_label_ja": "人物左手(画面右)高い・人物右手(画面左)低い",
+        "key": "pose_00",
+        "layer_name": "*基本",
+        "layer_path": "キャラクター/演奏姿勢/*基本",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\19_ハンドベル\\00_base\\body.png",
+        "source_sha256": "96e06c9a25fd1b90e33d2130143de5204cb8eeee65a1965e0fd0bdc31477ca69",
+        "rgba_sha256": "138d32f2bf3e3f34f7ee181ae8eb86154d3305ef633d8c7a7263b285a5829e80",
+        "preview_file": "プレビュー/00_base.png"
+      },
+      {
+        "pose_id": "01_A",
+        "label_ja": "画面左高・右低",
+        "source_label_ja": "人物右手(画面左)高い・人物左手(画面右)低い",
+        "key": "pose_01",
+        "layer_name": "*演奏01_01_A_画面左高・右低",
+        "layer_path": "キャラクター/演奏姿勢/*演奏01_01_A_画面左高・右低",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\19_ハンドベル\\01_A\\body.png",
+        "source_sha256": "fca8105c046b992dc9d69aa0de2c8a0887fcc431139b79b233427de251fc2d0a",
+        "rgba_sha256": "3162f81576b650b90207d56194f68eb8c4aae0cb5292138a8b88aec5f7458f97",
+        "preview_file": "プレビュー/01_A.png"
+      },
+      {
+        "pose_id": "02_B",
+        "label_ja": "両手首_外向き傾斜",
+        "source_label_ja": "両手首を外向きに傾ける",
+        "key": "pose_02",
+        "layer_name": "*演奏02_02_B_両手首_外向き傾斜",
+        "layer_path": "キャラクター/演奏姿勢/*演奏02_02_B_両手首_外向き傾斜",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\19_ハンドベル\\02_B\\body.png",
+        "source_sha256": "e0a626a277f97a1c050404d96d2c35e29afbf01e892dbb5c9595c1be1596dfe7",
+        "rgba_sha256": "a540f6499e03e38fa6b47a04a4f085880d4cc845d4317f54652341752563c329",
+        "preview_file": "プレビュー/02_B.png"
+      },
+      {
+        "pose_id": "03_C",
+        "label_ja": "両腕下げ_待機",
+        "source_label_ja": "両腕を下げて待機",
+        "key": "pose_03",
+        "layer_name": "*演奏03_03_C_両腕下げ_待機",
+        "layer_path": "キャラクター/演奏姿勢/*演奏03_03_C_両腕下げ_待機",
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\19_ハンドベル\\03_C\\body.png",
+        "source_sha256": "89a5fdd2cb06216b55883025e0b8433d572ab621e9ed663fcc61933ddd15dc52",
+        "rgba_sha256": "36972233d10142162e363c151b8001bc659342f0d1d5c3414c0548b2df65b8ce",
+        "preview_file": "プレビュー/03_C.png"
+      }
+    ],
+    "guide": {
+      "instrument": "handbells",
+      "name_ja": "ハンドベル",
+      "classification": "performance_material_candidate",
+      "candidate_pose_count": 4,
+      "canvas_wh": [
+        1024,
+        1536
+      ],
+      "display_order": [
+        "00_base",
+        "01_A",
+        "02_B",
+        "03_C"
+      ],
+      "display_order_is_not_animation_timing": true,
+      "status_ja": "両手が暗色の柄を握り、2つの鐘形カップと簡略な舌が見える。基本/Aで左右の高低を入れ替え、Bは外向き傾斜、Cは両腕を下げた待機。手・ベルと固定頭の干渉は見られない。",
+      "limits_ja": [
+        "Cは手の甲側の握りで指線が簡略化され、隠れる指の厳密な構造は未保証。",
+        "脚/足/衣装に小さな生成揺れがある。手首の動きとベルの舌は説明的な描写で、発音タイミングを保証しない。",
+        "本体のα最大値254・低αの縁は原画のまま残す。画面右の首元に襟折り返し線がある。",
+        "右襟奥のA27px/B59px等の透過は原稿にもあり、自然な隙間か襟奥の描写か判断保留。切出しで新設した穴ではない。上余白9px。"
+      ],
+      "integrated_use_ja": "人物・衣装・手・2つのベルを一体で使う。手とベルを分離する場合は柄の握りと隠れた衣装/指の補描が必要。",
+      "separation_outlook_ja": "頭以外は未分離。手・腕・楽器・椅子や台の独立化には隠面補描と接触/重なりQAが必要。",
+      "remaining_work_ja": [
+        "白黒背景と実寸で柄の握り、Cの簡略な指、ベルの舌と首襟を確認。",
+        "実際の切替速度で足と衣装の微小な揺れ、左右の高低差を確認する。",
+        "拡大用途では右襟奥の判断保留透過を確認する。"
+      ],
+      "head_policy": "use_this_instrument_supplied_corrected_and_transformed_head_at_0_0",
+      "head_setting": {
+        "file_name": "handbells_head_fixed.png",
+        "sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+        "source_was_corrected_193_pixel_alpha_variant": true,
+        "already_transformed": true,
+        "place_xy": [
+          0,
+          0
+        ],
+        "apply_this_transform_again": false,
+        "production_transform": {
+          "source": "head_boundary_review/delivery_193px_strictRGB/heads/common_1x_for_keyboard_bass.png",
+          "source_original": "shared/head_common_1024x1536.png",
+          "source_cleaning": "193 shoulder-line pixels made transparent; face/hair RGB preserved before scaling",
+          "resize": [
+            860,
+            1290
+          ],
+          "uniform_scale": 0.83984375,
+          "paste_xy": [
+            102,
+            0
+          ],
+          "resampling": "Lanczos",
+          "per_pose_change": false,
+          "spatial_neck_cut_points": [
+            [
+              0,
+              455
+            ],
+            [
+              390,
+              455
+            ],
+            [
+              402,
+              443
+            ],
+            [
+              419,
+              447
+            ],
+            [
+              439,
+              449
+            ],
+            [
+              448,
+              441
+            ],
+            [
+              458,
+              436
+            ],
+            [
+              480,
+              430
+            ],
+            [
+              495,
+              426
+            ],
+            [
+              510,
+              421
+            ],
+            [
+              528,
+              415
+            ],
+            [
+              544,
+              414
+            ],
+            [
+              562,
+              408
+            ],
+            [
+              579,
+              402
+            ],
+            [
+              591,
+              410
+            ],
+            [
+              601,
+              416
+            ],
+            [
+              609,
+              436
+            ],
+            [
+              623,
+              434
+            ],
+            [
+              641,
+              433
+            ],
+            [
+              654,
+              438
+            ],
+            [
+              678,
+              438
+            ],
+            [
+              1024,
+              438
+            ]
+          ],
+          "central_neck_refinement": "For x390..678 use bottommost fixed-head alpha>=127; for x580..612 use first gap below y395 to preserve collar behind separated hair strands. Retain one pixel underlap. No face/hair edits.",
+          "cut_method": "Make generated pixels above geometric contour fully transparent; no color-key. Composite unchanged transformed fixed common head."
+        }
+      },
+      "source_edition": "v5",
+      "fixed_head_path": "heads/bongo_handbells.png",
+      "fixed_head_archive": "Kiritan_Lightweight_Core_Part01of19_20261009.zip"
+    },
+    "head_policy": "supplied fixed head unchanged; vocal expression-layer migration pending",
+    "instrument_metadata_is_not_separate_raster": true,
+    "chair_and_equipment_integrated": false,
+    "attribute_reason_ja": "腕・手首を振る姿勢のため振奏。製品の必須分類を確定するものではない。",
+    "png_encoding_compatibility_copies": [
+      {
+        "source": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\00_共通頭\\bongo_handbells.png",
+        "source_sha256": "7f37d86091408923530504a6ae10916d2aa089fda8f8d81719d7e410afbd6236",
+        "copy": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch3\\compatible-inputs\\e77145ca601539598708.png",
+        "copy_sha256": "7b30bffa094efd207864c9306732c6fff114c1f90750b113d78d1934fba7484a",
+        "rgba_sha256": "6b3048fcec9db1602ab41284ca396945fcf14bbe1770b4dcde63ffbc6055acc7",
+        "canvas_wh": [
+          1024,
+          1536
+        ],
+        "rgba_exact": true,
+        "reason": "Delphi PNG reader compatibility; original CRC and zlib scan passed. PNG encoding only, no pixel changes."
+      }
+    ]
+  }
+]

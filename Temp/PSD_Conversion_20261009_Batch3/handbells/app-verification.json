@@ -1,0 +1,31 @@
+{
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "passed": true,
+  "file_sha256": "56c7052904004cfe38d468638bf32685b1be1332cfb8427b5ab63e43efc4558b",
+  "default_restored": true,
+  "saved_and_reloaded": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_振奏_ハンドベル.psd",
+  "pid": 11468,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "checks": [
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{55B01D3D-3738-41F6-8EBC-DC11083A2D6B}",
+      "name": "*演奏01_01_A_画面左高・右低"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{490267B5-239A-4DF9-82CC-32F8F4847848}",
+      "name": "*演奏02_02_B_両手首_外向き傾斜"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{3913AA3C-CB76-4D84-9810-ECF61942B1D2}",
+      "name": "*演奏03_03_C_両腕下げ_待機"
+    }
+  ],
+  "selected_pose_count": 4
+}

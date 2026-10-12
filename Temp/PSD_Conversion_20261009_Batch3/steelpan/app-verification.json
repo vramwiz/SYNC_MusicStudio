@@ -1,0 +1,31 @@
+{
+  "all_pixels_bounds_hierarchy_preserved": true,
+  "passed": true,
+  "file_sha256": "2a140aa2c71e8a2d6adcd3af2f007b135999270362266002e79aa9b03fadee83",
+  "default_restored": true,
+  "saved_and_reloaded": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_スティールパン.psd",
+  "pid": 3816,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "checks": [
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{C84F85C1-ECA2-4277-80CF-3011ED18383B}",
+      "name": "*演奏01_01_A_右手_画面左上げ・左手低打点候補"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{033E5E76-7E72-44A1-9E66-BB50B7326812}",
+      "name": "*演奏02_02_B_左手_画面右上げ・右手近接"
+    },
+    {
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{EB6FFB68-585F-40C2-9494-0B1CDBB1815D}",
+      "name": "*演奏03_03_C_両マレット上げ_待機"
+    }
+  ],
+  "selected_pose_count": 4
+}

@@ -11,18 +11,7 @@
     <AppType>Library</AppType>
     <MainSource>SYNC_MusicStudio_Filter.dpr</MainSource>
     <Base>True</Base>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenDll>true</GenDll>
-    <DCC_DcuOutput>.\$(Platform)\$(Config)\DCU</DCC_DcuOutput>
-    <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
-    <DCC_E>false</DCC_E>
-    <DCC_N>false</DCC_N>
-    <DCC_S>false</DCC_S>
-    <DCC_F>false</DCC_F>
-    <DCC_K>false</DCC_K>
-    <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Winapi;Vcl;$(DCC_Namespace)</DCC_Namespace>
-    <SanitizedProjectName>SYNC_MusicStudio_Filter</SanitizedProjectName>
+    <ProjectDir>$(MSBuildProjectDirectory)</ProjectDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
     <Base>true</Base>
@@ -50,52 +39,106 @@
     <Base>true</Base>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
+    <DCC_DcuOutput>.\$(Platform)\$(Config)\DCU</DCC_DcuOutput>
     <GenDll>true</GenDll>
-    <DCC_Define>$(DCC_Define)</DCC_Define>
+    <DCC_ExeOutput>.\$(Platform)\$(Config)</DCC_ExeOutput>
+    <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Winapi;Vcl;$(DCC_Namespace)</DCC_Namespace>
     <SanitizedProjectName>SYNC_MusicStudio_Filter</SanitizedProjectName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <BT_BuildType>Debug</BT_BuildType>
-    <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-    <DCC_DebugDCUs>true</DCC_DebugDCUs>
-    <DCC_Optimize>false</DCC_Optimize>
-    <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-    <DCC_RemoteDebug>true</DCC_RemoteDebug>
-    <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-    <DCC_RangeChecking>true</DCC_RangeChecking>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-    <Manifest_File>(なし)</Manifest_File>
-    <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
-    <DCC_ExeOutput>C:\ProgramData\aviutl2\Plugin\SYNC_MusicStudio</DCC_ExeOutput>
-    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PreBuildEvent>
+    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config Debug -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)"</PreBuildEvent>
     <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
-    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Complete -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PostBuildEvent>
+    <PreLinkEvent></PreLinkEvent>
+    <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Complete -Config Debug -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)" -DeployDirectory "C:\ProgramData\aviutl2\Plugin\SYNC_MusicStudio"</PostBuildEvent>
     <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
-    <Debugger_HostApplication>D:\aviutl2_v2.1.3a\aviutl2.exe</Debugger_HostApplication>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Cfg_2)'!=''">
-    <BT_BuildType>Release</BT_BuildType>
-    <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-    <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-    <DCC_DebugInformation>0</DCC_DebugInformation>
+    <PostBuildEventExecuteWhen>Always</PostBuildEventExecuteWhen>
+    <DCC_DcuOutput>.\Win64\Debug\DCU</DCC_DcuOutput>
+    <DCC_ExeOutput>.\Win64\Debug</DCC_ExeOutput>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config Release -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)"</PreBuildEvent>
+    <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+    <PreLinkEvent></PreLinkEvent>
+    <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Complete -Config Release -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)" -DeployDirectory "C:\ProgramData\aviutl2\Plugin\SYNC_MusicStudio"</PostBuildEvent>
+    <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    <PostBuildEventExecuteWhen>Always</PostBuildEventExecuteWhen>
+    <Debugger_HostApplication>D:\aviutl2_v2.1.3a\aviutl2.exe</Debugger_HostApplication>
+    <DCC_DcuOutput>.\Win64\Release\DCU</DCC_DcuOutput>
+    <VerInfo_Locale>1041</VerInfo_Locale>
     <Manifest_File>(なし)</Manifest_File>
     <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
-    <DCC_ExeOutput>C:\ProgramData\aviutl2\Plugin\SYNC_MusicStudio</DCC_ExeOutput>
-    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PreBuildEvent>
-    <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
-    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Complete -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PostBuildEvent>
-    <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
-    <Debugger_HostApplication>D:\aviutl2_v2.1.3a\aviutl2.exe</Debugger_HostApplication>
+    <DCC_ExeOutput>.\Win64\Release</DCC_ExeOutput>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cfg_1)'!=''">
+    <DCC_DebugDCUs>true</DCC_DebugDCUs>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+    <DCC_DebugInformation>1</DCC_DebugInformation>
+    <DCC_RemoteDebug>true</DCC_RemoteDebug>
+    <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+    <DCC_RangeChecking>true</DCC_RangeChecking>
+    <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
+    <BT_BuildType>Debug</BT_BuildType>
+    <DCC_Optimize>false</DCC_Optimize>
+    <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cfg_2)'!=''">
+    <DCC_Optimize>true</DCC_Optimize>
+    <BT_BuildType>Debug</BT_BuildType>
+    <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+    <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+    <DCC_DebugInformation>0</DCC_DebugInformation>
+    <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <DelphiCompile Include="$(MainSource)">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>
+    <DCCReference Include="Source\Lib\AviUtl2FilterTypes.pas" />
+    <DCCReference Include="Source\Lib\FilterTable\PluginFilterTable.pas" />
+    <DCCReference Include="Source\Lib\SYNC_MusicStudio_DarkTheme.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_ProjectData.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_ArrangementData.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_PatternData.pas" />
+    <DCCReference Include="Source\Common\Audio\SYNC_MusicStudio_AudioWaveform.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_WaveCache.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_BitmapCache.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_VisualCache.pas" />
+    <DCCReference Include="Source\Common\Audio\SYNC_MusicStudio_PreviewPlayback.pas" />
+    <DCCReference Include="Source\Common\Render\SYNC_MusicStudio_PsdPreview.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_PreviewFrame.pas">
+      <Form>MusicStudioPreviewFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_Controls.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_AudioClipFrame.pas">
+      <Form>MusicStudioAudioClipFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Common\Singing\SYNC_MusicStudio_Vowels.pas" />
+    <DCCReference Include="Source\Common\Singing\SYNC_MusicStudio_SingingData.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SingingFrame.pas">
+      <Form>MusicStudioSingingFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SlotFrame.pas">
+      <Form>MusicStudioSlotFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PsdTrackFrame.pas">
+      <Form>MusicStudioPsdTrackFrame</Form>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_ArrangementView.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PatternSettingsForm.pas">
+      <Form>MusicStudioPatternSettings</Form>
+    </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_SettingsForm.pas">
+      <Form>FormMusicStudioSettings</Form>
+    </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_FilterPlugin.pas" />
     <BuildConfiguration Include="Base">
       <Key>Base</Key>
     </BuildConfiguration>
@@ -107,14 +150,28 @@
       <Key>Cfg_2</Key>
       <CfgParent>Base</CfgParent>
     </BuildConfiguration>
-    <DCCReference Include="Source\Lib\AviUtl2FilterTypes.pas" />
-    <DCCReference Include="Source\Lib\FilterTable\PluginFilterTable.pas" />
-    <DCCReference Include="Source\Lib\SYNC_MusicStudio_DarkTheme.pas" />
-    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_ProjectData.pas" />
-    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_SettingsForm.pas">
-      <Form>FormMusicStudioSettings</Form>
-    </DCCReference>
-    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_FilterPlugin.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_SharedPsdLibrary.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_LibraryData.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_BeatData.pas" />
+    <DCCReference Include="Source\Common\Motion\SYNC_MusicStudio_MotionData.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PsdLayersFrame.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SharedLibraryEditor.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_MotionFrame.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PerformanceFrame.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtDocument.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtLayerName.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtPsd.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtPsdOrigin.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayers.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerConfig.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerFrameUI.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerJobs.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdSceneCache.pas" />
+    <DCCReference Include="Source\Common\Render\SYNC_MusicStudio_FramebufferCapture.pas"/>
+    <DCCReference Include="Source\Common\Render\SYNC_MusicStudio_HostBackground.pas" />
+    <DCCReference Include="Source\Common\Render\SYNC_MusicStudio_VideoRenderer.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_PerformanceCache.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_TimingFrame.pas" />
   </ItemGroup>
   <ProjectExtensions>
     <Borland.Personality>Delphi.Personality.12</Borland.Personality>
@@ -124,6 +181,10 @@
         <Source>
           <Source Name="MainSource">SYNC_MusicStudio_Filter.dpr</Source>
         </Source>
+        <Excluded_Packages>
+          <Excluded_Packages Name="$(BDSBIN)\dcloffice2k370.bpl">Microsoft Office 2000 オートメーション サーバー ラッパー コンポーネントのサンプル</Excluded_Packages>
+          <Excluded_Packages Name="$(BDSBIN)\dclofficexp370.bpl">Microsoft Office XP オートメーション サーバー ラッパー コンポーネントのサンプル</Excluded_Packages>
+        </Excluded_Packages>
       </Delphi.Personality>
       <Platforms>
         <Platform value="Win32">False</Platform>
@@ -136,19 +197,21 @@
   <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')" />
   <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')" />
   <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win64'">
-    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PreBuildEvent>
+    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config Debug -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)"</PreBuildEvent>
     <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
-    <PreLinkEvent />
+    <PreLinkEvent></PreLinkEvent>
     <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Complete -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PostBuildEvent>
+    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Complete -Config Debug -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)" -DeployDirectory "C:\ProgramData\aviutl2\Plugin\SYNC_MusicStudio"</PostBuildEvent>
     <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    <PostBuildEventExecuteWhen>Always</PostBuildEventExecuteWhen>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win64'">
-    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PreBuildEvent>
+    <PreBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Prepare -Config Release -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)"</PreBuildEvent>
     <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
-    <PreLinkEvent />
+    <PreLinkEvent></PreLinkEvent>
     <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(MSBuildProjectDirectory)\Scripts\BuildPlugin.ps1" -Stage Complete -Config "$(Config)" -ProjectName "$(PROJECTNAME)"</PostBuildEvent>
+    <PostBuildEvent>powershell -NoProfile -ExecutionPolicy Bypass -File "$(PROJECTDIR)\Scripts\BuildPlugin.ps1" -Stage Complete -Config Release -ProjectName "SYNC_MusicStudio_Filter" -LibraryPath "$(OUTPUTPATH)" -DeployDirectory "C:\ProgramData\aviutl2\Plugin\SYNC_MusicStudio"</PostBuildEvent>
     <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    <PostBuildEventExecuteWhen>Always</PostBuildEventExecuteWhen>
   </PropertyGroup>
 </Project>

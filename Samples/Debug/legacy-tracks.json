@@ -1,0 +1,66 @@
+﻿{
+  "schemaVersion": 1,
+  "previewAudio": null,
+  "materials": [],
+  "characters": [],
+  "patterns": [
+    {
+      "id": "debug-audio",
+      "kind": "audio",
+      "name": "参照切れWAV（仮想）",
+      "color": "#6FBFAD",
+      "audio": {
+        "filePath": "__SYNC_DEBUG_MISSING__\\audio.wav",
+        "volume": 0.75,
+        "durationSeconds": 12
+      }
+    },
+    {
+      "id": "debug-singing",
+      "kind": "singing",
+      "name": "参照切れ歌詞MIDI（仮想）",
+      "color": "#C78AE8",
+      "singing": {
+        "filePath": "__SYNC_DEBUG_MISSING__\\vocal.mid",
+        "trackIndex": 0,
+        "durationSeconds": 8
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "legacy-audio-track",
+      "kind": "audio",
+      "name": "旧音声トラック",
+      "color": "#6FBFAD",
+      "keep": "track extension",
+      "clips": [
+        {
+          "id": "legacy-clip-a",
+          "patternId": "debug-audio",
+          "startSeconds": 1,
+          "lengthSeconds": 12,
+          "keep": "clip extension"
+        }
+      ]
+    },
+    {
+      "id": "legacy-psd-track",
+      "kind": "psd",
+      "name": "旧PSDトラック",
+      "color": "#C78AE8",
+      "psd": {
+        "filePath": "__SYNC_DEBUG_MISSING__\\person.psd"
+      },
+      "clips": [
+        {
+          "id": "legacy-clip-s",
+          "patternId": "debug-singing",
+          "startSeconds": 3,
+          "lengthSeconds": 8
+        }
+      ]
+    }
+  ],
+  "debugOnly": true
+}

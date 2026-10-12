@@ -1,0 +1,25 @@
+{
+  "checks": [
+    {
+      "name": "*演奏01_01_A_lower_下げ弓",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{4C1154C3-C3D5-4BD9-A8A1-0369A628580F}"
+    },
+    {
+      "name": "*演奏02_03_C_rest_待機_弦から離す",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{AFB226F7-139C-4B9C-ABBD-BD166252CFE0}"
+    }
+  ],
+  "passed": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\07_バイオリン\\東北きりたん_バイオリン.psd",
+  "default_restored": true,
+  "file_sha256": "77d4bd5512a1e3c6c0f534b7983f8af57b51682d44667e24517db856e4b728e0",
+  "pid": 23744,
+  "selected_pose_count": 3,
+  "saved_and_reloaded": true,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "all_pixels_bounds_hierarchy_preserved": true
+}

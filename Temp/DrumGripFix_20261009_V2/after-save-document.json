@@ -1,0 +1,249 @@
+{
+  "documentId": "{959A6466-C74B-452B-868A-67FC8D630AC4}",
+  "revision": "0",
+  "fileName": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PSD\\東北きりたん_打撃_ドラム_基本握り修正_02.psd",
+  "selectedLayerId": "{A071C1E0-A218-4CCA-AA5A-761C028F55AA}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1536,
+  "height": 1024,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{A9C9D78D-3E98-4EBF-BF6A-FA8B7B0C953E}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{2904961B-FE67-430E-A90E-47A869476EB8}",
+      "parentId": "{A9C9D78D-3E98-4EBF-BF6A-FA8B7B0C953E}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{98B24BC1-BC02-4D98-BBFF-6CF77FBF6D83}",
+      "parentId": "{2904961B-FE67-430E-A90E-47A869476EB8}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "6c7e961386a4b0f7c99b01ac14c7e893dc522fd115e3525e1e62c35126e0a35a"
+    },
+    {
+      "layerId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "parentId": "{A9C9D78D-3E98-4EBF-BF6A-FA8B7B0C953E}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{A071C1E0-A218-4CCA-AA5A-761C028F55AA}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "2532ef8a41cac50af4ab09840068e825ad2a0670c50fdbdc0969cdbe06e284a0"
+    },
+    {
+      "layerId": "{E555649C-6229-4094-919C-563585896326}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*演奏01_A_タム前の低い構えとスネア",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "1e8bf807b1a70fe03d074526399d2b968d051248117f7575be214306107a3770"
+    },
+    {
+      "layerId": "{10F0C0C9-680D-4858-B731-2838874D6177}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*演奏02_B_両タム",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "b6c0525c6af8e4b11be2ab6be2a0c140c086ec330b465eefa03228d0ab04e06d"
+    },
+    {
+      "layerId": "{91088695-A565-4386-9F18-108BB1980C35}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*演奏03_C_左クラッシュとスネア",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "1f0bf7094101fa01a3257fee48ca0fbb85b2cc52dad23de093cc001e383ba539"
+    },
+    {
+      "layerId": "{817ACE65-7D20-4B44-8E68-CE046DF8E289}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*演奏04_D_右ハイハット_接触未成立",
+      "index": 4,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "168ee5bf1f811ba413372eb4a2cfaf8ae749fc9983b8ca6d229eb5c54cfe0f22"
+    },
+    {
+      "layerId": "{36C081A9-32F4-46F0-BA68-01A3129BD858}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*演奏05_C2_左クラッシュ予備動作",
+      "index": 5,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "24cc3501a03ebff2df60926b83379d804d109a1358be22e0eacafce2f1c341c8"
+    },
+    {
+      "layerId": "{260A7233-0B45-446C-937C-B8077CB891AE}",
+      "parentId": "{D2D3F7CA-BD2C-4A27-8C7B-A57FE84C3015}",
+      "name": "*演奏06_F_左手大振り_予備動作",
+      "index": 6,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "hasMask": false,
+      "pixelSha256": "6610d4f9eee655e0f354d9698aaf781c4c178b38f9aefef396bd1487eb90c683"
+    },
+    {
+      "layerId": "{D2522E8D-E751-4574-B94C-026A62E1F73C}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{692A1B55-7264-4B31-849F-0589B2128B8F}",
+      "parentId": "{D2522E8D-E751-4574-B94C-026A62E1F73C}",
+      "name": "打撃",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{16B1FEAD-5F95-466E-869B-167FFF43B4BE}",
+      "parentId": "{692A1B55-7264-4B31-849F-0589B2128B8F}",
+      "name": "ドラム",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 14,
+  "hasMore": false
+}

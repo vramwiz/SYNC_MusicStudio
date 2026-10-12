@@ -1,0 +1,192 @@
+﻿{
+  "schemaVersion": 1,
+  "arrangementVersion": 2,
+  "previewAudio": null,
+  "materials": [],
+  "characters": [],
+  "patterns": [
+    {
+      "id": "debug-audio",
+      "kind": "audio",
+      "name": "参照切れWAV（仮想）",
+      "color": "#6FBFAD",
+      "audio": {
+        "filePath": "__SYNC_DEBUG_MISSING__\\audio.wav",
+        "volume": 0.75,
+        "durationSeconds": 12
+      }
+    },
+    {
+      "id": "debug-singing",
+      "kind": "singing",
+      "name": "参照切れ歌詞MIDI（仮想）",
+      "color": "#C78AE8",
+      "singing": {
+        "filePath": "__SYNC_DEBUG_MISSING__\\vocal.mid",
+        "trackIndex": 0,
+        "durationSeconds": 8
+      }
+    },
+    {
+      "id": "debug-performance",
+      "kind": "performance",
+      "name": "予約: 演奏属性（編集・描画未実装）",
+      "color": "#DEBA73",
+      "performance": {
+        "debugOnly": true,
+        "instrument": "guitar"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "debug-audio-track",
+      "kind": "audio",
+      "name": "音声 / 2スロット",
+      "color": "#6FBFAD",
+      "slots": [
+        {
+          "id": "debug-audio-a",
+          "kind": "audio",
+          "name": "音声 A",
+          "color": "#6FBFAD",
+          "order": 0,
+          "accepts": [
+            "audio"
+          ],
+          "clips": [
+            {
+              "id": "debug-audio-clip-a",
+              "patternId": "debug-audio",
+              "slotId": "debug-audio-a",
+              "startSeconds": 0,
+              "lengthSeconds": 12
+            }
+          ]
+        },
+        {
+          "id": "debug-audio-b",
+          "kind": "audio",
+          "name": "音声 B",
+          "color": "#85C4D9",
+          "order": 1,
+          "accepts": [
+            "audio"
+          ],
+          "clips": [
+            {
+              "id": "debug-audio-clip-b",
+              "patternId": "debug-audio",
+              "slotId": "debug-audio-b",
+              "startSeconds": 8,
+              "lengthSeconds": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "debug-guitar-track",
+      "kind": "psd",
+      "name": "ギター奏者 + 歌唱（仮想）",
+      "color": "#DEBA73",
+      "role": "instrument",
+      "instrument": "guitar",
+      "psd": {
+        "filePath": "__SYNC_DEBUG_MISSING__\\guitar.psd"
+      },
+      "slots": [
+        {
+          "id": "debug-guitar-playing",
+          "kind": "performance",
+          "name": "演奏（予約）",
+          "color": "#DEBA73",
+          "order": 0,
+          "accepts": [
+            "performance"
+          ],
+          "clips": [
+            {
+              "id": "debug-playing-clip",
+              "patternId": "debug-performance",
+              "slotId": "debug-guitar-playing",
+              "startSeconds": 0,
+              "lengthSeconds": 20
+            }
+          ]
+        },
+        {
+          "id": "debug-guitar-mouth",
+          "kind": "singing",
+          "name": "口パク / 歌唱",
+          "color": "#C78AE8",
+          "order": 1,
+          "accepts": [
+            "singing"
+          ],
+          "clips": [
+            {
+              "id": "debug-mouth-clip",
+              "patternId": "debug-singing",
+              "slotId": "debug-guitar-mouth",
+              "startSeconds": 4,
+              "lengthSeconds": 8
+            }
+          ]
+        },
+        {
+          "id": "debug-guitar-emotion",
+          "kind": "emotion",
+          "name": "感情（予約）",
+          "color": "#DA8E9A",
+          "order": 2,
+          "accepts": [
+            "emotion"
+          ],
+          "clips": []
+        },
+        {
+          "id": "debug-guitar-rhythm",
+          "kind": "rhythm",
+          "name": "リズム（予約）",
+          "color": "#90ADDF",
+          "order": 3,
+          "accepts": [
+            "rhythm"
+          ],
+          "clips": []
+        }
+      ]
+    },
+    {
+      "id": "debug-generic-track",
+      "kind": "audio",
+      "name": "汎用受入の確認",
+      "color": "#A6BB87",
+      "slots": [
+        {
+          "id": "debug-generic",
+          "kind": "generic",
+          "name": "媒体と独立した汎用枠",
+          "color": "#A6BB87",
+          "order": 0,
+          "accepts": [
+            "audio",
+            "singing"
+          ],
+          "clips": [
+            {
+              "id": "debug-generic-song",
+              "patternId": "debug-singing",
+              "slotId": "debug-generic",
+              "startSeconds": 18,
+              "lengthSeconds": 8
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "debugOnly": true,
+  "debugNotice": "構造確認用の仮想プロジェクト。参照ファイルは存在しません。演奏・PSD・口パク描画・再生は未実装。"
+}

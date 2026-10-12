@@ -1,10 +1,13 @@
-# 配布ファイル
+﻿# 配布準備
 
-Release構成のFilterをビルドしてから`make_release_zip.bat`を実行する。
-`SYNC_Lyrics.zip`には`SYNC_Lyrics/`フォルダー以下のFilter、Skia、FFmpeg DLLと
-ライセンス文書と`Samples/`の歌詞同期データを収録する。生成ZIPはGitへ登録しない。
+旧SYNC_Lyrics用カタログと配布スクリプトは、現行Filterに不要と確認して削除した。
+演奏スタジオのインストーラー・公開用カタログは未作成。公開は行わない。
 
-`SYNC_Lyrics.catalog.json`はAviUtl2カタログ登録用の下書き。
-GitHub ReleaseへZIPを登録する際にタグ名と公開日を確定し、`version`配列へ
-参照先の形式に従って版、公開日、`SYNC_Lyrics_Filter.auf2`の`XXH3_128`を追加する。
-ハッシュはZIP内のFilterファイルに対して計算する。
+現行Release成果物はWin64/Release/SYNC_MusicStudio_Filter.auf2。
+同じフォルダーのDLLはDelphi/IDEの標準出力として保持するが、配布時はauf2だけを選ぶ。
+生成はプロジェクトのビルドイベントからScripts/BuildPlugin.ps1で行う。
+Skia/FFmpeg DLLは現行Filterに不要。ユーザーのWAV/MP3/MIDI/PSDを配布物へ含めない。
+正式な配布では`DEVELOPMENT.md`の配置規約に従い、検証後に別途配備を行う。
+
+ユーザー承認により、通常ビルドの後処理で既定のC:/ProgramData/aviutl2/Plugin/SYNC_MusicStudio/へauf2だけを配置する。
+DCUとDLLは作業プロジェクトのWin64構成フォルダーへ出力し、配備先へ混在させない。

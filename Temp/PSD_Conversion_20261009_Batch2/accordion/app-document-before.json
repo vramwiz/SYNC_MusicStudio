@@ -1,0 +1,215 @@
+{
+  "documentId": "{5C6E556B-4476-41A0-8A8D-B98281201F84}",
+  "revision": "0",
+  "fileName": "D:\\DelphiProg\\SYNC_MusicStudio\\Temp\\PSD_Conversion_20261009_Batch2\\accordion\\assembled.psd",
+  "selectedLayerId": "{9512B14F-74D0-4DE2-9356-DAF638F091BB}",
+  "canEdit": true,
+  "modified": false,
+  "width": 1024,
+  "height": 1536,
+  "layerOrder": "topmost-first-depth-first",
+  "offset": 0,
+  "limit": 24,
+  "layers": [
+    {
+      "layerId": "{9512B14F-74D0-4DE2-9356-DAF638F091BB}",
+      "parentId": "",
+      "name": "キャラクター",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{F92CBBE0-9B74-4775-9A95-15A06FAB6711}",
+      "parentId": "{9512B14F-74D0-4DE2-9356-DAF638F091BB}",
+      "name": "頭部",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{F63244ED-B859-4D5E-BF43-E4511D2F71CA}",
+      "parentId": "{F92CBBE0-9B74-4775-9A95-15A06FAB6711}",
+      "name": "固定頭（付属PNG）",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "49dfb54c5bb26795285995e1b775bc9fedf5676ef507d5e8dabe6826398c0a3b"
+    },
+    {
+      "layerId": "{DDAC24E0-B133-4F7C-A9E7-D0AE59B7E622}",
+      "parentId": "{9512B14F-74D0-4DE2-9356-DAF638F091BB}",
+      "name": "演奏姿勢",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{2998144C-1608-4C75-9DDB-516ED9F5ED55}",
+      "parentId": "{DDAC24E0-B133-4F7C-A9E7-D0AE59B7E622}",
+      "name": "*基本",
+      "index": 0,
+      "kind": "image",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "6bab29624ff4da976b38004e6e818e29ff28060c2c4e4a45adb94103e63716e0"
+    },
+    {
+      "layerId": "{A8EA2486-9E60-4701-A6C1-4F3409ED7187}",
+      "parentId": "{DDAC24E0-B133-4F7C-A9E7-D0AE59B7E622}",
+      "name": "*演奏01_01_A_closed_閉じ_中央鍵盤",
+      "index": 1,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "f04b15503fb1282f0682f3138322b6a67ef390106bceb2452e83382490dc7f7b"
+    },
+    {
+      "layerId": "{D9D8926A-68B1-4EE4-9ACE-F45661B87C44}",
+      "parentId": "{DDAC24E0-B133-4F7C-A9E7-D0AE59B7E622}",
+      "name": "*演奏02_03_C_wait_閉じ_休符候補",
+      "index": 2,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "52e364af5a15ab7864f12da589b2da216986c58e18bb3dc17fb53276f6d4d613"
+    },
+    {
+      "layerId": "{58F54497-0B38-47B9-9029-D8A8E4DE4602}",
+      "parentId": "{DDAC24E0-B133-4F7C-A9E7-D0AE59B7E622}",
+      "name": "*演奏03_04_D_half_lower_閉じ寄り_下寄り鍵盤",
+      "index": 3,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "6522adc995c9ffc8a770137e7b3e69912170d28b77a54ca46b7fbec266660af7"
+    },
+    {
+      "layerId": "{047E1A5D-CFA3-42A1-9AA4-A7094C93AE1C}",
+      "parentId": "{DDAC24E0-B133-4F7C-A9E7-D0AE59B7E622}",
+      "name": "*演奏04_05_E_open_upper_開き_上寄り鍵盤",
+      "index": 4,
+      "kind": "image",
+      "visible": false,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1536
+      },
+      "hasMask": false,
+      "pixelSha256": "642ca066dbc1312ea1579c00b65024786bad2f0251da9c35eeaf2dd5968fe4d0"
+    },
+    {
+      "layerId": "{F954B01F-2B43-4FB9-B3B9-AAC8B80C078D}",
+      "parentId": "",
+      "name": "楽器名",
+      "index": 1,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{F9BFCF1E-CA1A-4067-A32F-9112D0A0EE37}",
+      "parentId": "{F954B01F-2B43-4FB9-B3B9-AAC8B80C078D}",
+      "name": "鍵盤",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    },
+    {
+      "layerId": "{CE17999B-0715-4311-8B62-C31BC3D4CDCC}",
+      "parentId": "{F9BFCF1E-CA1A-4067-A32F-9112D0A0EE37}",
+      "name": "アコーディオン",
+      "index": 0,
+      "kind": "group",
+      "visible": true,
+      "opacity": 255,
+      "bounds": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "hasMask": false
+    }
+  ],
+  "layerCount": 12,
+  "hasMore": false
+}

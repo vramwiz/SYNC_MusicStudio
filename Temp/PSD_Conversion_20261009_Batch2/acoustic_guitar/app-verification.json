@@ -1,0 +1,37 @@
+{
+  "checks": [
+    {
+      "name": "*演奏01_01_A_down_ダウンストローク",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{7389CB30-15AF-4CCE-97AA-0FBE07B694DB}"
+    },
+    {
+      "name": "*演奏02_02_B_up_アップストローク",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{370D71E4-5F70-4C9D-B36E-3857A17BDF8A}"
+    },
+    {
+      "name": "*演奏03_03_C_wait_ミュート_待機",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{C228F5C9-4B20-4DEE-9524-C719C2331748}"
+    },
+    {
+      "name": "*演奏04_04_D_midfrets_中フレット",
+      "visible_pose_count": 1,
+      "all_layer_pixels_unchanged": true,
+      "jobId": "{81EE1E37-9D50-4BF6-B81D-684269B82C08}"
+    }
+  ],
+  "passed": true,
+  "destination": "C:\\Users\\zan12\\Documents\\SYNC_MusicStudio\\Characters\\PNG\\東北きりたん\\01_演奏素材\\08_アコースティックギター\\東北きりたん_アコースティックギター.psd",
+  "default_restored": true,
+  "file_sha256": "057f08ea326f8a36c9710974fe877dffdce7cab56959f09a780a0798e081884b",
+  "pid": 14692,
+  "selected_pose_count": 5,
+  "saved_and_reloaded": true,
+  "application": "D:\\DelphiProg\\AIArtToPSD\\Win64\\Release\\AIArtToPSD.exe",
+  "all_pixels_bounds_hierarchy_preserved": true
+}
