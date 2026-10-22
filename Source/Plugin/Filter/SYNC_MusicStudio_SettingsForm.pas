@@ -8,7 +8,7 @@ uses
   Vcl.Forms, Vcl.StdCtrls, Vcl.Menus, SYNC_MusicStudio_PatternData,
   SYNC_MusicStudio_ArrangementView, SYNC_MusicStudio_PreviewFrame, SYNC_MusicStudio_SharedPsdLibrary, SYNC_MusicStudio_LibraryData,
   SYNC_MusicStudio_PsdLayerFrameUI, SYNC_MusicStudio_LibraryThumbnails, SYNC_MusicStudio_EditHistory, SYNC_MusicStudio_PsdTransform,
-  SYNC_MusicStudio_TempoRulerEditor;
+  SYNC_MusicStudio_TempoRulerEditor, SYNC_MusicStudio_DrumFrame;
 
 type
   TMusicStudioApplyJSONEvent = function(const JSONText: string; out ErrorText: string): Boolean of object;
@@ -58,6 +58,8 @@ type
     procedure RefreshPatterns;
     procedure SyncMemo;
     procedure AddPerformanceClick(Sender: TObject);
+    procedure AddDrumClick(Sender: TObject);
+    procedure DrumPreview(Sender: TObject; Beat: Double; State: TDrumTransport; Emotion,Motion: Integer);
     procedure AddPattern(Singing: Boolean);
     procedure AddButtonClick(Sender: TObject);
     procedure EditButtonClick(Sender: TObject);
@@ -144,7 +146,7 @@ uses
   System.IOUtils, System.SysUtils, System.UITypes, Vcl.Graphics, Winapi.Windows,
   SYNC_MusicStudio_Controls, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_ProjectData,
   SYNC_MusicStudio_PatternSettingsForm, SYNC_MusicStudio_SharedLibraryEditor,
-  SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_TimingFrame, SYNC_MusicStudio_LayerStepData;
+  SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_TimingFrame, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_DrumData;
 
 {$R *.dfm}
 
@@ -482,6 +484,9 @@ begin
   for K in S.Accepts do if K='rhythm' then begin
     Item := TMenuItem.Create(AddMenu); Item.Caption := 'リズム同期（準備中）'; Item.Enabled := False; AddMenu.Items.Add(Item);
   end;
+  for K in FAvailableKinds do if K='performance' then begin
+    Item := TMenuItem.Create(AddMenu); Item.Caption := 'ドラムパターン'; Item.OnClick := AddDrumClick; AddMenu.Items.Add(Item);
+  end;
   AddButton.Enabled := FValid and (Length(FAvailableKinds)>0);
   if (Kind='emotion') or (Kind='animation') or (Kind='instrument') then
     if AssetID='' then StatusLabel.Caption := '先に歌唱PSDスロットへ共有PSDを割り当ててください。';
@@ -655,7 +660,7 @@ var
   Position: TPoint;
 begin
   if Length(FAvailableKinds)=0 then Exit;
-  if Length(FAvailableKinds)=1 then begin AddAvailablePattern(FAvailableKinds[0]); Exit; end;
+  if (Length(FAvailableKinds)=1) and (FAvailableKinds[0]<>'performance') then begin AddAvailablePattern(FAvailableKinds[0]); Exit; end;
   Position := AddButton.ClientToScreen(Point(0, AddButton.Height));
   AddMenu.Popup(Position.X, Position.Y);
 end;
@@ -685,6 +690,29 @@ begin
     Pattern.ConfigJSON := Steps.ConfigJSON; FDocument.UpdatePattern(Pattern);
   finally Steps.Free; end;
   if CommitMutation then begin SelectPatternIndex(Index); PatternListClick(nil); end;
+end;
+
+procedure TFormMusicStudioSettings.AddDrumClick(Sender: TObject);
+var Index: Integer; Pattern: TMusicStudioPattern; Data: TMusicStudioDrumData;
+begin
+  if not FValid then Exit;
+  Data := TMusicStudioDrumData.Create;
+  try
+    Index := FDocument.AddPerformance; Pattern := FDocument.PatternAt(Index);
+    Pattern.Name := 'ドラムパターン '+IntToStr(Index+1); Pattern.ConfigJSON := Data.JSON;
+    FDocument.UpdatePattern(Pattern);
+  finally Data.Free; end;
+  if CommitMutation then begin SelectPatternIndex(Index); PatternListClick(nil); end;
+end;
+
+procedure TFormMusicStudioSettings.DrumPreview(Sender: TObject; Beat: Double;
+  State: TDrumTransport; Emotion,Motion: Integer);
+const States: array[TDrumTransport] of string = ('停止','再生','一時停止');
+begin
+  // ドラムのローカル拍を既存プレビューへ渡す。音声のPlayを呼ばない。
+  FPreview.RestoreMusicalCursor(Beat,TMusicStudioDrumFrame(Sender).Data.LengthBeats,False);
+  StatusLabel.Caption := Format('ドラム %s / %.2f拍 / 表情: %s / モーション: %s',
+    [States[State],Beat,DrumKindName(0,Emotion),DrumKindName(1,Motion)]);
 end;
 
 procedure TFormMusicStudioSettings.AddPattern(Singing: Boolean);
@@ -717,7 +745,7 @@ var
   Dialog: TMusicStudioPatternSettings;
   Pattern: TMusicStudioPattern;
   Asset: TMusicStudioPsdAsset; AssetID,Error: string;
-  SharedError: string;
+  SharedError: string; SavedPosition: Double; DrumEditor: Boolean;
 begin
   if not FValid or (PatternList.ItemIndex < 0) then Exit;
   if not EditButton.Enabled then Exit;
@@ -731,6 +759,7 @@ begin
   end;
   if (Pattern.Kind <> 'audio') and (Pattern.Kind <> 'singing') and (Pattern.Kind<>'performance') and (Pattern.Kind<>'tempo') then Exit;
   Dialog := TMusicStudioPatternSettings.Create(Self);
+  SavedPosition := FPreview.Position; DrumEditor := False;
   try
     Dialog.SilentVisualMode := FSilentVisualMode;
     if (Pattern.Kind='performance') and MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) then begin
@@ -740,13 +769,20 @@ begin
       if AssetID<>'' then FSharedLibrary.TryRead(AssetID,Asset,Error);
       Dialog.LoadPerformanceSteps(Pattern,AssetID,Asset.FilePath,Asset.ConfigJSON,FDocument.Timing.BPMAt(0),FDocument.Timing.TimingJSON);
     end else Dialog.LoadPattern(Pattern);
+    if Dialog.DrumFrame<>nil then begin
+      DrumEditor := True; FPreview.Pause;
+      Dialog.DrumFrame.TempoBPM := FDocument.Timing.BPMAt(0);
+      Dialog.DrumFrame.OnPreview := DrumPreview;
+    end;
     while Dialog.ShowModal=mrOK do begin
       try Dialog.ReadPattern(Pattern); FDocument.UpdatePattern(Pattern);
       except on E: Exception do begin MessageDlg(E.Message,mtWarning,[mbOK],0); Continue; end; end;
       if CommitMutation then Break;
     end;
   finally
+    if Dialog.DrumFrame<>nil then Dialog.DrumFrame.OnPreview := nil;
     Dialog.Free;
+    if DrumEditor then FPreview.Seek(SavedPosition);
   end;
 end;
 

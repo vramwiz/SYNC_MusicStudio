@@ -1,6 +1,11 @@
 ﻿program SYNC_MusicStudio_NoAudioTests;
 {$APPTYPE CONSOLE}
 uses
+  SYNC_MusicStudio_DrumPsdChecks in 'SYNC_MusicStudio_DrumPsdChecks.pas',
+  SYNC_MusicStudio_DrumPsdRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_DrumPsdRules.pas',
+  SYNC_MusicStudio_DrumChecks in 'SYNC_MusicStudio_DrumChecks.pas',
+  SYNC_MusicStudio_DrumData in '..\Source\Common\Project\SYNC_MusicStudio_DrumData.pas',
+  SYNC_MusicStudio_DrumFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_DrumFrame.pas',
   SYNC_MusicStudio_CursorTempoChecks in 'SYNC_MusicStudio_CursorTempoChecks.pas',
   SYNC_MusicStudio_MeterMap in '..\Source\Common\Project\SYNC_MusicStudio_MeterMap.pas',
   SYNC_MusicStudio_ClipTempo in '..\Source\Common\Project\SYNC_MusicStudio_ClipTempo.pas',
@@ -89,6 +94,16 @@ begin
   try
     SetTextCodePage(Output,65001); SetTextCodePage(ErrOutput,65001);
     Application.Initialize;
+    if ParamStr(2)='--drum-rules' then begin RunDrumPsdChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--drum-psd' then begin InspectDrumPsd(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--drums' then begin RunDrumChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--drum-regression' then begin
+      ForceDirectories(ParamStr(1));
+      RunEditorModelChecks(ParamStr(1)); RunEditorInteractionChecks(ParamStr(1));
+      RunSlotChecks(ParamStr(1)); RunBeatChecks(ParamStr(1)); RunPerformanceCacheChecks(ParamStr(1));
+      RunMusicStudioPsdLayerChecks(ParamStr(1),False);
+      RunNoAudioChecks(ParamStr(1)); RunReviewChecks(ParamStr(1)); Exit;
+    end;
     if ParamStr(2)='--object-review-tiny' then begin RunObjectReviewChecks(ParamStr(1),False); Exit; end;
     if ParamStr(2)='--object-review-minimum' then begin RunObjectReviewChecks(ParamStr(1),True); Exit; end;
     if ParamStr(2)='--layer-objects' then begin RunLayerObjectChecks(ParamStr(1)); Exit; end;
@@ -108,6 +123,7 @@ begin
     if ParamStr(2)='--psd-playback' then begin RunPsdPlaybackChecks(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
     if ParamStr(2)='--psd-mouth' then begin RunPsdMouthChecks(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
     if ParamStr(2)='--psd-display' then begin RunPsdDisplayChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    RunDrumChecks(ParamStr(1));
     RunPsdDisplayChecks(ParamStr(1));
     RunCursorTempoChecks(ParamStr(1));
     RunTempoTimelineChecks(ParamStr(1));

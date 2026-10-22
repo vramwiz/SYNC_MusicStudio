@@ -93,6 +93,13 @@
     <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_DrumPsdRules.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_DrumData.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_DrumFrame.pas">
+      <Form>MusicStudioDrumFrame</Form>
+      <FormType>dfm</FormType>
+      <DesignClass>TFrame</DesignClass>
+    </DCCReference>
     <DelphiCompile Include="$(MainSource)">
       <MainSource>MainSource</MainSource>
     </DelphiCompile>

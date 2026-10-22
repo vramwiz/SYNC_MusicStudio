@@ -6,6 +6,13 @@
 音声fixture生成、decode、再生/試聴/waveOutとTestEditorStage1全体を実行しない。ミュートによる代替も行わない。
 以下の旧音声検証手順は再開後用。現在はTestNoAudioと音声処理を呼ばないFoundationだけを使う。
 
+## 現在の検証方針（2026-10-22 ユーザー指定）
+
+DPIに関する試験は不要。以後はDPI変更/倍率比較/モニター間DPI試験を実行しない。
+変更箇所に直接関係する専用ケースと必要最小限のビルド・スモーク確認に絞り、同じ成功ケースやDebug/Releaseで同内容の全体回帰を反復しない。
+下記の旧DPI検証手順は過去の記録として保持する。DPI試験を含む全体スイートを通常の入口として実行せず、専用モードを選ぶ。
+ドラムUIの --drums はDPI変更を行わない。今回のPSD命名規則は --drum-rules / --drum-psd を使用する。
+
 ## 安全性・性能
 
 - AviUtl2のCコールバック境界へDelphi例外を漏らさない。
@@ -57,7 +64,7 @@ cmd /c 'call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat" && 
 
 今回の追加版は配備しない。既存.dprojのBT_BuildType・IDEイベントを維持し、
 呼出時だけPostBuildEventをDeployDirectoryなしへ上書きしてDebug→ReleaseをこのPCで直列ビルドする。
-再現コマンドは`Temp/EditorStage1/slot-library/BuildLocal.ps1`。ビルド前後の入力SHA256も照合する。
+再現コマンドは`Scripts/BuildLocal.ps1 -EvidenceRoot <Temp内証拠先>`。既存のIDEイベントを変えず、呼出時のPostBuildEventを無配備へ上書きしてからauf2を生成する。ビルド前後の入力SHA256も照合する。
 通常の上記MSBuild/IDEビルドには既存配備指定があるため、無配備確認にはこの上書きを必ず使う。
 
 ## コメント・分割・文字コード

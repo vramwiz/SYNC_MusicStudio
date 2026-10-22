@@ -1,0 +1,147 @@
+﻿{
+  "schemaVersion": 1,
+  "previewAudio": null,
+  "materials": [],
+  "characters": [],
+  "tracks": [
+    {
+      "id": "{815F68C5-0CFE-4484-B447-0993D258B5A9}",
+      "kind": "psd",
+      "role": "singing",
+      "name": "歌唱トラック 1",
+      "color": "#CC8CE0",
+      "slots": [
+        {
+          "id": "{7BFB6F5E-119A-4307-B9F5-385D6176A16F}",
+          "kind": "psd",
+          "name": "歌唱PSD",
+          "color": "#6FBFAD",
+          "order": 0,
+          "accepts": [
+            "psd"
+          ],
+          "clips": []
+        },
+        {
+          "id": "{2C16DA1E-4142-4CD8-A991-9D6B9E52CF9D}",
+          "kind": "singing",
+          "name": "歌唱 / 口パク",
+          "color": "#CC8CE0",
+          "order": 1,
+          "accepts": [
+            "singing"
+          ],
+          "clips": []
+        },
+        {
+          "id": "{B5ED17EE-BE73-4A8A-AA50-59FE0228FB12}",
+          "kind": "emotion",
+          "name": "表情",
+          "color": "#6FBFAD",
+          "order": 2,
+          "accepts": [
+            "emotion"
+          ],
+          "clips": []
+        },
+        {
+          "id": "{AC4F0BE4-D9CF-4CF6-B09F-ECA8A01F7140}",
+          "kind": "animation",
+          "name": "アニメーション",
+          "color": "#6FBFAD",
+          "order": 3,
+          "accepts": [
+            "animation"
+          ],
+          "clips": []
+        },
+        {
+          "id": "{79E1551B-6835-4B9F-8583-C0EFDBA35F2E}",
+          "kind": "performance",
+          "name": "演奏",
+          "color": "#6FBFAD",
+          "order": 4,
+          "accepts": [
+            "performance"
+          ],
+          "clips": []
+        }
+      ],
+      "psd": {
+        "filePath": ""
+      }
+    }
+  ],
+  "arrangementVersion": 2,
+  "patterns": [
+    {
+      "id": "{180068D9-F019-4EBE-8FC7-0888D9AA435E}",
+      "kind": "performance",
+      "name": "ドラムパターン（操作UIサンプル）",
+      "color": "#EDBA70",
+      "performance": {
+        "lengthBeats": 4.0,
+        "notes": [],
+        "drumPattern": {
+          "version": 1,
+          "bars": 1,
+          "stepsPerBar": 16,
+          "rows": [
+            "スネア",
+            "ハイハット",
+            "ハイタム",
+            "ロータム",
+            "フロアタム",
+            "クラッシュ",
+            "ライド",
+            "バスドラム",
+            "スティック"
+          ],
+          "hits": [
+            {
+              "row": 0,
+              "beat": 0.0,
+              "state": 0
+            },
+            {
+              "row": 7,
+              "beat": 0.0,
+              "state": 1
+            },
+            {
+              "row": 8,
+              "beat": 3.75,
+              "state": 2
+            }
+          ],
+          "ranges": [
+            {
+              "lane": 0,
+              "kind": 1,
+              "startBeat": 0.0,
+              "endBeat": 1.0
+            },
+            {
+              "lane": 0,
+              "kind": 1,
+              "startBeat": 1.0,
+              "endBeat": 2.0
+            },
+            {
+              "lane": 1,
+              "kind": 6,
+              "startBeat": 1.0,
+              "endBeat": 2.0
+            },
+            {
+              "lane": 0,
+              "kind": 2,
+              "startBeat": 2.25,
+              "endBeat": 3.75
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

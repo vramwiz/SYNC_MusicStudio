@@ -83,7 +83,7 @@ begin
     F.TimelineBox.SelectSlot(TI,4); Check(F.LibraryKind='instrument','instrument context');
     F.PatternList.ItemIndex := 0; Check(F.DropSelectedLibraryAt(TI,4,0,Error),Error);
     F.TimelineBox.SelectSlot(TI,5); Check(F.LibraryKind='performance','performance context');
-    F.AddButton.OnClick(F.AddButton); Performance := F.SelectedLibraryPattern;
+    F.AddMenu.Items[0].Click; Performance := F.SelectedLibraryPattern;
     P := F.Document.PatternAt(Performance); P.Name := '拍で保存する演奏';
     P.ConfigJSON := '{"lengthBeats":8,"notes":[{"startBeat":0,"lengthBeats":1,"pitch":60,"velocity":100},{"startBeat":2,"lengthBeats":2,"pitch":64,"velocity":80}]}';
     F.Document.UpdatePattern(P); Check(F.Document.TrySave(Text,Error),Error); F.LoadDocument(Text);

@@ -1296,3 +1296,62 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
   artifactsに最新auf2/実PSDコピー試行JSON/最新96・内部144画像/最小DPI画像。OpenSilentDemo.ps1から独立EXEを--silentで起動し、演奏スロット→左パターンを開いて試行する。
   実AviUtl2/aup2再読込/物理モニターDPI/音声回帰は未検証。旧ピアノロール等の全UI操作統一は今回の範囲外で現行操作を保持。
   添付3PNGはprepare成功、consumer-localのPython helperが実行不能でPC上の画像取得/閲覧は未了。親側の実画素所見を反映し、自身の最新GUI画像を別途確認。
+
+## 2026-10-22 ドラムパターン操作UI（PSD未関連付け・無配備）
+
+- 演奏スロットの左＋に「ドラムパターン」を追加。従来の演奏追加もメニューで選べる。
+  DrumData/DrumFrameを追加し、作品内performance.drumPatternへ独立保存。PSD関連付け・動作描画・音声処理は追加していない。
+- 打点9行/スティック、未判定/正常/異常表示、表情/全体モーションの仮名popup、バー追加/移動/両端伸縮/削除、重複拒否、Esc/capture喪失取消、局所UndoRedo。
+  小節/分割/ズーム/横scroll、将来の行追加用の縦scroll。表示変更で元の打点時刻を変えず、非グリッド打点も描画位置から操作できる。
+- 33msの無音loop、pause位置保持、stop先頭、時間軸seek、hide停止。メインプレビューへローカル拍/transport/表情/全体モーションを通知し、終了時に元のメイン位置へ戻す。
+  実PSD描画は接続していない。パターン拍子は4/4固定、種類名は仮。操作UIの今回範囲を超える描画・判定エンジンは未実装。
+- Delphi37.0/同PCで最終Debug→Releaseを.dprojから直列無配備ビルド。エラー/警告なし。Scripts/BuildLocal.ps1は呼出時だけPostBuildEventを上書きし、IDE既存イベント/BT_BuildTypeは保持。
+  最終Debug auf2=22938036B、Release=6505472B。hashは証拠root/artifacts-hashes.json。配備先は開始/終了hash一致。
+- 最終NoAudioTests --drums成功。モデルの打点/バー/隣接/重複/短縮拒否/失敗読込不変/保存再読込、所有native画面の打点ON/OFF、バー追加/move/両端resize/重複drag拒否/Esc/capture喪失後mouseup取消/Delete/UndoRedo、実popup選択を検証。
+  無音clock/pause/stop/seek、zoom/scrollデータ不変、96と内部144DPI（フォーム/フレームCurrentPPI=144をassert）、親設定の保存、PSDなしのメニュー追加/取消/適用/メイン位置通知/作品再読込も成功。
+  入り口検証で音声エンジン未確保、waveform decode数0。サンプルSamples/Debug/drum-pattern.jsonと起動手順を追加。独立EditorPreview再コンパイル成功。
+- --drum-regression成功。既存の歌唱MIDI/JSON/スロット/旧演奏/GUI/D&D/取消/再読込/テンポ境界/ピアノロール/キャッシュ/合成PSD/共有一覧/共有revision/属性混在popup/世代切替を維持。
+  このモードは合成素材の関連回帰であり、全NoAudioケース実行とは扱わない。両DLLのFoundationは最終成果物で成功。
+- 全NoAudioの試行は既存RealExpressionCheckが参照するD:/Users/take6/SYNC_MusicStudio/Libraries/PSDAssets/6720ffb6-68b1-4b4a-9582-da424493c9bc/asset.json不在で停止。
+  最終両DLLのVideoOutputも、合成snapshot/alpha/seek/stop/reload/multi-instance、WARP形式/row pitch/resize20、ownership/scene/500並行、SDK背景/30更新/144DPI/nil/fallback、transform/flip/clip、実設定ボタンの透明object＋色付きframebuffer/再open/取消が成功後、同じ旧実PSD参照で終了1。
+  SDK全体成功/実PSD付き演奏step・テンポ後続ケース完了とは扱わない。既存fixtureを無断で変更せず未完了を記録。実AviUtl2/aup2再読込/物理モニター間DPI/音声回帰は未実施。
+- 新規日本語pas/dpr/ps1はUTF-8 BOM/CRLF。DPR参照は主DLL/NoAudio/独立Editorの全参照存在を確認。追加外部DLLなし。
+  不要なソース依存は見つからず継承UIを保持。専用Tests/Win64/DrumDCUはflat DCU86件/13821917B、誤生成Tests/Tests/Win64/DrumDCUは空と確認。
+  生成物削除は再帰版/非再帰ファイル単位版とも自動承認レビューからblocked by policyのみで拒否されたため未削除。診断map/最新EXE/auf2/PNG/JSON/logも保持。不要生成物整理は未完了として引き継ぐ。
+- 証拠root C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-drums-20261022/。
+  drums-tests.log、drums-96/144.png、drum-performance/project.json、regression/regression.log、final-build、foundation-debug/release.log、sdk-Debug/Release-final.log/result.json、deployed-before/after.json。
+  初期の文字コード/JSON項目順/parent未設定でのVCL生成/capture解放順、内部144が96へ戻るテスト条件を検出し修正。最終テストでは実際のPPIをassertし、期待値を弱めず成功。
+  音声fixture/decode/waveOut・配備・実作品変更・参照元変更・commit/pushなし。
+## 2026-10-22 ドラムUIの暗色コンボ・全体fit追修正（無配備）
+
+- 小節/分割コンボを共通の暗色owner drawへ変更。ネイティブ操作を維持しつつ白く残る矢印もローカル派生クラスで暗色描画する。
+- 縦横scroll部品・scroll位置・ホイール移動/zoom・拡大率欄を削除。横は利用可能幅÷パターン全拍数、縦は利用可能高さ÷全行数でfitし、描画/hit/seek/dragで同じ座標を使う。リサイズ中の未確定dragは取消する。
+- NoAudioTests --drumsで既存打点/バー追加・移動・両端伸縮/重複拒否/popup/取消/UndoRedo/無音transport/保存再読込に加え、scroll部品0、コンボowner draw、幅変更時のJSON不変/末尾seek、2小節の末尾打点、96/実内部144DPIを確認。native PNGも目視確認。
+  一度native表情popup選択が失敗したが、コード変更せず再実行で成功（既知のフォーカス依存と整合）。全体成功として未実行項目を補っていない。
+- --drum-regressionの既存関連合成素材ケース、最終Debug/Releaseの両Foundation成功。Debug→Release直列無配備ビルドはエラー/警告なし。独立EditorPreview再コンパイル成功。
+  音声関連処理は引き続き停止。今回の範囲でSDK/全NoAudioの実PSD欠損ケースは再実行していない。前項の全体回帰未完了は継続する。
+- 開始時からユーザー差分のあったAup2/sample.aup2を保持し、同作品/配備auf2の開始終了SHA256は一致。参照元変更・配備・commit/pushなし。
+- 仕様31/DESIGN/Samples手順/noteを更新。不要なスクロール/拡大関連メンバーを除去し新規外部依存なし。旧生成物の削除拒否は前項のまま。今回のDrumFitDCUも生成物として保持する。
+- 証拠: C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-drum-fit-20261022/。final-build、drums-tests.log、regression.log、foundation-Debug/Release.log、drums-96/144.png、protected-before/after.json。
+## 2026-10-22 ドラムPSD命名規則・読込時参照生成（無配備）
+
+- 添付の専用PSD命名規則をDRUM_PSD_NAMING.mdへ保存。本文1～15は提示仕様、16～17節は未確定部分の仮決定と実装手順。
+  ユーザーの「決まっていない部分は仮などでよい、実際に作る時に決める」を受け、BASE/楽器_BASE、共通CM_n、FX、スティックST/クラッシュCR/ライドRD、BD→RLを仮定義。DrumPsdRulesの定数へ集約した。
+- PSD読込時にBack/Character/Front、LA/RA/LL/RL、0～9段階、元名/正規化名/prefix/suffix/固定キー/SourceIndex/元表示を解析しDocumentが所有。
+  既存ParseLayerNameを利用して先頭*・!とflipを維持。ドラム仕様の末尾*は分離して保持する。PSD自体の改名や既存の全般的な排他描画仕様は変更していない。
+- 左右/ハイハット/共通/ベース補完は事前辞書化。元のCommandID・要求部位と実部位を分け、同じ親の正規化名重複と重複rootは曖昧として解決しない。
+  人物/本体/エフェクトを別kindで解決し、画像を相互に代用しない。手のHO/H/HC補完をLLペダルへ適用しない。
+  CloneではBuildLayers(False)と解析済みテーブルの複製を使用。描画用cloneでドラム名称解析を増やさず、明示的なPSD再読込でだけ再解析する。
+- 独立NoAudioホスト --drum-rules成功。合成PSDで命名/制御記号/未知記号拒否/仮BASE/階層/左右補完と実部位/HH優先順位/ペダル分離/共通姿勢/重複root・同親曖昧拒否/本体とFX分離/0～9段階/clone寿命分離/描画再解析なし/原本hash不変/欠損再読込の旧参照解除を確認。
+  --drum-psdも同じ合成PSDを読取して22参照の開発用JSONを出力成功。これは実PSD検証の代替とは主張しない。
+- 関連 --drum-regressionは成功。Debug→Release直列無配備ビルドは警告/エラーなし。最終ReleaseのFoundationだけを実行して成功。独立EditorPreview再コンパイル成功。
+  ユーザーがDPI試験不要・試験回数削減を指定した後はDPI試験/追加全体回帰を実行していない。--drumsからDPI変更・144画像の試験を除去し、再コンパイルのみ実施。
+  DEVELOPMENTとnoteに、今後DPI試験を省いて変更箇所の専用ケースへ絞る方針を記録。名称再解析の反復検証も初回/キャッシュ利用の2回へ削減し、削減後に同じ成功ケースを再実行していない。
+- 主DLL/NoAudio/独立EditorのDPR参照は欠損0。新規の命名解析unit/検証unitは使用先があり不要ソースなし、外部DLL追加なし。継承UIを保持。
+  過去の生成物削除は自動承認レビュー拒否のまま。今回の専用DrumRulesDCU/証拠は保持し、削除完了とは扱わない。
+  作業開始時のAup2/sample.aup2と配備auf2のSHA256は終了時一致。音声処理/原PSD・実共有設定変更/配備/commit/pushなし。
+- 本段階は自動認識と内部参照まで。UI9行から左右指示への変換、独立した6時間パラメータ/動作評価、ペダル状態保持、同じ腕の競合判定、表示切替とメインプレビュー/AviUtl2描画への接続は後続作業。
+  デバッグ出力のsourceVisibleはPSD読込時の状態。演奏中の現在表示やデバッグ専用画面を実装済みとは扱わない。
+- 証拠root C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-drum-rules-20261022/。
+  drum-naming.psd、drum-psd-references.json、drum-rules-tests.log、inspect/とinspect.log、regression.log、final-build、foundation-release.log、protected-after.json。
+  保護開始hashはTemp/SYNC_MusicStudio-drum-rules-protected-before.json。旧実PSD欠損による全NoAudio/SDK後半未完了は前記のまま継続。

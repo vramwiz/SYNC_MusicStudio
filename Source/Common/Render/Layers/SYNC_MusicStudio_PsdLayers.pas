@@ -5,7 +5,7 @@ unit SYNC_MusicStudio_PsdLayers;
 interface
 
 uses System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
-  System.Types, Vcl.Graphics, SYNC_MusicStudio_ArtDocument;
+  System.Types, Vcl.Graphics, SYNC_MusicStudio_ArtDocument, SYNC_MusicStudio_DrumPsdRules;
 
 type
   TMusicStudioLayerInfo = record
@@ -24,7 +24,8 @@ type
     FImages: TObjectDictionary<string,TBitmap>;
     FCacheBytes: Int64;
     FLoadCount, FRenderCount: Integer;
-    procedure BuildLayers;
+    FDrumRules: TMusicStudioDrumPsdRules;
+    procedure BuildLayers(AnalyzeDrums: Boolean = True);
     procedure Clear;
     function GetLoaded: Boolean;
     function GetWidth: Integer;
@@ -53,6 +54,7 @@ type
     property LoadCount: Integer read FLoadCount;
     property RenderCount: Integer read FRenderCount;
     property CacheCount: Integer read GetCacheCount;
+    property DrumRules: TMusicStudioDrumPsdRules read FDrumRules;
   end;
 
 procedure MusicStudioSetJsonBoolean(Obj: TJSONObject; const Key: string; Value: Boolean);
@@ -78,17 +80,19 @@ begin
   FByKey := TDictionary<string,TArtLayer>.Create;
   FParents := TDictionary<string,string>.Create;
   FImages := TObjectDictionary<string,TBitmap>.Create([doOwnsValues]);
+  FDrumRules := TMusicStudioDrumPsdRules.Create;
 end;
 
 destructor TMusicStudioLayerDocument.Destroy;
 begin
-  Clear; FImages.Free; FParents.Free; FByKey.Free; inherited;
+  Clear; FDrumRules.Free; FImages.Free; FParents.Free; FByKey.Free; inherited;
 end;
 
 procedure TMusicStudioLayerDocument.Clear;
 begin
   FImages.Clear; FCacheBytes := 0; FByKey.Clear; FParents.Clear;
   FLayers := nil; FreeAndNil(FDocument); FLastError := '';
+  if FDrumRules<>nil then FDrumRules.Clear;
 end;
 
 function TMusicStudioLayerDocument.GetLoaded: Boolean;
@@ -100,8 +104,8 @@ begin Result := 0; if Loaded then Result := FDocument.Height; end;
 function TMusicStudioLayerDocument.GetCacheCount: Integer;
 begin Result := FImages.Count; end;
 
-procedure TMusicStudioLayerDocument.BuildLayers;
-var Items: TList<TMusicStudioLayerInfo>;
+procedure TMusicStudioLayerDocument.BuildLayers(AnalyzeDrums: Boolean);
+var Items: TList<TMusicStudioLayerInfo>; DrumLayers: TArray<TDrumPsdLayer>; I: Integer;
   procedure Walk(List: TList<TArtLayer>; const ParentKey, ParentPath: string; Depth: Integer);
   var Ordinals: TDictionary<string,Integer>; Layer: TArtLayer;
       Info: TMusicStudioLayerInfo; Ordinal: Integer;
@@ -128,6 +132,16 @@ begin
   FByKey.Clear; FParents.Clear; Items := TList<TMusicStudioLayerInfo>.Create;
   try Walk(FDocument.Roots,'','',0); FLayers := Items.ToArray;
   finally Items.Free; end;
+  if AnalyzeDrums then begin
+    SetLength(DrumLayers,Length(FLayers));
+    for I := 0 to High(FLayers) do begin
+      DrumLayers[I].Key := FLayers[I].Key; FParents.TryGetValue(FLayers[I].Key,DrumLayers[I].ParentKey);
+      DrumLayers[I].Name := FLayers[I].Name; DrumLayers[I].Path := FLayers[I].Path;
+      DrumLayers[I].IsGroup := FLayers[I].IsGroup; DrumLayers[I].Visible := FLayers[I].Visible;
+      DrumLayers[I].SourceIndex := FLayers[I].SourceIndex;
+    end;
+    FDrumRules.Build(DrumLayers);
+  end;
 end;
 
 function TMusicStudioLayerDocument.LoadFile(const Path: string): Boolean;
@@ -141,6 +155,7 @@ begin
   except on E: Exception do begin
     FLastError := E.Message; FImages.Clear; FByKey.Clear; FParents.Clear;
     FLayers := nil; FreeAndNil(FDocument);
+    FDrumRules.Clear;
   end; end;
 end;
 
@@ -149,7 +164,10 @@ begin
   Result := TMusicStudioLayerDocument.Create;
   try
     Result.FFilePath := FFilePath; Result.FLastError := FLastError;
-    if Loaded then begin Result.FDocument := FDocument.Clone; Result.BuildLayers; end;
+    if Loaded then begin
+      Result.FDocument := FDocument.Clone; Result.BuildLayers(False);
+      Result.FDrumRules.Free; Result.FDrumRules := nil; Result.FDrumRules := FDrumRules.Clone;
+    end;
   except Result.Free; raise; end;
 end;
 

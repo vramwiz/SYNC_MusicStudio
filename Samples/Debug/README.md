@@ -52,3 +52,18 @@ PSDトラックの参照を設定すると、保存済みの合成画像を静�
 検証ログ、編集後JSON、通常/最小サイズの実フォームPNGは`Temp/EditorStage1/verification/`に生成する。
 `generic-slots-loaded.png`は読込直後、`generic-slots.png`は編集/並替え後。
 `slot-settings.png`、`generic-slot-scrolled.png`、`sample-missing-audio.png`等も参照。
+
+## ドラムパターン操作UI（PSD不要・無音）
+
+`drum-pattern.json`は打点3件（未判定/正常/異常の表示例）と表情/全体モーションのバーを持つ。
+演奏スロットを選択し、左一覧の「ドラムパターン（操作UIサンプル）」をダブルクリックする。
+新規作成は演奏スロットの左＋→「ドラムパターン」。PSDの割当は不要。
+
+```powershell
+& .\Tests\Win64\SYNC_MusicStudio_EditorPreview.exe --silent .\Samples\Debug\drum-pattern.json --library-root "$env:TEMP\SYNC_MusicStudio-drum-demo\PSDAssets"
+```
+
+打点クリックでON/OFF。下2行は空白dragでバー追加、バーclickで種類、中央dragで移動、両端dragで伸縮、Deleteで削除。
+Ctrl+Z/Y、時間軸clickでシーク、再生/一時停止/停止に対応し、全体をフォーム幅・高さに自動fitする（スクロールバー/拡大率欄なし）。実音声、PSD演奏、エフェクト描画は行わない。
+再現テストはNoAudioTestsの`<Temp証拠先> --drums`。関連する既存合成素材回帰は`--drum-regression`。
+無配備ビルドは`Scripts/BuildLocal.ps1`。IDEの既存配備イベントは維持する。

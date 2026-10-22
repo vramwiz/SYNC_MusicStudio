@@ -4,6 +4,9 @@
 {$APPTYPE CONSOLE}
 
 uses
+  SYNC_MusicStudio_DrumPsdRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_DrumPsdRules.pas',
+  SYNC_MusicStudio_DrumData in '..\Source\Common\Project\SYNC_MusicStudio_DrumData.pas',
+  SYNC_MusicStudio_DrumFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_DrumFrame.pas',
   SYNC_MusicStudio_MeterMap in '..\Source\Common\Project\SYNC_MusicStudio_MeterMap.pas',
   SYNC_MusicStudio_ClipTempo in '..\Source\Common\Project\SYNC_MusicStudio_ClipTempo.pas',
   SYNC_MusicStudio_TimelineMetrics in '..\Source\Plugin\Filter\SYNC_MusicStudio_TimelineMetrics.pas',
