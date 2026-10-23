@@ -53,11 +53,13 @@ type
   TMusicStudioScenePlacement = class
   public
     ID, Kind, MidiPath, ErrorText: string;
-    StartSeconds, LengthSeconds, StartBeat: Double;
+    StartSeconds, LengthSeconds, StartBeat,SourceStartSeconds: Double;
     MidiTrack: Integer;
     Visibility: TJSONObject;
     Steps: TMusicStudioLayerStepData;
     Instrument: TMusicStudioInstrumentData;
+    HasSelection: Boolean;
+    Selection: TInstrumentState; // 独立スロットの意味指定。配置の秒区間と共に評価する。
     StepConfigs: TObjectList<TJSONObject>;
     Motion: TMusicStudioMotionConfig;
     destructor Destroy; override;
@@ -301,15 +303,24 @@ begin
       for Slot in Track.Slots do for Clip in Slot.Clips do begin
         if not Patterns.TryGetValue(Clip.PatternID,Pattern) then Continue;
         if (Pattern.Kind<>'singing') and (Pattern.Kind<>'emotion') and
-          (Pattern.Kind<>'instrument') and (Pattern.Kind<>'animation') and (Pattern.Kind<>'performance') then Continue;
+          (Pattern.Kind<>'instrument') and (Pattern.Kind<>'animation') and (Pattern.Kind<>'performance') and (Pattern.Kind<>'selection') then Continue;
         Entry := TMusicStudioScenePlacement.Create; SceneTrack.Placements.Add(Entry);
         Entry.ID := Clip.ID; Entry.Kind := Pattern.Kind;
         Entry.StartSeconds := Clip.StartSeconds; Entry.LengthSeconds := Clip.LengthSeconds;
         if Clip.TimeBase='beats' then Entry.StartBeat := Clip.StartBeat
         else Entry.StartBeat := StartBeat(Clip.StartSeconds);
         Entry.MidiPath := Pattern.FilePath; Entry.MidiTrack := Pattern.SourceTrack;
+        Entry.SourceStartSeconds := Pattern.SourceStartSeconds;
         try
           if Pattern.Kind='singing' then Continue;
+          if Pattern.Kind='selection' then begin
+            Config := Pattern.ConfigJSON;
+            with TJSONObject.ParseJSONValue(Config) as TJSONObject do try
+              Entry.Selection.Row := GetValue<string>('row'); Entry.Selection.Choice := GetValue<string>('choice');
+              Entry.Selection.SelectionMode := GetValue<string>('mode'); Entry.HasSelection := True;
+            finally Free; end;
+            Continue;
+          end;
           if Pattern.Kind='performance' then begin
             if MusicStudioHasInstrumentTimeline(Pattern.ConfigJSON) then begin
               Entry.Instrument := TMusicStudioInstrumentData.Create; Entry.Instrument.Load(Pattern.ConfigJSON);
@@ -364,7 +375,7 @@ begin
   Source := FMidiCache.Find(vkMidi,Placement.MidiPath);
   if (Source=nil) or (Source.Status<>vsReady) or (Source.Rolls=nil) or
     not Source.Rolls.TryGetValue(Placement.MidiTrack,Roll) then Exit;
-  Local := FSeconds-Placement.StartSeconds; LatestStart := -1; Vowels := '';
+  Local := FSeconds-Placement.StartSeconds+Placement.SourceStartSeconds; LatestStart := -1; Vowels := '';
   Note := Roll.FirstOverlap(Local);
   while (Note<Length(Roll.Notes)) and (Roll.Notes[Note].StartSeconds<=Local) do begin
     if (Roll.Notes[Note].EndSeconds>Local) and (Roll.Notes[Note].StartSeconds>=LatestStart) then begin
@@ -405,10 +416,12 @@ var Entry,Singing,Performance: TMusicStudioScenePlacement; Overrides,Config: TJS
     Transforms: TMusicStudioSceneTransforms; T: TMusicStudioMotionTransform;
     Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor: Double; Pair: TJSONPair; CommonVisibility: TJSONObject;
     CommonStates: TArray<TInstrumentState>; CommonState: TInstrumentState; PoseActive: Boolean;
+    Independent: array[0..3] of TMusicStudioScenePlacement; I,K: Integer; HasIndependent: Boolean;
 begin
   if (Track.Source=nil) or (Track.Source.Document=nil) or (Track.Source.Config=nil) then Exit;
   Overrides := nil; Config := nil; Singing := nil; Performance := nil; ActiveIndex := -1; Mouth := 0; Warning := '';
   PoseActive := False;
+  CommonStates := nil; HasIndependent := False; for I := 0 to High(Independent) do Independent[I] := nil;
   try
     try
       Overrides := BuildMusicStudioPsdOverrides(Track.Source.Document,Track.Source.Config,-1);
@@ -419,13 +432,18 @@ begin
       for Entry in Track.Placements do begin
         if (FSeconds<Entry.StartSeconds) or (FSeconds>=Entry.StartSeconds+Entry.LengthSeconds) then Continue;
         if Entry.ErrorText<>'' then begin Warning := Entry.ErrorText; Continue; end;
+        if Entry.HasSelection then begin
+          for I := 0 to High(Independent) do if Entry.Selection.Row=INSTRUMENT_SELECTION_ROWS[I] then
+            if (Independent[I]=nil) or (Entry.StartSeconds>=Independent[I].StartSeconds) then Independent[I] := Entry;
+          Continue;
+        end;
         if Entry.Kind='performance' then begin
           if (Performance=nil) or (Entry.StartSeconds>=Performance.StartSeconds) then Performance := Entry;
           Continue;
         end;
         if Entry.Kind='singing' then begin
           if (Singing=nil) or (Entry.StartSeconds>=Singing.StartSeconds) then Singing := Entry;
-        end else if Entry.Visibility<>nil then MergeVisibility(Track.Source.Document,Overrides,Entry.Visibility)
+        end else if Entry.Visibility<>nil then Continue
         else if Entry.Motion<>nil then begin
           CalculateMusicStudioMotionTransform(Entry.Motion,FBeatPosition-Entry.StartBeat,T);
           T.OffsetX := Round(T.OffsetX*Factor); T.OffsetY := Round(T.OffsetY*Factor); T.TopOffsetX := T.TopOffsetX*Factor;
@@ -443,12 +461,25 @@ begin
       end;
       if (Performance<>nil) and (Performance.Instrument<>nil) then begin
         CommonStates := Performance.Instrument.StatesAt(FBeatPosition,Performance.StartBeat);
+      end;
+      for I := 0 to High(Independent) do if Independent[I]<>nil then begin
+        Entry := Independent[I];
+        // 独立ポーズの実要素は演奏配置外で使う。明示通常は内部ポーズも打ち消せる。
+        if (Entry.Selection.Row='ポーズ') and (Entry.Selection.SelectionMode='choice') and (Performance<>nil) then Continue;
+        K := 0; for CommonState in CommonStates do if CommonState.Row<>Entry.Selection.Row then begin CommonStates[K] := CommonState; Inc(K); end;
+        SetLength(CommonStates,K+1); CommonStates[K] := Entry.Selection; HasIndependent := True;
+      end;
+      if HasIndependent or ((Performance<>nil) and (Performance.Instrument<>nil)) then begin
         for CommonState in CommonStates do if (CommonState.Row='ポーズ') and
           Track.Source.Document.InstrumentRules.HasChoice(CommonState.Row,CommonState.Choice) then PoseActive := True;
-        CommonVisibility := Track.Source.Document.InstrumentRules.Visibility(CommonStates);
+        CommonVisibility := Track.Source.Document.InstrumentRules.Visibility(CommonStates,(Performance=nil) or (Performance.Instrument=nil));
         try for Pair in CommonVisibility do MusicStudioSetJsonBoolean(Overrides,Pair.JsonString.Value,TJSONBool(Pair.JsonValue).AsBoolean);
         finally CommonVisibility.Free; end;
       end;
+      // 旧PSDプリセットも独立スロットとして共通演奏より後に重ねる。
+      for Entry in Track.Placements do if (Entry.Visibility<>nil) and (Entry.ErrorText='') and
+        (FSeconds>=Entry.StartSeconds) and (FSeconds<Entry.StartSeconds+Entry.LengthSeconds) then
+          MergeVisibility(Track.Source.Document,Overrides,Entry.Visibility);
       if (Singing<>nil) and not PoseActive then Mouth := MouthAt(Singing);
       if PoseActive then Mouth := -1;
       Config := TJSONObject(Track.Source.Config.Clone);

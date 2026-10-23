@@ -348,7 +348,7 @@ begin
   FSourceTimer.Enabled := False; FreeAndNil(InstrumentFrame); FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
   if Track.Kind = 'psd' then begin
     if Track.PsdAssetID<>'' then
-      FAttributeLabel.Caption := '共有PSDを使用中。PSDスロットを選択すると素材と母音設定を編集できます。'
+      FAttributeLabel.Caption := '演奏者 / 共有PSDを使用中。PSD割当枠で素材と母音を編集、演奏属性は確定後に固定リストから選択。'
     else if Track.PsdPath='' then
       FAttributeLabel.Caption := 'PSDスロットへ左の共有PSDをドラッグして割り当てます。'
     else begin
@@ -356,7 +356,7 @@ begin
       PsdFrame := TMusicStudioPsdTrackFrame.Create(Self); PsdFrame.Parent := Self;
       PsdFrame.Align := alClient; PsdFrame.SelectFile(Track.PsdPath);
     end;
-  end else FAttributeLabel.Caption := '音声トラック  ・  スロットごとに受入属性を設定';
+  end else FAttributeLabel.Caption := '音楽トラック  ・  基準音源とテンポ';
 end;
 
 procedure TMusicStudioPatternSettings.LoadSlot(const Slot: TMusicStudioSlot);
@@ -398,7 +398,10 @@ begin
   if Assigned(SingingFrame) then begin
     if (Pattern.FilePath <> SingingFrame.FilePath) or (Pattern.SourceTrack <> SingingFrame.SelectedTrack) or
       (SingingFrame.Source.Status in [ssReady,ssNoLyrics]) then
+    begin
       Pattern.Duration := SingingFrame.SelectedDuration;
+      Pattern.SourceStartSeconds := SingingFrame.SelectedStartSeconds;
+    end;
     Pattern.FilePath := SingingFrame.FilePath;
     Pattern.SourceTrack := SingingFrame.SelectedTrack;
   end;

@@ -9,9 +9,11 @@ uses
 type
   TMusicStudioPattern = record
     ID, Kind, Name, Color, FilePath, AssetID, SharedPatternID, ConfigJSON: string;
+    PerformanceAttribute,LibraryRevision: string; // 共通演奏の分類と配置時の版。AssetIDは使わない。
     Volume: Double; // 1.0 = 100%。音源データや波形キャッシュは保存しない。
     SourceTrack: Integer; // 歌唱MIDI内の0始まりトラック番号。-1は未選択。
     Duration: Double; // 読込済み音源の長さ。配置の初期長さ用メタデータで、実データではない。
+    SourceStartSeconds: Double; // 歌唱の有効音符区間の先頭。旧文書は0で従来同期を保つ。
   end;
 
   TMusicStudioAssetResolver = function(const AssetID: string): string of object;
@@ -44,6 +46,16 @@ type
     function AddTempo: Integer;
     function AddReference(const Pattern: TMusicStudioPattern): Integer;
     procedure AssignPsd(Index: Integer; const AssetID: string);
+    // PSD解析結果を反映する。既存の配置と手動スロットを保持する。
+    procedure SetPerformer(Index: Integer; const Attribute: string; const Slots: TArray<string>; UpdateSlots: Boolean = True; const ChoicesJSON: string = '');
+    // 小型枠の候補操作。候補Rootを検証してから採用し、失敗時は作品を変更しない。
+    procedure WriteSmallElement(TrackIndex,SlotIndex,ClipIndex: Integer; const Mode,Choice: string; StartSeconds,LengthSeconds: Double);
+    function CopyTrack(Index: Integer): string;
+    function PasteTrack(const Text: string): Integer;
+    // 同じ共通ID/版の作品snapshotを再利用する。別PSDでも同じ属性なら利用できる。
+    function ImportPerformance(const Pattern: TMusicStudioPattern): Integer;
+    // 共通UIDの名称だけを全配置snapshotへ反映する。演奏データと配置時の版は保持する。
+    procedure RenamePerformance(const Attribute,SharedID,Name: string);
     property AssetResolver: TMusicStudioAssetResolver read FAssetResolver write FAssetResolver;
     // 指定IDの属性だけを変更し、そのパターンの拡張属性を保持する。
     procedure UpdatePattern(const Pattern: TMusicStudioPattern);
@@ -79,7 +91,8 @@ implementation
 
 uses
   System.Math, System.Generics.Collections, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_TempoPatternData,
-  SYNC_MusicStudio_ProjectData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData;
+  SYNC_MusicStudio_ProjectData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData,
+  SYNC_MusicStudio_PerformerData, SYNC_MusicStudio_PerformanceKinds, SYNC_MusicStudio_SmallSlotData;
 
 function ValidColor(const Value: string): Boolean;
 var
@@ -137,6 +150,11 @@ begin
       ErrorText := 'パターンIDが重複しています: ' + ID;
       if IDs.ContainsKey(ID) then Exit;
       IDs.Add(ID, True);
+      if Obj.GetValue('kind').Value='selection' then begin
+        ErrorText := '独立演出の要素指定が不正です。';
+        if not ValidateMusicStudioSelection(Obj.GetValue('selection')) then Exit;
+        Continue;
+      end;
       if Obj.GetValue('kind').Value = 'singing' then
       begin
         ErrorText := '歌唱パターンにはsinging.filePathと-1以上のsinging.trackIndexが必要です。';
@@ -146,6 +164,12 @@ begin
           not (Audio.GetValue('trackIndex') is TJSONNumber) then Exit;
         if not TryStrToInt(Audio.GetValue('trackIndex').Value, SourceTrack) or
           (SourceTrack < -1) or (SourceTrack > 255) then Exit;
+        if Audio.GetValue('sourceStartSeconds')<>nil then begin
+          ErrorText := '歌唱の参照開始秒が不正です。';
+          if not (Audio.GetValue('sourceStartSeconds') is TJSONNumber) then Exit;
+          Volume := TJSONNumber(Audio.GetValue('sourceStartSeconds')).AsDouble;
+          if IsNan(Volume) or IsInfinite(Volume) or (Volume<0) or (Volume>604800) then Exit;
+        end;
       end
       else if Obj.GetValue('kind').Value = 'audio' then
       begin
@@ -166,6 +190,8 @@ begin
         Continue;
       end
       else if Obj.GetValue('kind').Value='performance' then begin
+        ErrorText := '共通演奏の属性/ID/版が不正です。';
+        if not ValidatePerformanceReference(Obj.GetValue('performanceLibrary')) then Exit;
         ErrorText := '演奏パターンには拍で記したperformance属性が必要です。';
         if not (Obj.GetValue('performance') is TJSONObject) then Exit;
         Performance := TMusicStudioPerformanceData.Create;
@@ -210,6 +236,10 @@ begin
         if not (Duration is TJSONNumber) then Exit;
         Volume := TJSONNumber(Duration).AsDouble;
         if IsNan(Volume) or IsInfinite(Volume) or (Volume < 0) or (Volume > 604800) then Exit;
+        if (Obj.GetValue('kind').Value='singing') and (Audio.GetValue('sourceStartSeconds') is TJSONNumber) and
+          (TJSONNumber(Audio.GetValue('sourceStartSeconds')).AsDouble+Volume>604800) then begin
+          ErrorText := '歌唱の参照区間が上限604800秒を超えています。'; Exit;
+        end;
       end;
     end;
     ErrorText := '';
@@ -288,8 +318,15 @@ begin
     Audio := Obj.GetValue('singing') as TJSONObject;
     Result.FilePath := Audio.GetValue('filePath').Value;
     Result.SourceTrack := StrToInt(Audio.GetValue('trackIndex').Value);
+    if Audio.GetValue('sourceStartSeconds') is TJSONNumber then Result.SourceStartSeconds := TJSONNumber(Audio.GetValue('sourceStartSeconds')).AsDouble;
   end;
   if Obj.GetValue('performance') is TJSONObject then Result.ConfigJSON := Obj.GetValue('performance').ToJSON;
+  if Obj.GetValue('selection') is TJSONObject then Result.ConfigJSON := Obj.GetValue('selection').ToJSON;
+  if Obj.GetValue('performanceLibrary') is TJSONObject then begin
+    Audio := TJSONObject(Obj.GetValue('performanceLibrary'));
+    Result.PerformanceAttribute := Audio.GetValue<string>('attribute');
+    Result.SharedPatternID := Audio.GetValue<string>('id'); Result.LibraryRevision := Audio.GetValue<string>('revision');
+  end;
   if Obj.GetValue('tempo') is TJSONObject then begin
     Result.ConfigJSON := Obj.GetValue('tempo').ToJSON;
     if TJSONObject(Obj.GetValue('tempo')).GetValue('filePath') is TJSONString then Result.FilePath := TJSONObject(Obj.GetValue('tempo')).GetValue('filePath').Value;
@@ -417,6 +454,50 @@ begin
 end;
 procedure TMusicStudioDocument.AssignPsd(Index: Integer; const AssetID: string);
 begin MusicStudioAssignPsd(FRoot,Index,AssetID); end;
+procedure TMusicStudioDocument.SetPerformer(Index: Integer; const Attribute: string; const Slots: TArray<string>; UpdateSlots: Boolean; const ChoicesJSON: string);
+begin MusicStudioSetPerformer(FRoot,Index,Attribute,Slots,UpdateSlots,ChoicesJSON); end;
+procedure TMusicStudioDocument.WriteSmallElement(TrackIndex,SlotIndex,ClipIndex: Integer; const Mode,Choice: string; StartSeconds,LengthSeconds: Double);
+var Candidate: TJSONObject; Error: string;
+begin
+  Candidate := TJSONObject(FRoot.Clone);
+  try
+    MusicStudioWriteSmallElement(Candidate,TrackIndex,SlotIndex,ClipIndex,Mode,Choice,StartSeconds,LengthSeconds);
+    if not TryLoad(Candidate.ToJSON,Error) then raise Exception.Create(Error);
+  finally Candidate.Free; end;
+end;
+function TMusicStudioDocument.CopyTrack(Index: Integer): string;
+begin Result := MusicStudioCopyTrack(FRoot,Index); end;
+function TMusicStudioDocument.PasteTrack(const Text: string): Integer;
+var Candidate: TJSONObject; Error: string;
+begin
+  Candidate := TJSONObject(FRoot.Clone);
+  try
+    Result := MusicStudioPasteTrack(Candidate,Text);
+    if not TryLoad(Candidate.ToJSON,Error) then raise Exception.Create(Error);
+  finally Candidate.Free; end;
+end;
+procedure TMusicStudioDocument.RenamePerformance(const Attribute,SharedID,Name: string);
+var V: TJSONValue; O,R: TJSONObject;
+begin
+  if PatternArray=nil then Exit;
+  for V in PatternArray do begin
+    O := TJSONObject(V); R := O.GetValue('performanceLibrary') as TJSONObject;
+    if (R<>nil) and (R.GetValue<string>('attribute')=Attribute) and (R.GetValue<string>('id')=SharedID) then
+      SetValue(O,'name',TJSONString.Create(Name));
+  end;
+end;
+function TMusicStudioDocument.ImportPerformance(const Pattern: TMusicStudioPattern): Integer;
+var I: Integer; P: TMusicStudioPattern;
+begin
+  if (Pattern.Kind<>'performance') or (PerformanceKindIndex(Pattern.PerformanceAttribute)<0) or
+    (Pattern.SharedPatternID='') or (Pattern.LibraryRevision='') then raise Exception.Create('共通演奏の参照が不正です。');
+  for I := 0 to PatternCount-1 do begin
+    P := PatternAt(I);
+    if (P.Kind='performance') and (P.SharedPatternID=Pattern.SharedPatternID) and
+      (P.PerformanceAttribute=Pattern.PerformanceAttribute) and (P.LibraryRevision=Pattern.LibraryRevision) then Exit(I);
+  end;
+  Result := AddPerformance; P := Pattern; P.ID := PatternAt(Result).ID; UpdatePattern(P);
+end;
 function TMusicStudioDocument.AddSinging: Integer;
 var
   Items: TJSONArray;
@@ -482,8 +563,16 @@ begin
     try
     SetValue(Obj, 'name', TJSONString.Create(Pattern.Name));
     SetValue(Obj, 'color', TJSONString.Create(Pattern.Color));
-    if Pattern.Kind='performance' then SetValue(Obj,'performance',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
+    if Pattern.Kind='performance' then begin
+      SetValue(Obj,'performance',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
+      if Pattern.PerformanceAttribute<>'' then begin
+        Audio := TJSONObject.Create; Audio.AddPair('attribute',Pattern.PerformanceAttribute);
+        Audio.AddPair('id',Pattern.SharedPatternID); Audio.AddPair('revision',Pattern.LibraryRevision);
+        SetValue(Obj,'performanceLibrary',Audio);
+      end;
+    end;
     if Pattern.Kind='tempo' then SetValue(Obj,'tempo',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
+    if Pattern.Kind='selection' then SetValue(Obj,'selection',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
     if Pattern.Kind = 'audio' then
     begin
       Audio := Obj.GetValue('audio') as TJSONObject;
@@ -495,6 +584,7 @@ begin
       Audio := Obj.GetValue('singing') as TJSONObject;
       SetValue(Audio, 'filePath', TJSONString.Create(Pattern.FilePath));
       SetValue(Audio, 'trackIndex', TJSONNumber.Create(Pattern.SourceTrack));
+      SetValue(Audio, 'sourceStartSeconds',TJSONNumber.Create(Pattern.SourceStartSeconds));
     end;
     if (Pattern.Kind = 'audio') or (Pattern.Kind = 'singing') then
       SetValue(Audio, 'durationSeconds', TJSONNumber.Create(Pattern.Duration));
@@ -586,6 +676,10 @@ begin
   if (TrackIndex<0) or (TrackIndex>=TrackCount) then begin ErrorText := '配置先トラックを選択してください。'; Exit; end;
   for I := 0 to PatternCount-1 do begin
     P := PatternAt(I); if P.ID<>PatternID then Continue;
+    if (P.Kind='performance') and (P.PerformanceAttribute<>'') and
+      (P.PerformanceAttribute<>TrackAt(TrackIndex).PerformanceAttribute) then begin
+      ErrorText := '配置先の演奏属性が一致しません。'; Exit;
+    end;
     if not ((P.Kind='performance') or (P.Kind='tempo')) then begin ErrorText := 'この属性は秒で配置します。'; Exit; end;
     if (P.Kind='performance') and (MusicStudioPerformanceLayerAsset(P.ConfigJSON)<>'') and
       (MusicStudioPerformanceLayerAsset(P.ConfigJSON)<>TrackAt(TrackIndex).PsdAssetID) then begin
@@ -606,7 +700,9 @@ end;
 procedure TMusicStudioDocument.RemovePlacement(TrackIndex, ClipIndex: Integer);
 begin RemovePlacement(TrackIndex,0,ClipIndex); end;
 procedure TMusicStudioDocument.RemovePlacement(TrackIndex,SlotIndex,ClipIndex: Integer);
-begin ApplyTimingMutation(procedure begin MusicStudioRemovePlacement(FRoot,TrackIndex,SlotIndex,ClipIndex); end); end;
+begin ApplyTimingMutation(procedure begin
+  MusicStudioRemovePlacement(FRoot,TrackIndex,SlotIndex,ClipIndex); MusicStudioPruneSmallElements(FRoot);
+end); end;
 procedure TMusicStudioDocument.MovePlacement(TrackIndex, ClipIndex: Integer; StartSeconds, LengthSeconds: Double);
 begin MovePlacement(TrackIndex,0,ClipIndex,StartSeconds,LengthSeconds); end;
 procedure TMusicStudioDocument.MovePlacement(TrackIndex,SlotIndex,ClipIndex: Integer; StartSeconds,LengthSeconds: Double);

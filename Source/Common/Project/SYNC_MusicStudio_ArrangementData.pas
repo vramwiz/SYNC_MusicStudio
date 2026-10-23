@@ -13,12 +13,15 @@ type
     ID, Kind, Name, Color: string;
     Order: Integer;
     Accepts: TArray<string>;
+    Choices: TArray<string>; // PSDの意味名候補。仮想通常/非表示はここへ混ぜない。
     Clips: TArray<TMusicStudioPlacement>;
   end;
   TMusicStudioTrack = record
-    ID, Kind, Name, Color, PsdPath, PsdAssetID, Role: string;
+    ID, Kind, Name, Color, PsdPath, PsdAssetID, Role, PerformanceAttribute: string;
     PsdTransform: TMusicStudioPsdTransform;
     Slots: TArray<TMusicStudioSlot>;
+    ProvidedSlots: TArray<string>; // PSD解析が提供した能力。既存の手動/配置済み枠とは区別する。
+    HasCapabilityMetadata: Boolean;
     Clips: TArray<TMusicStudioPlacement>; // 旧単一スロットAPIの読取互換。先頭スロットのみ。
   end;
 // 検証のみ。旧1/新2を識別し、ID・受入属性・親slotId・時刻を確認する。Rootは変更しない。
@@ -59,7 +62,8 @@ function MusicStudioSlotCompatible(const PatternKind: string; const Slot: TMusic
 function MusicStudioCompatible(const PatternKind, TrackKind: string; out Reason: string): Boolean;
 function MusicStudioSlotKindName(const Kind: string): string;
 implementation
-uses System.SysUtils, System.Math, System.Generics.Collections, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_ClipTempo;
+uses System.SysUtils, System.Math, System.Generics.Collections, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_ClipTempo,
+  SYNC_MusicStudio_SmallSlotData;
 function NewID: string;
 var G: TGUID;
 begin CreateGUID(G); Result := GUIDToString(G); end;
@@ -87,12 +91,15 @@ function MusicStudioSlotKindName(const Kind: string): string;
 begin
   if Kind = 'audio' then Result := '音声'
   else if Kind = 'singing' then Result := '歌唱 / 口パク'
-  else if Kind = 'psd' then Result := '歌唱PSD'
+  else if Kind = 'psd' then Result := 'PSD割当'
   else if Kind = 'instrument' then Result := '楽器'
   else if Kind = 'animation' then Result := 'アニメーション'
   else if Kind = 'performance' then Result := '演奏'
   else if Kind = 'tempo' then Result := 'テンポ'
   else if Kind = 'emotion' then Result := '表情'
+  else if Kind = 'face' then Result := '顔色'
+  else if Kind = 'pose' then Result := 'ポーズ'
+  else if Kind = 'symbol' then Result := '記号'
   else if Kind = 'rhythm' then Result := 'リズム同期（属性編集・描画は準備中）'
   else if Kind = 'generic' then Result := '汎用'
   else Result := '未対応属性: ' + Kind;
@@ -306,7 +313,7 @@ begin Result := TJSONArray(TrackObject(Root,TrackIndex).GetValue('slots')); end;
 function SlotObject(Root: TJSONObject; TrackIndex,SlotIndex: Integer): TJSONObject;
 begin Result := TJSONObject(SlotArray(Root,TrackIndex).Items[SlotIndex]); end;
 function MusicStudioTrackAt(Root: TJSONObject; Index: Integer): TMusicStudioTrack;
-var Obj,SObj,Clip: TJSONObject; V: TJSONValue; Slots,Clips: TJSONArray; I,J: Integer; ErrorText: string;
+var Obj,SObj,Clip: TJSONObject; V,Choice: TJSONValue; Slots,Clips: TJSONArray; I,J: Integer; ErrorText: string;
 begin
   Result := Default(TMusicStudioTrack); V := TJSONArray(Root.GetValue('tracks')).Items[Index];
   if not (V is TJSONObject) then begin Result.Name := '未対応の旧トラック'; Exit; end;
@@ -320,12 +327,18 @@ begin
     TextField(TJSONObject(Obj.GetValue('psd')),'assetId',Result.PsdAssetID);
     ReadMusicStudioPsdTransform(TJSONObject(Obj.GetValue('psd')).GetValue('transform'),Result.PsdTransform,ErrorText);
     TextField(Obj,'role',Result.Role);
+    TextField(Obj,'performanceAttribute',Result.PerformanceAttribute);
+    Result.HasCapabilityMetadata := Obj.GetValue('providedSlots') is TJSONArray;
+    if Obj.GetValue('providedSlots') is TJSONArray then
+      for V in TJSONArray(Obj.GetValue('providedSlots')) do Result.ProvidedSlots := Result.ProvidedSlots+[V.Value];
   end;
   Slots := TJSONArray(Obj.GetValue('slots')); SetLength(Result.Slots,Slots.Count);
   for I := 0 to Slots.Count - 1 do begin
     SObj := TJSONObject(Slots.Items[I]); TextField(SObj,'id',Result.Slots[I].ID); TextField(SObj,'kind',Result.Slots[I].Kind);
     TextField(SObj,'name',Result.Slots[I].Name); TextField(SObj,'color',Result.Slots[I].Color);
     Result.Slots[I].Order := I; ReadAccepts(SObj,Result.Slots[I].Accepts);
+    if SObj.GetValue('choices') is TJSONArray then for Choice in TJSONArray(SObj.GetValue('choices')) do
+      Result.Slots[I].Choices := Result.Slots[I].Choices+[Choice.Value];
     Clips := TJSONArray(SObj.GetValue('clips')); SetLength(Result.Slots[I].Clips,Clips.Count);
     for J := 0 to Clips.Count - 1 do begin
       Clip := TJSONObject(Clips.Items[J]); Result.Slots[I].Clips[J].ID := Clip.GetValue('id').Value;
@@ -356,20 +369,16 @@ end;
 function MusicStudioAddTrack(Root: TJSONObject; const Kind: string): Integer;
 var Obj,Psd: TJSONObject; Items: TJSONArray; Name,Color,SlotKind: string;
 begin
-  if Kind = 'audio' then begin Name := '音声トラック'; Color := '#6FBFAD'; SlotKind := 'audio'; end
-  else if (Kind = 'psd') or (Kind='instrument') then begin Name := '歌唱トラック'; Color := '#CC8CE0'; SlotKind := 'psd'; end
+  if Kind = 'audio' then begin Name := '音楽トラック'; Color := '#6FBFAD'; SlotKind := 'audio'; end
+  else if (Kind = 'psd') or (Kind='instrument') or (Kind='performer') then begin Name := '演奏者トラック'; Color := '#CC8CE0'; SlotKind := 'psd'; end
   else raise Exception.Create('未対応のトラック種別です。');
   Items := TJSONArray(Root.GetValue('tracks')); Result := Items.Count;
   Obj := TJSONObject.Create; Obj.AddPair('id',NewID);
-  if Kind='instrument' then begin Obj.AddPair('kind','psd'); Obj.AddPair('role','instrument'); Name := '楽器トラック'; end
-  else begin Obj.AddPair('kind',Kind); if Kind='psd' then Obj.AddPair('role','singing'); end;
+  if Kind<>'audio' then begin Obj.AddPair('kind','psd'); Obj.AddPair('role','performer'); end
+  else Obj.AddPair('kind',Kind);
   Obj.AddPair('name',Name+' '+IntToStr(Result+1)); Obj.AddPair('color',Color); Obj.AddPair('slots',TJSONArray.Create);
-  if (Kind = 'psd') or (Kind='instrument') then begin Psd := TJSONObject.Create; Psd.AddPair('filePath',''); Obj.AddPair('psd',Psd); end;
+  if Kind<>'audio' then begin Psd := TJSONObject.Create; Psd.AddPair('filePath',''); Obj.AddPair('psd',Psd); end;
   Items.AddElement(Obj); if not Assigned(Root.GetValue('arrangementVersion')) or (Root.GetValue('arrangementVersion').Value<>'3') then Put(Root,'arrangementVersion',TJSONNumber.Create(2)); MusicStudioAddSlot(Root,Result,SlotKind);
-  if Kind<>'audio' then begin
-    MusicStudioAddSlot(Root,Result,'singing'); MusicStudioAddSlot(Root,Result,'emotion'); MusicStudioAddSlot(Root,Result,'animation');
-    if Kind='instrument' then begin MusicStudioAddSlot(Root,Result,'instrument'); MusicStudioAddSlot(Root,Result,'performance'); end;
-  end;
 end;
 function PatternKind(Root: TJSONObject; const ID: string): string;
 var V: TJSONValue;

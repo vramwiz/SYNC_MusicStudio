@@ -30,6 +30,7 @@ begin
     Area := Bounds; Area.Left := Max(Allowed.Left,Metrics.XAtSeconds(StartSeconds)); Area.Right := Min(Allowed.Right,Metrics.XAtSeconds(EndSeconds));
     R := Bounds; R.Left := Round(EnsureRange(Metrics.XAtSeconds(StartSeconds)-(StartSeconds-Base)*Scale,-500000000.0,500000000.0));
     R.Right := R.Left+Max(1,Ceil(Min(1000000000.0,Clip.LengthSeconds*Scale)));
+    if Pattern.Kind='singing' then R.Left := Round(EnsureRange(R.Left-Pattern.SourceStartSeconds*Scale,-500000000.0,500000000.0));
     if Pattern.Kind='audio' then Wave.Draw(Canvas,R,Area,Wave.Find(Pattern.FilePath),Scale,Pattern.Volume,PPI,Background,Foreground)
     else if Pattern.Kind='singing' then Visual.DrawRoll(Canvas,R,Area,Visual.Find(vkMidi,Pattern.FilePath),Pattern.SourceTrack,Scale,PPI,Background,Foreground)
     else Performance.Draw(Canvas,R,Area,Pattern.ID,Clip.StartBeat,Scale,PPI,Background,Foreground);

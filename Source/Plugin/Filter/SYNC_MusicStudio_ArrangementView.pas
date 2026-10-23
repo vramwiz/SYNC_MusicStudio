@@ -14,6 +14,7 @@ type
   TMusicStudioClipResizeEvent = procedure(TrackIndex, SlotIndex, ClipIndex: Integer; StartSeconds,LengthSeconds: Double) of object;
   TMusicStudioSeekEvent = procedure(Seconds: Double) of object;
   TMusicStudioTempoMenuEvent = procedure(Beat: Double) of object;
+  TMusicStudioSmallMenuEvent = procedure(TrackIndex,SlotIndex,ClipIndex: Integer; Seconds: Double; const ScreenPoint: TPoint) of object;
   TMusicStudioArrangementRow = record
     TrackIndex, SlotIndex: Integer; // -1は見出し/折りたたみサマリー。展開状態と選択は独立。
   end;
@@ -35,6 +36,7 @@ type
     FOnSelectionChange: TNotifyEvent;
     FOnSeek: TMusicStudioSeekEvent;
     FOnTempoMenu: TMusicStudioTempoMenuEvent;
+    FOnSmallMenu: TMusicStudioSmallMenuEvent;
     FPlayhead: Double;
     FExpandedTrack: Integer;
     FWaveCache: TMusicStudioWaveCache;
@@ -48,6 +50,8 @@ type
     procedure SetSilentVisualMode(Value: Boolean);
     function RowSize(Index: Integer): Integer;
     function RowTop(Index: Integer): Integer;
+    function SlotVisible(const Track: TMusicStudioTrack; SlotIndex: Integer): Boolean;
+    function SummaryOffset(const Track: TMusicStudioTrack; SlotIndex: Integer): Integer;
     procedure SyncWaveSources;
     procedure WaveTimer(Sender: TObject);
     procedure PaintClip(TrackIndex, SlotIndex, ClipIndex: Integer; const Area: TRect; Summary: Boolean);
@@ -85,6 +89,7 @@ type
     function TrackAtPoint(X, Y: Integer): Integer;
     function SlotAtPoint(X, Y: Integer): Integer;
     function SlotRowTop(TrackIndex, SlotIndex: Integer): Integer;
+    function SlotHeight(const Kind: string): Integer;
     function TrackRowTop(TrackIndex: Integer): Integer;
     procedure SelectTrack(Index: Integer);
     procedure SelectSlot(TrackIndex, SlotIndex: Integer);
@@ -112,6 +117,7 @@ type
     property Playhead: Double read FPlayhead;
     property OnSeek: TMusicStudioSeekEvent read FOnSeek write FOnSeek;
     property OnTempoMenu: TMusicStudioTempoMenuEvent read FOnTempoMenu write FOnTempoMenu;
+    property OnSmallMenu: TMusicStudioSmallMenuEvent read FOnSmallMenu write FOnSmallMenu;
     property SelectedTrack: Integer read FSelectedTrack;
     property SelectedSlot: Integer read FSelectedSlot;
     property SelectedClip: Integer read FSelectedClip;
@@ -127,7 +133,8 @@ type
 implementation
 
 uses System.SysUtils, System.Math, System.UITypes, System.Generics.Collections, Winapi.Windows, Vcl.Graphics,
-  SYNC_MusicStudio_BeatData, SYNC_MusicStudio_TimelineContent;
+  SYNC_MusicStudio_BeatData, SYNC_MusicStudio_TimelineContent, SYNC_MusicStudio_SmallSlotData,
+  SYNC_MusicStudio_PerformanceKinds;
 
 function RGBColor(const Hex: string): TColor;
 var N: Integer;
@@ -199,13 +206,32 @@ begin
   if WaveChanged or VisualChanged then Invalidate;
 end;
 
+function TMusicStudioArrangementView.SlotVisible(const Track: TMusicStudioTrack; SlotIndex: Integer): Boolean;
+var K: string;
+begin
+  Result := True;
+  if not Track.HasCapabilityMetadata then Exit;
+  if not (MusicStudioSmallSlot(Track.Slots[SlotIndex].Kind) or (Track.Slots[SlotIndex].Kind='singing') or (Track.Slots[SlotIndex].Kind='performance')) then Exit;
+  Result := False; for K in Track.ProvidedSlots do if K=Track.Slots[SlotIndex].Kind then Exit(True);
+end;
+function TMusicStudioArrangementView.SummaryOffset(const Track: TMusicStudioTrack; SlotIndex: Integer): Integer;
+var I: Integer;
+begin Result := 0; for I := 0 to SlotIndex-1 do if SlotVisible(Track,I) then Inc(Result,Scale(48)); end;
+function TMusicStudioArrangementView.SlotHeight(const Kind: string): Integer;
+begin
+  if (Kind='singing') or (Kind='performance') then Result := Scale(104)
+  else if MusicStudioSmallSlot(Kind) then Result := Scale(28)
+  else if Kind='psd' then Result := Scale(32) else Result := RowHeight;
+end;
 function TMusicStudioArrangementView.RowSize(Index: Integer): Integer;
 var T: TMusicStudioTrack;
 begin
+  T := FDocument.TrackAt(FRows[Index].TrackIndex);
+  if FRows[Index].SlotIndex>=0 then Exit(SlotHeight(T.Slots[FRows[Index].SlotIndex].Kind));
   Result := RowHeight;
+  if T.Kind='psd' then Result := Scale(104);
   if (FRows[Index].SlotIndex < 0) and not TrackExpanded(FRows[Index].TrackIndex) then begin
-    T := FDocument.TrackAt(FRows[Index].TrackIndex);
-    Result := Max(Result,Length(T.Slots)*Scale(48));
+    Result := Max(Result,SummaryOffset(T,Length(T.Slots)));
   end;
 end;
 function TMusicStudioArrangementView.RowTop(Index: Integer): Integer;
@@ -265,6 +291,7 @@ begin
         if Y+RowSize(I) <= RulerHeight then Continue;
         T := FDocument.TrackAt(FRows[I].TrackIndex);
         for J := 0 to High(T.Slots) do begin
+          if not SlotVisible(T,J) then Continue;
           if (FRows[I].SlotIndex >= 0) and (FRows[I].SlotIndex <> J) then Continue;
           if (FRows[I].SlotIndex < 0) and TrackExpanded(FRows[I].TrackIndex) then Continue;
           for K := 0 to High(T.Slots[J].Clips) do begin
@@ -352,6 +379,7 @@ begin
     if FSelectedTrack >= 0 then begin
       T := FDocument.TrackAt(FSelectedTrack);
       if FSelectedSlot >= Length(T.Slots) then begin FSelectedSlot := -1; FSelectedClip := -1; end;
+      if (FSelectedSlot>=0) and not SlotVisible(T,FSelectedSlot) then begin FSelectedSlot := -1; FSelectedClip := -1; end;
       if FSelectedSlot >= 0 then if FSelectedClip >= Length(T.Slots[FSelectedSlot].Clips) then FSelectedClip := -1;
     end;
     for I := 0 to TrackCount - 1 do begin
@@ -360,6 +388,7 @@ begin
       for S in T.Slots do for C in S.Clips do EndTime := Max(EndTime,C.StartSeconds+C.LengthSeconds+30);
       if TrackExpanded(I) then begin
         for J := 0 to High(T.Slots) do begin
+          if not SlotVisible(T,J) then Continue;
           N := Length(FRows); SetLength(FRows,N+1); FRows[N].TrackIndex := I; FRows[N].SlotIndex := J;
         end;
       end;
@@ -422,26 +451,17 @@ end;
 function TMusicStudioArrangementView.TrackRowTop(TrackIndex: Integer): Integer;
 begin Result := SlotRowTop(TrackIndex,-1); end;
 function TMusicStudioArrangementView.TrackThumbnailRect(TrackIndex: Integer): TRect;
-var I: Integer; T: TMusicStudioTrack; Kind: string;
+var Y: Integer;
 begin
   Result := Rect(0,0,0,0);
   if (FDocument=nil) or (TrackIndex<0) or (TrackIndex>=FDocument.TrackCount) then Exit;
-  T := FDocument.TrackAt(TrackIndex);
-  for I := 0 to High(T.Slots) do for Kind in T.Slots[I].Accepts do if Kind='psd' then
-    Exit(SlotThumbnailRect(TrackIndex,I));
+  if FDocument.TrackAt(TrackIndex).Kind<>'psd' then Exit;
+  Y := TrackRowTop(TrackIndex); Result := Rect(Scale(8),Y+Scale(34),Scale(76),Y+Scale(100));
 end;
 function TMusicStudioArrangementView.SlotThumbnailRect(TrackIndex,SlotIndex: Integer): TRect;
-var Y: Integer; Kind: string; Slot: TMusicStudioSlot; AcceptsPsd: Boolean;
 begin
+  // 旧公開入口は残し、PSD画像はトラック見出しへ集約する。
   Result := Rect(0,0,0,0);
-  if (FDocument=nil) or not TrackExpanded(TrackIndex) or (SlotIndex<0) or
-    (TrackIndex<0) or (TrackIndex>=FDocument.TrackCount) then Exit;
-  if (FDocument.TrackAt(TrackIndex).Kind<>'psd') or (SlotIndex>=Length(FDocument.TrackAt(TrackIndex).Slots)) then Exit;
-  Slot := FDocument.TrackAt(TrackIndex).Slots[SlotIndex]; AcceptsPsd := False;
-  for Kind in Slot.Accepts do if Kind='psd' then AcceptsPsd := True;
-  if not AcceptsPsd then Exit;
-  Y := SlotRowTop(TrackIndex,SlotIndex);
-  Result := Rect(HeaderWidth-Scale(52),Y+Scale(7),HeaderWidth-Scale(8),Y+Scale(51));
 end;
 
 procedure TMusicStudioArrangementView.SetZoom(PixelsPerSecond: Double);
@@ -492,14 +512,14 @@ function TMusicStudioArrangementView.TrackAtPoint(X,Y: Integer): Integer;
 var I: Integer;
 begin I := RowAtPoint(X,Y); if I < 0 then Result := -1 else Result := FRows[I].TrackIndex; end;
 function TMusicStudioArrangementView.SlotAtPoint(X,Y: Integer): Integer;
-var I,Count: Integer;
+var I,J: Integer; T: TMusicStudioTrack;
 begin
   Result := -1; I := RowAtPoint(X,Y); if I < 0 then Exit;
   Result := FRows[I].SlotIndex;
   if (Result < 0) and (X >= HeaderWidth) and not TrackExpanded(FRows[I].TrackIndex) then begin
-    Count := Length(FDocument.TrackAt(FRows[I].TrackIndex).Slots);
-    if Count = 1 then Result := 0
-    else if Count > 1 then Result := Min(Count-1,(Y-RowTop(I)) div Scale(48));
+    T := FDocument.TrackAt(FRows[I].TrackIndex);
+    for J := 0 to High(T.Slots) do if SlotVisible(T,J) and
+      (Y-RowTop(I)>=SummaryOffset(T,J)) and (Y-RowTop(I)<SummaryOffset(T,J)+Scale(48)) then Exit(J);
   end;
 end;
 
@@ -521,18 +541,17 @@ end;
 function TMusicStudioArrangementView.SecondsAtSlot(X,TrackIndex,SlotIndex: Integer): Double;
 begin Result := Metrics.SecondsAtX(X); end;
 function TMusicStudioArrangementView.ClipRect(TrackIndex,SlotIndex: Integer; const Clip: TMusicStudioPlacement): TRect;
-var Y,H,Count: Integer; Pattern: TMusicStudioPattern;
+var Y,H: Integer; Pattern: TMusicStudioPattern; Track: TMusicStudioTrack;
 begin
+  Track := FDocument.TrackAt(TrackIndex);
   Y := SlotRowTop(TrackIndex,SlotIndex);
-  H := RowHeight;
+  H := SlotHeight(Track.Slots[SlotIndex].Kind);
   if not TrackExpanded(TrackIndex) then begin
-    Count := Length(FDocument.TrackAt(TrackIndex).Slots);
-    if Count > 1 then H := Scale(48);
-    Y := TrackRowTop(TrackIndex)+SlotIndex*H;
+    H := Scale(48); Y := TrackRowTop(TrackIndex)+SummaryOffset(Track,SlotIndex);
   end;
   Result := Rect(Metrics.XAtSeconds(Clip.StartSeconds), Y + Scale(1),
     Metrics.XAtSeconds(Clip.StartSeconds+Clip.LengthSeconds), Y + H - Scale(1));
-  if FindPattern(Clip.PatternID,Pattern) and ((Pattern.Kind='emotion') or (Pattern.Kind='performance') or (Pattern.Kind='tempo')) then
+  if FindPattern(Clip.PatternID,Pattern) and ((Pattern.Kind='selection') or (Pattern.Kind='emotion') or (Pattern.Kind='performance') or (Pattern.Kind='tempo')) then
     Result.Right := Max(Result.Right,Result.Left+Scale(9));
 end;
 
@@ -594,6 +613,10 @@ begin
     Canvas.Brush.Color := TitleColor; Canvas.Pen.Color := FrameColor;
     Canvas.Rectangle(R);
     Canvas.Brush.Style := bsClear; Canvas.Font.Color := ClipTextColor(TitleColor);
+    if MusicStudioSmallSlot(T.Slots[SlotIndex].Kind) and not Summary then begin
+      TextRect := R; Inc(TextRect.Left,Scale(6)); Inc(TextRect.Top,Scale(4));
+      DrawLabel(Canvas,TextRect,P.Name); Exit;
+    end;
     TextRect := R; TextRect.Left := Max(Area.Left+Scale(4),R.Left+Scale(7));
     TextRect.Right := Min(Area.Right,R.Right-Scale(4)); TextRect.Top := R.Top+Scale(1);
     TextRect.Bottom := R.Top+Scale(16);
@@ -623,7 +646,9 @@ begin
       WaveRect.Left := R.Left;
       if Detail='' then DrawMusicStudioTimelineContent(Canvas,Metrics,C,P,WaveRect,Area,FWaveCache,FVisualCache,FPerformanceCache,CurrentPPI,Background,Foreground)
       else begin TextRect.Top := WaveRect.Top; TextRect.Bottom := WaveRect.Bottom; DrawLabel(Canvas,TextRect,Detail); end;
-    end else if (P.Kind='performance') or (P.Kind='tempo') then begin
+    end else if P.Kind='performance' then begin
+      // 大型枠の本文は将来の演奏内容表示用に確保する。
+    end else if P.Kind='tempo' then begin
       WaveRect.Left := R.Left;
       DrawMusicStudioTimelineContent(Canvas,Metrics,C,P,WaveRect,Area,FWaveCache,FVisualCache,FPerformanceCache,CurrentPPI,Background,Foreground);
       Detail := FPerformanceCache.PatternMessage(P.ID);
@@ -715,8 +740,7 @@ begin
     if (TrackIndex = FSelectedTrack) and (SlotIndex = FSelectedSlot) and (SlotIndex >= 0) then Canvas.Brush.Color := $00564D41
     else if TrackIndex = FSelectedTrack then Canvas.Brush.Color := $00433F38 else Canvas.Brush.Color := $002D2D2D;
     HeaderColor := Canvas.Brush.Color; TextRight := HeaderWidth-Scale(8);
-    ThumbRect := SlotThumbnailRect(TrackIndex,SlotIndex);
-    if not IsRectEmpty(ThumbRect) then TextRight := HeaderWidth-Scale(58);
+    if SlotIndex<0 then ThumbRect := TrackThumbnailRect(TrackIndex) else ThumbRect := Rect(0,0,0,0);
     Canvas.FillRect(Rect(0,Y,HeaderWidth,Y + H));
     if SlotIndex >= 0 then begin Slot := T.Slots[SlotIndex]; Detail := Slot.Color; end else Detail := T.Color;
     Canvas.Brush.Color := RGBColor(Detail); Canvas.FillRect(Rect(0,Y,Scale(4),Y + H));
@@ -724,25 +748,17 @@ begin
     if SlotIndex < 0 then begin
       if TrackExpanded(TrackIndex) then Detail := '▼ '+T.Name else Detail := '▶ '+T.Name;
     end else Detail := '  '+Slot.Name;
-    DrawLabel(Canvas,Rect(Scale(14),LabelY + Scale(10),TextRight,LabelY + Scale(32)),Detail);
+    DrawLabel(Canvas,Rect(Scale(14),LabelY + Min(Scale(10),Max(Scale(3),(H-Scale(18)) div 2)),TextRight,LabelY + H),Detail);
     Canvas.Font.Color := $00AAAAAA;
-    if SlotIndex >= 0 then Detail := string.Join(' / ',Slot.Accepts)
-    else if T.Kind = 'audio' then Detail := Format('音声  ・  %dスロット',[Length(T.Slots)])
-    else if T.Kind = 'psd' then begin
-      Visual := FVisualCache.Find(vkPsd,T.PsdPath);
-      Detail := 'PSD読込中';
-      if Assigned(Visual) then case Visual.Status of
-        vsUnselected: Detail := 'PSD未割当';
-        vsMissing: Detail := 'PSD参照切れ';
-        vsBroken: Detail := 'PSD読込失敗';
-        vsReady: Detail := Format('PSD ・ %d枠',[Length(T.Slots)]);
-      end;
-      if Assigned(FSceneCache) then begin
-        Detail := FSceneCache.StatusForTrack(TrackIndex);
-        if Detail='' then Detail := Format('PSD ・ %d枠',[Length(T.Slots)]);
-      end;
-    end else Detail := '旧 / 未対応属性（保持）';
-    DrawLabel(Canvas,Rect(Scale(14),LabelY + Scale(36),TextRight,LabelY + RowHeight),Detail);
+    if SlotIndex<0 then begin
+      if T.Kind='psd' then begin
+        DrawLabel(Canvas,Rect(Scale(84),LabelY+Scale(36),TextRight,LabelY+Scale(60)),PerformanceKindName(T.PerformanceAttribute));
+        Detail := 'PSD未割当';
+        if FSceneCache<>nil then Detail := FSceneCache.StatusForTrack(TrackIndex)
+        else if T.PsdPath<>'' then Detail := '演奏者';
+        DrawLabel(Canvas,Rect(Scale(84),LabelY+Scale(64),TextRight,LabelY+Scale(100)),Detail);
+      end else DrawLabel(Canvas,Rect(Scale(14),LabelY+Scale(36),TextRight,LabelY+H),'音楽');
+    end;
     if not IsRectEmpty(ThumbRect) then begin
       Visual := FVisualCache.Find(vkPsd,T.PsdPath);
       Thumb := FVisualCache.Thumbnail(Visual,ThumbRect.Width,ThumbRect.Height,CurrentPPI,HeaderColor);
@@ -761,16 +777,17 @@ begin
     if SlotIndex < 0 then begin
       if not TrackExpanded(TrackIndex) and (Length(T.Slots) > 0) then begin
         for K := 0 to High(T.Slots) do begin
+          if not SlotVisible(T,K) then Continue;
           if Length(T.Slots[K].Clips) = 0 then begin
             Canvas.Brush.Style := bsClear; Canvas.Font.Color := $007C7C7C;
-            DrawLabel(Canvas,Rect(HeaderWidth+Scale(8),Max(RulerHeight,Y+K*Scale(48))+Scale(10),Area.Right,
-              Min(Area.Bottom,Y+(K+1)*Scale(48))),Format('%d:%s（空）',[K+1,T.Slots[K].Name]));
+            DrawLabel(Canvas,Rect(HeaderWidth+Scale(8),Max(RulerHeight,Y+SummaryOffset(T,K))+Scale(10),Area.Right,
+              Min(Area.Bottom,Y+SummaryOffset(T,K)+Scale(48))),Format('%d:%s（空）',[K+1,T.Slots[K].Name]));
             Canvas.Brush.Style := bsSolid;
           end;
           for J := 0 to High(T.Slots[K].Clips) do PaintClip(TrackIndex,K,J,Area,True);
           if Length(T.Slots) > 1 then begin
             Canvas.Pen.Color := $00444444;
-            Canvas.MoveTo(HeaderWidth,Y+(K+1)*Scale(48)); Canvas.LineTo(Area.Right,Y+(K+1)*Scale(48));
+            Canvas.MoveTo(HeaderWidth,Y+SummaryOffset(T,K)+Scale(48)); Canvas.LineTo(Area.Right,Y+SummaryOffset(T,K)+Scale(48));
           end;
         end;
       end else begin
@@ -785,7 +802,7 @@ begin
     try
       IntersectClipRect(Canvas.Handle,Area.Left,Area.Top,Area.Right,Area.Bottom);
       for J := 0 to High(Slot.Clips) do PaintClip(TrackIndex,SlotIndex,J,Area,False);
-      Canvas.Pen.Color := $00444444; Canvas.MoveTo(0,Y + RowHeight); Canvas.LineTo(ClientWidth,Y + RowHeight);
+      Canvas.Pen.Color := $00444444; Canvas.MoveTo(0,Y + H); Canvas.LineTo(ClientWidth,Y + H);
     finally RestoreDC(Canvas.Handle,Saved); end;
     finally RestoreDC(Canvas.Handle,SavedRow); Canvas.Refresh; end;
   end;
@@ -824,22 +841,23 @@ begin
   inherited;
 end;
 procedure TMusicStudioArrangementView.MouseDown(Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
-var T: TMusicStudioTrack; TrackIndex,SlotIndex,ClipIndex,Edge,OldTrack,OldSlot,OldClip: Integer;
+var T: TMusicStudioTrack; TrackIndex,SlotIndex,ClipIndex,Edge: Integer;
 begin
   inherited;
-  Edge := EmotionResizeEdgeAt(X,Y); OldTrack := FSelectedTrack; OldSlot := FSelectedSlot; OldClip := FSelectedClip;
   CancelInteraction;
   if (Button=mbRight) and (Y<RulerHeight) and (X>=HeaderWidth) then Exit;
   if (Button=mbLeft) and (Y<RulerHeight) and (X>=HeaderWidth) then begin
     if Assigned(FOnSeek) then FOnSeek(SecondsAtPoint(X)); Exit;
   end;
   TrackIndex := TrackAtPoint(X,Y); SlotIndex := SlotAtPoint(X,Y); ClipIndex := ClipAtPoint(X,Y);
-  if (OldTrack<>TrackIndex) or (OldSlot<>SlotIndex) or (OldClip<>ClipIndex) then Edge := 0;
   if (Button = mbLeft) and (X < HeaderWidth) and (SlotIndex < 0) and not (ssDouble in Shift) then begin
     ToggleTrack(TrackIndex); Exit;
   end;
   FSelectedTrack := TrackIndex; FSelectedSlot := SlotIndex; FSelectedClip := ClipIndex; Refresh;
+  Edge := EmotionResizeEdgeAt(X,Y);
   if Assigned(FOnSelectionChange) then FOnSelectionChange(Self);
+  if (Button=mbLeft) and (ClipIndex<0) and (SlotIndex>=0) and (X>=HeaderWidth) then
+    if MusicStudioSmallSlot(FDocument.TrackAt(TrackIndex).Slots[SlotIndex].Kind) and Assigned(FOnSeek) then FOnSeek(SecondsAtSlot(X,TrackIndex,SlotIndex));
   // VCLはDblClickでモーダル設定を閉じた後にもssDouble付きMouseDownを呼ぶ。
   // そのMouseDownで再捕捉すると、設定終了後にドラッグ状態が残ってしまう。
   if (Button = mbLeft) and not (ssDouble in Shift) and (FSelectedClip >= 0) then begin
@@ -860,6 +878,8 @@ end;
 procedure TMusicStudioArrangementView.DblClick;
 begin
   FDragging := False; FDragStarted := False; MouseCapture := False;
+  if (FDocument<>nil) and (FSelectedTrack>=0) and (FSelectedSlot>=0) then
+    if MusicStudioSmallSlot(FDocument.TrackAt(FSelectedTrack).Slots[FSelectedSlot].Kind) then Exit;
   inherited;
 end;
 
@@ -879,10 +899,19 @@ begin
   FHScroll.Position := EnsureRange(Round((AnchorBeat-Max(0,P.X-HeaderWidth)/Metrics.PixelsPerBeat)*64),0,FHScroll.Max);
 end;
 procedure TMusicStudioArrangementView.DoContextPopup(MousePos: TPoint; var Handled: Boolean);
+var TrackIndex,SlotIndex: Integer;
 begin
   if (MousePos.Y>=0) and (MousePos.Y<RulerHeight) and (MousePos.X>=HeaderWidth) and Assigned(FOnTempoMenu) then begin
     CancelInteraction; FOnTempoMenu(Metrics.BeatAtX(MousePos.X)); Handled := True;
-  end else inherited;
+  end else begin
+    TrackIndex := TrackAtPoint(MousePos.X,MousePos.Y); SlotIndex := SlotAtPoint(MousePos.X,MousePos.Y);
+    if (FDocument<>nil) and (TrackIndex>=0) and (SlotIndex>=0) and (MousePos.X>=HeaderWidth) and Assigned(FOnSmallMenu) then
+      if MusicStudioSmallSlot(FDocument.TrackAt(TrackIndex).Slots[SlotIndex].Kind) then begin
+        CancelInteraction; Handled := True;
+        FOnSmallMenu(TrackIndex,SlotIndex,ClipAtPoint(MousePos.X,MousePos.Y),SecondsAtSlot(MousePos.X,TrackIndex,SlotIndex),ClientToScreen(MousePos)); Exit;
+      end;
+    inherited;
+  end;
 end;
 
 procedure TMusicStudioArrangementView.MouseMove(Shift: TShiftState; X,Y: Integer);

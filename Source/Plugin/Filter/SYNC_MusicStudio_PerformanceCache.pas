@@ -6,7 +6,8 @@
 interface
 
 uses System.Types, System.Generics.Collections, Winapi.Windows, Vcl.Graphics,
-  SYNC_MusicStudio_PatternData, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_TempoPatternData;
+  SYNC_MusicStudio_PatternData, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_TempoPatternData,
+  SYNC_MusicStudio_InstrumentData;
 
 type
   TMusicStudioPerformanceSource = class
@@ -15,6 +16,8 @@ type
     Notes: TArray<TMusicStudioPerformanceNote>; // 開始拍順。
     Steps: TMusicStudioLayerStepData;
     Tempo: TMusicStudioTempoPatternData;
+    Instrument: TMusicStudioInstrumentData; // 共通区間のsnapshot。PaintでJSONを読まない。
+    InstrumentRows: TArray<string>;
     PrefixEnd: TArray<Double>; // 開始順に求めた最大終了拍。
     function FirstOverlap(Beat: Double): Integer;
     procedure Build(const Text: string; IsTempo: Boolean = False);
@@ -62,10 +65,23 @@ end;
 procedure TMusicStudioPerformanceSource.Build(const Text: string; IsTempo: Boolean);
 const MinimumPitchSpan = 5;
 var Data: TMusicStudioPerformanceData; I,Lowest,Highest: Integer; EndBeat: Double;
+  Block: TInstrumentBlock; Row: string; Found: Boolean;
 begin
   ConfigJSON := Text; Message := '';
   FreeAndNil(Steps); Steps := TMusicStudioLayerStepData.Create;
   FreeAndNil(Tempo);
+  FreeAndNil(Instrument); InstrumentRows := nil;
+  if not IsTempo and MusicStudioHasInstrumentTimeline(Text) then begin
+    Instrument := TMusicStudioInstrumentData.Create;
+    try
+      Instrument.Load(Text);
+      for Block in Instrument.Blocks do begin
+        Found := False; for Row in InstrumentRows do if Row=Block.Row then Found := True;
+        if not Found then InstrumentRows := InstrumentRows+[Block.Row];
+      end;
+    except on E: Exception do Message := E.Message; end;
+    Notes := nil; PrefixEnd := nil; PitchLow := 0; PitchSpan := Max(1,Length(InstrumentRows)); PitchHigh := PitchSpan-1; Exit;
+  end;
   if IsTempo then begin
     Tempo := TMusicStudioTempoPatternData.Create;
     try Tempo.LoadJSON(Text); Message := ''; except on E: Exception do Message := E.Message; end;
@@ -102,7 +118,7 @@ begin
   finally Data.Free; end;
 end;
 destructor TMusicStudioPerformanceSource.Destroy;
-begin Tempo.Free; Steps.Free; inherited; end;
+begin Instrument.Free; Tempo.Free; Steps.Free; inherited; end;
 
 constructor TMusicStudioPerformanceCache.Create;
 begin
@@ -157,6 +173,9 @@ var Source: TMusicStudioPerformanceSource;
 begin
   if not FSources.TryGetValue(PatternID,Source) then Exit('パターン参照切れ');
   if Source.Message <> '' then Exit(Source.Message);
+  if Source.Instrument<>nil then begin
+    if Source.Instrument.Blocks.Count=0 then Exit('演奏区間なし') else Exit('');
+  end;
   if Source.Tempo<>nil then Exit('');
   if (Source.Steps<>nil) and Source.Steps.Enabled then begin
     if Source.Steps.StepCount=0 then Exit('stepなし') else Exit('');
@@ -171,6 +190,7 @@ function TMusicStudioPerformanceCache.Tile(Source: TMusicStudioPerformanceSource
 var Key: string; Bitmap: TBitmap; I,Y,Margin,InnerHeight,NoteHeight,LeftX,RightX: Integer;
   TileStart,TileEnd,BaseSeconds,StartLocalBeat,EndLocalBeat,StartSeconds,EndSeconds,Center: Double;
   Note: TMusicStudioPerformanceNote; R: TRect; Step: TMusicStudioLayerStep; Point: TMusicStudioTempoPoint; EndPoint: Double;
+  Block: TInstrumentBlock; Lane: Integer;
 begin
   Key := 'e:'+IntToStr(Source.Revision)+':'+IntToStr(FTimingRevision)+':'+
     MusicStudioDoubleKey(StartBeat)+':'+IntToStr(Index)+':'+IntToStr(Height)+':'+IntToStr(PPI)+':'+
@@ -192,6 +212,17 @@ begin
     TileStart := Int64(Index)*256/PixelsPerSecond; TileEnd := (Int64(Index)+1)*256/PixelsPerSecond;
     StartLocalBeat := FTiming.SecondsToBeat(BaseSeconds+TileStart)-StartBeat;
     EndLocalBeat := FTiming.SecondsToBeat(BaseSeconds+TileEnd)-StartBeat;
+    if Source.Instrument<>nil then for Block in Source.Instrument.Blocks do begin
+      if (Block.StartBeat>=EndLocalBeat) or (Block.EndBeat<=StartLocalBeat) then Continue;
+      Lane := 0; for I := 0 to High(Source.InstrumentRows) do if Source.InstrumentRows[I]=Block.Row then Lane := I;
+      StartSeconds := FTiming.BeatToSeconds(StartBeat+Block.StartBeat)-BaseSeconds;
+      EndSeconds := FTiming.BeatToSeconds(StartBeat+Block.EndBeat)-BaseSeconds;
+      LeftX := Floor(EnsureRange(StartSeconds*PixelsPerSecond-Int64(Index)*256,0.0,256.0));
+      RightX := Ceil(EnsureRange(EndSeconds*PixelsPerSecond-Int64(Index)*256,0.0,256.0));
+      Y := Margin+Lane*InnerHeight div Source.PitchSpan;
+      Bitmap.Canvas.Brush.Color := Foreground;
+      Bitmap.Canvas.FillRect(Rect(LeftX,Y,Max(LeftX+1,RightX),Max(Y+1,Margin+(Lane+1)*InnerHeight div Source.PitchSpan)));
+    end;
     if Source.Tempo<>nil then for I := 0 to Source.Tempo.Timing.PointCount-1 do begin
       Point := Source.Tempo.Timing.TempoPoint(I); EndPoint := Source.Tempo.LengthBeats;
       if I+1<Source.Tempo.Timing.PointCount then EndPoint := Source.Tempo.Timing.TempoPoint(I+1).Beat;

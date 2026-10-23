@@ -14,14 +14,15 @@ type
 function MusicStudioLibraryItems(Document: TMusicStudioDocument; Store: TMusicStudioSharedPsdLibrary;
   const Kind, AssetID: string): TArray<TMusicStudioLibraryItem>; overload;
 function MusicStudioLibraryItems(Document: TMusicStudioDocument; Store: TMusicStudioSharedPsdLibrary;
-  const Kinds: TArray<string>; const AssetID: string): TArray<TMusicStudioLibraryItem>; overload;
+  const Kinds: TArray<string>; const AssetID: string; const Attribute: string = ''): TArray<TMusicStudioLibraryItem>; overload;
 function MusicStudioLibraryKinds(const Accepts: TArray<string>; const AssetID: string;
   AllowPsd: Boolean): TArray<string>;
 function MusicStudioReferenceIndex(Document: TMusicStudioDocument; const Kind,AssetID,SharedID: string): Integer;
 function MusicStudioEmotionItem(const Pattern: TMusicStudioPattern;
   const Assets: TArray<TMusicStudioPsdAsset>): TMusicStudioLibraryItem;
 implementation
-uses System.Generics.Collections, System.Hash, System.SysUtils, SYNC_MusicStudio_LayerStepData;
+uses System.Generics.Collections, System.Hash, System.SysUtils, SYNC_MusicStudio_LayerStepData,
+  SYNC_MusicStudio_PerformanceLibrary;
 function MusicStudioLibraryKinds(const Accepts: TArray<string>; const AssetID: string;
   AllowPsd: Boolean): TArray<string>;
 var Kind: string;
@@ -67,9 +68,10 @@ begin
   else Result := MusicStudioLibraryItems(Document,Store,TArray<string>.Create(Kind),AssetID);
 end;
 function MusicStudioLibraryItems(Document: TMusicStudioDocument; Store: TMusicStudioSharedPsdLibrary;
-  const Kinds: TArray<string>; const AssetID: string): TArray<TMusicStudioLibraryItem>;
+  const Kinds: TArray<string>; const AssetID: string; const Attribute: string): TArray<TMusicStudioLibraryItem>;
 var L: TList<TMusicStudioLibraryItem>; Item: TMusicStudioLibraryItem; A: TMusicStudioPsdAsset;
   SP: TMusicStudioSharedPattern; I: Integer; P: TMusicStudioPattern; Present: Boolean; Kind: string;
+  Performance: TMusicStudioPerformanceLibrary;
   function Accepts(const Value: string): Boolean;
   var K: string;
   begin Result := False; for K in Kinds do if K=Value then Exit(True); end;
@@ -77,6 +79,18 @@ begin
   Result := nil; if Document=nil then Exit;
   L := TList<TMusicStudioLibraryItem>.Create;
   try
+    if Accepts('performance') and (Attribute<>'') and (Store<>nil) then begin
+      Performance := TMusicStudioPerformanceLibrary.Create(Store.Root);
+      try
+        for P in Performance.Patterns(Attribute) do begin
+          Item := Default(TMusicStudioLibraryItem); Item.Pattern := P; Item.Shared := True; Item.PatternIndex := -1;
+          for I := 0 to Document.PatternCount-1 do
+            if (Document.PatternAt(I).Kind='performance') and (Document.PatternAt(I).SharedPatternID=P.SharedPatternID) and
+              (Document.PatternAt(I).LibraryRevision=P.LibraryRevision) and (Document.PatternAt(I).PerformanceAttribute=Attribute) then Item.PatternIndex := I;
+          L.Add(Item);
+        end;
+      finally Performance.Free; end;
+    end;
     if Accepts('psd') and Assigned(Store) then for A in Store.Assets do begin
       Item := Default(TMusicStudioLibraryItem); Item.PatternIndex := MusicStudioReferenceIndex(Document,'psd',A.ID,'');
       Item.Shared := True; Item.Missing := A.Missing; Item.Pattern.Kind := 'psd'; Item.Pattern.AssetID := A.ID;
@@ -103,6 +117,10 @@ begin
       P := Document.PatternAt(I);
       Kind := P.Kind;
       if not Accepts(Kind) then Continue;
+      if (Kind='performance') and (P.PerformanceAttribute<>'') then begin
+        // 旧版snapshotは配置済み作品の再生用。正本一覧へ別項目として増やさない。
+        Continue;
+      end;
       if (Kind='performance') and (MusicStudioPerformanceLayerAsset(P.ConfigJSON)<>'') and
         (MusicStudioPerformanceLayerAsset(P.ConfigJSON)<>AssetID) then Continue;
       if ((Kind='emotion') or (Kind='animation') or (Kind='instrument')) and (P.AssetID<>AssetID) then Continue;

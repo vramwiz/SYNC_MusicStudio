@@ -456,7 +456,7 @@ begin
           Pattern := FDocument.PatternAt(L); if (Pattern.ID<>Clip.PatternID) or (Pattern.Kind<>'singing') then Continue;
           Source := FSharedVisualCache.Find(vkMidi,Pattern.FilePath);
           if (Source=nil) or (Source.Status<>vsReady) or (Source.Rolls=nil) or not Source.Rolls.TryGetValue(Pattern.SourceTrack,Roll) then Continue;
-          LocalTime := FPosition-Clip.StartSeconds; NoteIndex := Roll.FirstOverlap(LocalTime);
+          LocalTime := FPosition-Clip.StartSeconds+Pattern.SourceStartSeconds; NoteIndex := Roll.FirstOverlap(LocalTime);
           while NoteIndex<Length(Roll.Notes) do begin
             Note := Roll.Notes[NoteIndex]; if Note.StartSeconds>LocalTime then Break;
             if LocalTime<Note.EndSeconds then Result := Result+Format('%s [%d] ',[Note.Lyric,Note.Key]); Inc(NoteIndex);
@@ -470,7 +470,8 @@ begin
         K := -1;
         for L := 0 to FDocument.PatternCount-1 do begin Pattern := FDocument.PatternAt(L); if Pattern.ID=Clip.PatternID then begin K := Pattern.SourceTrack; Break; end; end;
         for Note in FMidiJobs[J].Source.Notes do if (Note.TrackIndex=K) and
-          (FPosition-Clip.StartSeconds>=Note.StartSeconds) and (FPosition-Clip.StartSeconds<Note.EndSeconds) then
+          (FPosition-Clip.StartSeconds+Pattern.SourceStartSeconds>=Note.StartSeconds) and
+          (FPosition-Clip.StartSeconds+Pattern.SourceStartSeconds<Note.EndSeconds) then
           Result := Result+Format('%s [%d] ',[Note.Lyric,Note.Key]);
       end;
     end;

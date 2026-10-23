@@ -21,7 +21,7 @@ uses
   System.JSON,
   System.SysUtils,
   System.Classes,
-  SYNC_MusicStudio_PatternData, SYNC_MusicStudio_ArrangementData;
+  SYNC_MusicStudio_PatternData, SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_PerformerData;
 
 function RequireArray(Document: TJSONObject; const Name: string; out ErrorText: string): Boolean;
 begin
@@ -122,6 +122,8 @@ begin
       if not UpgradeMusicStudioArrangement(Document, ErrorText) or
         not ValidateMusicStudioArrangement(Document, ErrorText) then
         Exit;
+      if not MusicStudioValidatePerformers(Document,ErrorText) then Exit;
+      MusicStudioUpgradePerformers(Document);
       SourceText := Document.ToJSON;
       if (Pos(#13, SourceText) > 0) or (Pos(#10, SourceText) > 0) then
       begin

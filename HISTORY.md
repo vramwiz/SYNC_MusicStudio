@@ -1368,3 +1368,30 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - 変更した全DPRの参照欠損0、日本語pas/dprのUTF-8 BOM/CRLFとgit diff --checkを確認。追加unit/dfmには使用先があり、不要ソース/外部DLL依存の追加なし。誤って作成したBOMだけの一時ソース1件を内容確認後削除。継承UI/参照元を保持。過去に削除拒否された生成物は再試行せず、今回のInstrumentDCU 92件/15454999Bも保持する。
 - 作業開始終了のAup2/sample.aup2と配備auf2のSHA256一致。実共有設定/原PSD/参照元変更、配備、commit/pushなし。
 - 証拠root: C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-instrument-20261023/。common-instrument.psd、common-editor.png、common-project.json、common-analysis.json、instrument-analysis.json、build/、protected-before/after.json。初期のGUID API/欠損JSON項目例外を修正し、上記は修正後の結果。
+## 2026-10-23 演奏者トラック・属性別共通演奏管理（無配備）
+
+- 新方針をTRACK_SLOT_PATTERN_MANAGEMENT.mdへ整理し、受領方針/後続検討と今回の暫定決定を分離した。仕様34/DESIGN/note/DEVELOPMENTへ反映。約1500行の目安・機能別フォルダー分離・コメント規約を記録。
+- 新規トラックUIを音楽/演奏者の2種類へ統合。保存上のaudio/psdを維持し、旧PSD roleをperformerへ統合。新規演奏者はPSD割当枠のみを持ち、PSD/母音設定/既存プリセットから歌唱・演奏・表情・ポーズを提供する。
+- 固定属性vocal/guitar/bass/drums/keyboard/otherと仮の明示名「演奏属性:ドラム」等を集約。明示指定→一意構造→暗色固定選択の順。一般の四肢から楽器を推測せず、手動取消時は割当を変更しない。属性とPSD由来能力はトラックへ保存する。
+- 同じ能力の空スロットIDを保持し、不要になった自動空枠だけを削除。配置済み/手動枠は保持する。コピー/ペーストではトラック/枠/配置のIDだけを再発行し、PSD・共通パターン参照を再利用。参照切れを伴う貼付は候補Rootで検証し元文書を保つ。
+- 歌唱はプロジェクト内の全歌唱枠で共有。新規/再取込時に最初の音符から最後の音符までのsourceStartSeconds/durationSecondsを保存し、区間内休符を残す。旧未指定は0。描画/口パク/歌詞/タイムラインに同じ参照開始を適用した。
+- 演奏正本は既定Documents/SYNC_MusicStudio/Libraries/PerformancePatterns/<属性>/<GUID>.json。読取は作成せず、保存は排他・revision照合・同ディレクトリ一時ファイルから原子的公開。破損項目は他項目から分離する。属性一覧は全PSD/トラック/作品で共有する。
+- 共通演奏編集は全属性で同じInstrumentFrameを使い、保存時にPSD固有IDを除去。旧物理キーstepの強制共通化は拒否し、既存ローカル演奏は保持する。作品には共通ID/属性/版と配置時snapshotを保存。同一版は重複作成せず、正本更新で既存作品を自動変更しない暫定方式。
+- 専用NoAudioTests --performer-management最終成功。異なるPSDの同一属性一覧/別作品共有/両PSDへのD&D、異属性拒否、数値差分不足のSceneCache画素省略、歌唱の先頭休符除去、固定選択/取消、能力再適用時ID不変、トラック複製のID/参照、参照欠損貼付の原子性、旧版保持/保存競合、破損項目分離、パスキー拒否、原PSD hash不変を確認。共通区間UIの既存 --instrumentも関連確認として成功。
+- 共通区間のタイムライン描画を読込済みsnapshot/タイルへ追加。「音符なし」扱いにせず区間バーを表示する。テスト所有フォームのCanvas版PaintTo画像を目視確認。初回HDC版は子部品なしの背景だけとなったため証拠に使わず、Canvas版へ修正した。
+- 最終Delphi37 Win64 Debug→Releaseの無配備ビルドは警告/エラーなし。独立EditorPreview/Foundation再コンパイル成功。Release Foundationだけを1回実行しJSON/フォーム/登録/ABI最小入口成功。SDK映像全体・AviUtl2実機・実PSDは今回未確認。音声fixture/decode/試聴/waveOutとDPI試験、全体回帰の反復は行っていない（MIDI専用合成素材は無音解析のみ）。
+- Common/ProjectとPlugin/FilterのPerformance/Performerへ6ユニットを分離。変更した最大ユニットはSettingsForm 1341行、ほかは712行以下。新規公開境界に目的・所有権・保存/取消の副作用をコメントし、変更DPRの参照欠損0、UTF-8 BOM/CRLF、git diff --checkを確認。追加ソースはすべて使用され、不要ソース・新規外部DLLなし。旧継承UIを保持。以前に自動承認レビューで拒否された生成物の削除は再試行せず、既存InstrumentDCUを再利用した。
+- 作業開始終了のAup2/sample.aup2と配備auf2のSHA256一致。実共有ライブラリ/原PSD/参照元変更、配備、commit/pushなし。検証rootはTemp/SYNC_MusicStudio-performer-20261023/（final/、common-regression/、performer-tests.log、build/、foundation-release.log、protected-before/after.json、unit-lines.json）。
+- 固定属性の最終一覧・正式なPSD属性識別名・不足差分の代用・ライブラリ版更新の最終運用・表情/ポーズの管理範囲は仕様12節の後続事項。差分自動巡回/反復と未確定区間の画像プレビューは前回の未実装を継続する。
+## 2026-10-23 大小スロット・固定PSD表示・独立演出（無配備）
+
+- 追加指示をTRACK_SLOT_UI.mdへ整理し、仕様35/DESIGN/noteへ反映。大型104/小型28の共通時間軸、トラック固定列のPSD・名称・演奏属性、演奏本文の将来領域、既存歌唱ピアノロールを維持した。
+- PSD能力から顔色/ポーズ/記号を含む6種類を提供。PSD候補をslot.choicesへ値コピーし、メニュー/Paintで再読込しない。能力のない枠は非表示にし、配置済みデータは保持する。旧自動ポーズ枠は新kindへ移行する。
+- 小型の左空白クリックは選択/シークのみ。右クリックの追加/変更サブメニューと削除、中央移動・両端調整、作品Undo/Redoを接続した。仮想通常は実レイヤー名と分離し、記号に仮想非表示を追加。追加は既存グリッドと既定4秒を使う。
+- selection意味パターン＋既存clipsを使用。配置UIDを保持し、変更時は他配置からパターンを分離、孤立したselectionだけを整理する。共通演奏の名称更新は共通UIDで既存snapshotの名前だけへ反映し、演奏内容/版/配置参照を保つ。
+- SceneCacheの同時指定を独立>内部>PSD初期の順に統合。明示通常/記号非表示と終了後の内部復帰を実装。独立ポーズ実要素は演奏配置外、明示通常は内部ポーズも解除可能とした。旧物理stepへ独立指定を重ねる際は対象行だけを更新する。
+- 最終NoAudioTests --slot-ui成功。大小高さ、固定画像領域の横scroll不変、PSD候補、左クリック非追加、右追加開始/変更/削除、移動/左右端のnativeメッセージ、Undo/Redo、UID保持、初期/内部/独立の画素、記号消去、ポーズ抑制/終了復帰、欠損枠データ保持、原PSD hash不変を確認。既存 --performer-management と --instrumentも変更に関係する専用確認として1回ずつ成功。
+- 最終Debug→ReleaseをBuildLocalで無配備ビルドし警告/エラーなし。EditorPreview/Foundationを再コンパイルし、Release Foundation1回成功。DPI試験・音声fixture/decode/試聴/waveOut・全体回帰反復なし。実PSD/AviUtl2実機・SDK映像全体は今回未確認。
+- 追加2ユニットはPerformerフォルダーへ分離し、公開境界の所有権/副作用/仮想要素/保存範囲をコメント。SettingsForm1348行、ArrangementView977行。DPR参照欠損0、UTF-8 BOM/CRLF、git diff --check確認。不要になった旧スロット画像描画と旧プリセットからの能力追加処理を除去し、不要ソース追加なし。継承UIと以前削除拒否された生成物は保持した。
+- 証拠root: C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-slots-20261023/。final/slot-ui.pngは所有フォームのCanvas PaintToを目視確認し、PSD描画完了も確認。slot-tests.log、final/slot-project.json、management/、instrument/、build/、protected-before/after.json。保護対象aup2/配備auf2のSHA256一致。実共有設定/参照元変更、配備、commit/pushなし。
+- ユーザーの「あと5分程度」の指定後は機能を広げず、上記の検証・コメント・記録で区切った。差分自動巡回/反復と未確定編集区間の画像プレビューは従来の後続事項のまま。

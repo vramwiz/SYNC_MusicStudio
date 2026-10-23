@@ -21,6 +21,7 @@ type
   end;
   TInstrumentState = record
     Row,Choice: string;
+    SelectionMode: string; // 空/choiceは実候補、defaultはPSD初期状態、hiddenは記号の明示消去。
     Stage: Integer;
   end;
   TMusicStudioInstrumentRules = class
@@ -44,7 +45,7 @@ type
     function HasChoice(const Row,Choice: string): Boolean;
     function Stages(const Row,Choice: string): TArray<Integer>;
     // 指定なしは元の表示。欠損段階は当該グループを消し、ポーズは他の制御行を抑制する。
-    function Visibility(const States: TArray<TInstrumentState>): TJSONObject;
+    function Visibility(const States: TArray<TInstrumentState>; SpecifiedOnly: Boolean = False): TJSONObject;
     function DiagnosticJSON: string;
   end;
 implementation
@@ -162,13 +163,17 @@ begin
     Put(Target,Current,True); Current := FLayers[I].ParentKey;
   end;
 end;
-function TMusicStudioInstrumentRules.Visibility(const States: TArray<TInstrumentState>): TJSONObject;
-var R: TInstrumentReference; State: TInstrumentState; Pose,MatchingChannel: Boolean; Other: TInstrumentReference;
+function TMusicStudioInstrumentRules.Visibility(const States: TArray<TInstrumentState>; SpecifiedOnly: Boolean): TJSONObject;
+var R: TInstrumentReference; State: TInstrumentState; Pose,MatchingChannel,Included: Boolean; Other: TInstrumentReference;
   ActorParent: string; Layer: TDrumPsdLayer;
 begin
   Result := TJSONObject.Create;
   try
     for R in FReferences do begin
+      if SpecifiedOnly then begin
+        Included := False; for State in States do if State.Row=R.Row then Included := True;
+        if not Included then Continue;
+      end;
       Put(Result,R.Layer.Key,R.Layer.Visible);
       if FByKey.ContainsKey(R.PatternKey) then Put(Result,R.PatternKey,FLayers[FByKey[R.PatternKey]].Visible);
       if FByKey.ContainsKey(R.ChannelKey) then Put(Result,R.ChannelKey,FLayers[FByKey[R.ChannelKey]].Visible);
@@ -179,7 +184,12 @@ begin
     end;
     Pose := False; for State in States do if (State.Row='ポーズ') and HasChoice(State.Row,State.Choice) then Pose := True;
     for State in States do begin
-      if (Pose and (State.Row<>'ポーズ')) or not HasChoice(State.Row,State.Choice) then Continue;
+      if Pose and (State.Row<>'ポーズ') then Continue;
+      if (State.SelectionMode='hidden') and (State.Row='記号') then begin
+        for R in FReferences do if R.Row=State.Row then Put(Result,R.Layer.Key,False);
+        Continue;
+      end;
+      if (State.SelectionMode='default') or not HasChoice(State.Row,State.Choice) then Continue;
       for R in FReferences do if R.Row=State.Row then begin
         MatchingChannel := R.Kind=irkAction;
         if not MatchingChannel then for Other in FReferences do if (Other.ChannelKey=R.ChannelKey) and (Other.Choice=State.Choice) and not Other.Ambiguous then MatchingChannel := True;

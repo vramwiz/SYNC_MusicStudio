@@ -93,6 +93,14 @@
     <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <DCCReference Include="Source\Common\Project\Performer\SYNC_MusicStudio_SmallSlotData.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Performer\SYNC_MusicStudio_SmallSlotEditor.pas" />
+    <DCCReference Include="Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceKinds.pas" />
+    <DCCReference Include="Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceLibrary.pas" />
+    <DCCReference Include="Source\Common\Project\Performer\SYNC_MusicStudio_PerformerData.pas" />
+    <DCCReference Include="Source\Common\Project\Performer\SYNC_MusicStudio_PerformerPsd.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Performer\SYNC_MusicStudio_PerformerEditor.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas" />
     <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas" />
     <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentFrame.pas">

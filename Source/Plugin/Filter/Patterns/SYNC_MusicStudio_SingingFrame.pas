@@ -38,6 +38,8 @@ type
     procedure PollResults;
     function IsLoading: Boolean;
     function SelectedDuration: Double;
+    // MIDI原点から最初の有効音符まで。配置位置と分離して保存する。
+    function SelectedStartSeconds: Double;
     property FilePath: string read FPath;
     property SelectedTrack: Integer read FSelectedTrack;
     property Source: TMusicStudioSingingSource read FSource;
@@ -247,10 +249,18 @@ begin
 end;
 
 function TMusicStudioSingingFrame.SelectedDuration: Double;
-var T: TMusicStudioSingingTrack;
+var N: TMusicStudioSingingNote;
 begin
   Result := 0;
-  for T in FSource.Tracks do if T.Index = FSelectedTrack then Exit(T.Duration);
+  for N in FSource.Notes do if (N.TrackIndex=FSelectedTrack) and (N.EndSeconds>Result) then Result := N.EndSeconds;
+  if Result>0 then Result := Result-SelectedStartSeconds;
+end;
+function TMusicStudioSingingFrame.SelectedStartSeconds: Double;
+var N: TMusicStudioSingingNote; Found: Boolean;
+begin
+  Result := 0; Found := False;
+  for N in FSource.Notes do if (N.TrackIndex=FSelectedTrack) and (N.EndSeconds>N.StartSeconds) then
+    if not Found or (N.StartSeconds<Result) then begin Result := N.StartSeconds; Found := True; end;
 end;
 
 end.

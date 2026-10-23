@@ -5,6 +5,14 @@
 {$APPTYPE CONSOLE}
 
 uses
+  SYNC_MusicStudio_SmallSlotData in '..\Source\Common\Project\Performer\SYNC_MusicStudio_SmallSlotData.pas',
+  SYNC_MusicStudio_SmallSlotEditor in '..\Source\Plugin\Filter\Performer\SYNC_MusicStudio_SmallSlotEditor.pas',
+  SYNC_MusicStudio_PerformanceKinds in '..\Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceKinds.pas',
+  SYNC_MusicStudio_PerformanceLibrary in '..\Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceLibrary.pas',
+  SYNC_MusicStudio_PerformerData in '..\Source\Common\Project\Performer\SYNC_MusicStudio_PerformerData.pas',
+  SYNC_MusicStudio_PerformerPsd in '..\Source\Common\Project\Performer\SYNC_MusicStudio_PerformerPsd.pas',
+  SYNC_MusicStudio_PerformerEditor in '..\Source\Plugin\Filter\Performer\SYNC_MusicStudio_PerformerEditor.pas',
+  SYNC_MusicStudio_PerformanceEditor in '..\Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas',
   SYNC_MusicStudio_InstrumentRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas',
   SYNC_MusicStudio_InstrumentData in '..\Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas',
   SYNC_MusicStudio_InstrumentFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentFrame.pas',
