@@ -60,6 +60,7 @@ type
     procedure AddPerformanceClick(Sender: TObject);
     procedure AddDrumClick(Sender: TObject);
     procedure DrumPreview(Sender: TObject; Beat: Double; State: TDrumTransport; Emotion,Motion: Integer);
+    procedure InstrumentPreview(Sender: TObject);
     procedure AddPattern(Singing: Boolean);
     procedure AddButtonClick(Sender: TObject);
     procedure EditButtonClick(Sender: TObject);
@@ -146,7 +147,8 @@ uses
   System.IOUtils, System.SysUtils, System.UITypes, Vcl.Graphics, Winapi.Windows,
   SYNC_MusicStudio_Controls, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_ProjectData,
   SYNC_MusicStudio_PatternSettingsForm, SYNC_MusicStudio_SharedLibraryEditor,
-  SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_TimingFrame, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_DrumData;
+  SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_TimingFrame, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_DrumData,
+  SYNC_MusicStudio_InstrumentFrame, SYNC_MusicStudio_InstrumentData;
 
 {$R *.dfm}
 
@@ -715,6 +717,12 @@ begin
     [States[State],Beat,DrumKindName(0,Emotion),DrumKindName(1,Motion)]);
 end;
 
+procedure TFormMusicStudioSettings.InstrumentPreview(Sender: TObject);
+begin
+  FPreview.Pause;
+  FPreview.RestoreMusicalCursor(TMusicStudioInstrumentFrame(Sender).Position,TMusicStudioInstrumentFrame(Sender).Data.LengthBeats,False);
+end;
+
 procedure TFormMusicStudioSettings.AddPattern(Singing: Boolean);
 var
   Index: Integer;
@@ -762,7 +770,8 @@ begin
   SavedPosition := FPreview.Position; DrumEditor := False;
   try
     Dialog.SilentVisualMode := FSilentVisualMode;
-    if (Pattern.Kind='performance') and MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) then begin
+    Dialog.OnInstrumentPosition := InstrumentPreview;
+    if (Pattern.Kind='performance') and (MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) or MusicStudioHasInstrumentTimeline(Pattern.ConfigJSON)) then begin
       AssetID := MusicStudioPerformanceLayerAsset(Pattern.ConfigJSON);
       if (AssetID='') and (TimelineBox.SelectedTrack>=0) then AssetID := FDocument.TrackAt(TimelineBox.SelectedTrack).PsdAssetID;
       Asset := Default(TMusicStudioPsdAsset);
@@ -780,6 +789,7 @@ begin
       if CommitMutation then Break;
     end;
   finally
+    if Dialog.InstrumentFrame<>nil then begin Dialog.InstrumentFrame.OnPositionChange := nil; DrumEditor := True; end;
     if Dialog.DrumFrame<>nil then Dialog.DrumFrame.OnPreview := nil;
     Dialog.Free;
     if DrumEditor then FPreview.Seek(SavedPosition);

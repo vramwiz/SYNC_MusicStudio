@@ -5,7 +5,7 @@ unit SYNC_MusicStudio_PsdLayers;
 interface
 
 uses System.SysUtils, System.Classes, System.JSON, System.Generics.Collections,
-  System.Types, Vcl.Graphics, SYNC_MusicStudio_ArtDocument, SYNC_MusicStudio_DrumPsdRules;
+  System.Types, Vcl.Graphics, SYNC_MusicStudio_ArtDocument, SYNC_MusicStudio_DrumPsdRules, SYNC_MusicStudio_InstrumentRules;
 
 type
   TMusicStudioLayerInfo = record
@@ -25,6 +25,7 @@ type
     FCacheBytes: Int64;
     FLoadCount, FRenderCount: Integer;
     FDrumRules: TMusicStudioDrumPsdRules;
+    FInstrumentRules: TMusicStudioInstrumentRules;
     procedure BuildLayers(AnalyzeDrums: Boolean = True);
     procedure Clear;
     function GetLoaded: Boolean;
@@ -55,6 +56,7 @@ type
     property RenderCount: Integer read FRenderCount;
     property CacheCount: Integer read GetCacheCount;
     property DrumRules: TMusicStudioDrumPsdRules read FDrumRules;
+    property InstrumentRules: TMusicStudioInstrumentRules read FInstrumentRules;
   end;
 
 procedure MusicStudioSetJsonBoolean(Obj: TJSONObject; const Key: string; Value: Boolean);
@@ -81,11 +83,12 @@ begin
   FParents := TDictionary<string,string>.Create;
   FImages := TObjectDictionary<string,TBitmap>.Create([doOwnsValues]);
   FDrumRules := TMusicStudioDrumPsdRules.Create;
+  FInstrumentRules := TMusicStudioInstrumentRules.Create;
 end;
 
 destructor TMusicStudioLayerDocument.Destroy;
 begin
-  Clear; FDrumRules.Free; FImages.Free; FParents.Free; FByKey.Free; inherited;
+  Clear; FInstrumentRules.Free; FDrumRules.Free; FImages.Free; FParents.Free; FByKey.Free; inherited;
 end;
 
 procedure TMusicStudioLayerDocument.Clear;
@@ -93,6 +96,7 @@ begin
   FImages.Clear; FCacheBytes := 0; FByKey.Clear; FParents.Clear;
   FLayers := nil; FreeAndNil(FDocument); FLastError := '';
   if FDrumRules<>nil then FDrumRules.Clear;
+  if FInstrumentRules<>nil then FInstrumentRules.Clear;
 end;
 
 function TMusicStudioLayerDocument.GetLoaded: Boolean;
@@ -141,6 +145,7 @@ begin
       DrumLayers[I].SourceIndex := FLayers[I].SourceIndex;
     end;
     FDrumRules.Build(DrumLayers);
+    FInstrumentRules.Build(DrumLayers);
   end;
 end;
 
@@ -156,6 +161,7 @@ begin
     FLastError := E.Message; FImages.Clear; FByKey.Clear; FParents.Clear;
     FLayers := nil; FreeAndNil(FDocument);
     FDrumRules.Clear;
+    FInstrumentRules.Clear;
   end; end;
 end;
 
@@ -167,6 +173,7 @@ begin
     if Loaded then begin
       Result.FDocument := FDocument.Clone; Result.BuildLayers(False);
       Result.FDrumRules.Free; Result.FDrumRules := nil; Result.FDrumRules := FDrumRules.Clone;
+      Result.FInstrumentRules.Free; Result.FInstrumentRules := nil; Result.FInstrumentRules := FInstrumentRules.Clone;
     end;
   except Result.Free; raise; end;
 end;

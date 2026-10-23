@@ -8,7 +8,7 @@ uses
   SYNC_MusicStudio_PatternData, SYNC_MusicStudio_ArrangementData,
   SYNC_MusicStudio_AudioClipFrame, SYNC_MusicStudio_SingingFrame, SYNC_MusicStudio_PsdTrackFrame,
   SYNC_MusicStudio_SlotFrame, SYNC_MusicStudio_PsdLayersFrame, SYNC_MusicStudio_MotionFrame, SYNC_MusicStudio_PerformanceFrame,
-  SYNC_MusicStudio_LayerStepFrame, SYNC_MusicStudio_TempoPatternFrame, SYNC_MusicStudio_DrumFrame;
+  SYNC_MusicStudio_LayerStepFrame, SYNC_MusicStudio_TempoPatternFrame, SYNC_MusicStudio_DrumFrame, SYNC_MusicStudio_InstrumentFrame;
 
 type
   TMusicStudioPatternSettings = class(TForm)
@@ -23,6 +23,8 @@ type
     FColorButton,FOkButton,FCancelButton: TButton;
     FSourceTimer: TTimer;
     FSharedKind,FSourceKey: string;
+    FInstrumentAsset: string;
+    FInstrumentTempo: Double;
     procedure SourceTimer(Sender: TObject);
     procedure PickColor(Sender: TObject);
     procedure ColorChanged(Sender: TObject);
@@ -45,6 +47,8 @@ type
     LayerStepFrame: TMusicStudioLayerStepFrame;
     TempoFrame: TMusicStudioTempoPatternFrame;
     DrumFrame: TMusicStudioDrumFrame;
+    InstrumentFrame: TMusicStudioInstrumentFrame;
+    OnInstrumentPosition: TNotifyEvent;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure LoadSharedPattern(const Pattern: TMusicStudioPattern; const Path,BaseConfig: string);
@@ -62,7 +66,7 @@ implementation
 
 uses
   System.SysUtils, System.UITypes, System.Math, Winapi.Windows, Vcl.Graphics,
-  SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_Controls, SYNC_MusicStudio_SingingData, SYNC_MusicStudio_DrumData;
+  SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_Controls, SYNC_MusicStudio_SingingData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData;
 
 {$R *.dfm}
 
@@ -179,7 +183,7 @@ var PPI,Margin,ColorX: Integer;
   begin C.SetBounds(MulDiv(X,PPI,96),MulDiv(Y,PPI,96),MulDiv(W,PPI,96),MulDiv(H,PPI,96)); end;
 begin
   inherited;
-  if ((LayerStepFrame=nil) and (DrumFrame=nil)) or (FCommonPanel=nil) or (FFooterPanel=nil) then Exit;
+  if ((LayerStepFrame=nil) and (DrumFrame=nil) and (InstrumentFrame=nil)) or (FCommonPanel=nil) or (FFooterPanel=nil) then Exit;
   PPI := Max(CurrentPPI,MulDiv(Abs(Font.Height),96,13)); Margin := MulDiv(16,PPI,96);
   Constraints.MinWidth := MulDiv(860,PPI,96); Constraints.MinHeight := MulDiv(560,PPI,96);
   DisableAlign;
@@ -202,7 +206,7 @@ var PPI: Integer;
 begin
   FSharedKind := Pattern.Kind; FOriginalName := Pattern.Name; FSourceKey := '';
   NameEdit.Text := Pattern.Name; ColorEdit.Text := Pattern.Color;
-  FSourceTimer.Enabled := False; FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
+  FSourceTimer.Enabled := False; FreeAndNil(InstrumentFrame); FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
   FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
   Caption := MusicStudioSlotKindName(Pattern.Kind)+'設定';
   if Pattern.Kind='psd' then begin
@@ -228,6 +232,25 @@ end;
 procedure TMusicStudioPatternSettings.SourceTimer(Sender: TObject);
 var Key: string;
 begin
+  if LayerStepFrame<>nil then begin
+    LayerStepFrame.LayerEditor.PollResults;
+    if LayerStepFrame.LayerEditor.IsLoading then Exit;
+    if (LayerStepFrame.LayerEditor.Document=nil) or not LayerStepFrame.LayerEditor.Document.Loaded then Exit;
+    FSourceTimer.Enabled := False;
+    // 旧レイヤー区間を自動変換しない。新規または共通方式のパターンだけを切り替える。
+    if ((LayerStepFrame.LayerEditor.Document.InstrumentRules.RowCount>0) or MusicStudioHasInstrumentTimeline(LayerStepFrame.Data.ConfigJSON)) and
+      ((LayerStepFrame.Data.StepCount=0) or MusicStudioHasInstrumentTimeline(LayerStepFrame.Data.ConfigJSON)) then begin
+      try
+        InstrumentFrame := TMusicStudioInstrumentFrame.Create(Self); InstrumentFrame.Parent := Self; InstrumentFrame.Align := alClient;
+        InstrumentFrame.LoadPattern(LayerStepFrame.Data.ConfigJSON,FInstrumentAsset,LayerStepFrame.LayerEditor.Document.InstrumentRules,FInstrumentTempo);
+        InstrumentFrame.OnPositionChange := OnInstrumentPosition;
+        FreeAndNil(LayerStepFrame);
+        FAttributeLabel.Caption := 'PSDの固定キーワードから行・候補を生成。空白ドラッグで区間、クリックで候補と数値差分を選択。';
+        Resize;
+      except on E: Exception do begin FreeAndNil(InstrumentFrame); FAttributeLabel.Caption := E.Message; end; end;
+    end;
+    Exit;
+  end;
   if (MotionFrame=nil) or (LayersFrame=nil) then Exit;
   LayersFrame.PollResults;
   if LayersFrame.IsLoading or LayersFrame.IsRendering or (LayersFrame.PreviewBitmap=nil) then Exit;
@@ -248,7 +271,7 @@ begin
   FNameLabel.Caption := 'パターン名';
   NameEdit.Text := Pattern.Name;
   ColorEdit.Text := Pattern.Color;
-  FSourceTimer.Enabled := False; FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
+  FSourceTimer.Enabled := False; FreeAndNil(InstrumentFrame); FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
   if Pattern.Kind = 'audio' then begin
     FAttributeLabel.Caption := 'オーディオクリップ  ・  音源はファイル参照として保存';
     AudioFrame := TMusicStudioAudioClipFrame.Create(Self);
@@ -287,15 +310,21 @@ procedure TMusicStudioPatternSettings.LoadPerformanceSteps(const Pattern: TMusic
   const AssetID,Path,BaseConfig: string; TempoBPM: Double; const TimingJSON: string);
 begin
   LoadPattern(Pattern); FreeAndNil(PerformanceFrame);
+  FInstrumentAsset := AssetID; FInstrumentTempo := TempoBPM;
   ClientWidth := 1050; ClientHeight := 780; Constraints.MinWidth := 860; Constraints.MinHeight := 560;
   FAttributeLabel.Caption := '小節クリック → チェックで設定。四角を移動/右端で長さ。空白ドラッグでパン、ホイールで拡縮。無音ループ。';
   FAttributeLabel.Top := 80; FAttributeLabel.Parent.Height := 104;
   LayerStepFrame := TMusicStudioLayerStepFrame.Create(Self); LayerStepFrame.Parent := Self; LayerStepFrame.Align := alClient;
   LayerStepFrame.LoadPerformance(Pattern.ConfigJSON,AssetID,Path,BaseConfig,TempoBPM,TimingJSON);
+  FSourceTimer.Enabled := True;
   Resize;
 end;
 procedure TMusicStudioPatternSettings.EditorKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
+  if InstrumentFrame<>nil then begin
+    if not ((ActiveControl is TCustomEdit) or (ActiveControl is TCustomComboBox)) then InstrumentFrame.HandleKey(Key,Shift);
+    Exit;
+  end;
   if DrumFrame<>nil then begin
     if not ((ActiveControl is TCustomEdit) or (ActiveControl is TCustomComboBox)) then DrumFrame.HandleKey(Key,Shift);
     Exit;
@@ -309,13 +338,14 @@ procedure TMusicStudioPatternSettings.EditorHidden(Sender: TObject);
 begin
   if LayerStepFrame<>nil then LayerStepFrame.Stop;
   if DrumFrame<>nil then DrumFrame.Stop;
+  if InstrumentFrame<>nil then InstrumentFrame.Stop;
 end;
 procedure TMusicStudioPatternSettings.LoadTrack(const Track: TMusicStudioTrack);
 begin
   Caption := 'トラック設定'; FOriginalName := Track.Name;
   FNameLabel.Caption := 'トラック名';
   NameEdit.Text := Track.Name; ColorEdit.Text := Track.Color;
-  FSourceTimer.Enabled := False; FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
+  FSourceTimer.Enabled := False; FreeAndNil(InstrumentFrame); FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
   if Track.Kind = 'psd' then begin
     if Track.PsdAssetID<>'' then
       FAttributeLabel.Caption := '共有PSDを使用中。PSDスロットを選択すると素材と母音設定を編集できます。'
@@ -333,7 +363,7 @@ procedure TMusicStudioPatternSettings.LoadSlot(const Slot: TMusicStudioSlot);
 begin
   Caption := 'スロット設定'; FOriginalName := Slot.Name; FNameLabel.Caption := 'スロット名';
   NameEdit.Text := Slot.Name; ColorEdit.Text := Slot.Color;
-  FSourceTimer.Enabled := False; FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
+  FSourceTimer.Enabled := False; FreeAndNil(InstrumentFrame); FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
   FAttributeLabel.Caption := 'スロットは独立した配置先です。受入属性は描画エンジンの実装状況とは別です。';
   SlotFrame := TMusicStudioSlotFrame.Create(Self); SlotFrame.Parent := Self; SlotFrame.Align := alClient;
   SlotFrame.LoadSlot(Slot);
@@ -352,6 +382,7 @@ end;
 
 procedure TMusicStudioPatternSettings.ReadPattern(var Pattern: TMusicStudioPattern);
 begin
+  if Assigned(InstrumentFrame) then Pattern.ConfigJSON := InstrumentFrame.ConfigJSON;
   if Assigned(DrumFrame) then Pattern.ConfigJSON := DrumFrame.ConfigJSON;
   if Assigned(PerformanceFrame) then Pattern.ConfigJSON := PerformanceFrame.ConfigJSON;
   if Assigned(LayerStepFrame) then Pattern.ConfigJSON := LayerStepFrame.ConfigJSON;
@@ -405,6 +436,7 @@ procedure TMusicStudioPatternSettings.AcceptClick(Sender: TObject);
 var
   Color: TColor;
 begin
+  if Assigned(InstrumentFrame) then try InstrumentFrame.ConfigJSON; except on E: Exception do begin FAttributeLabel.Caption := E.Message; Exit; end; end;
   if Assigned(PerformanceFrame) then try PerformanceFrame.ConfigJSON; except on E: Exception do begin FAttributeLabel.Caption := E.Message; Exit; end; end;
   if Assigned(LayerStepFrame) then try LayerStepFrame.ConfigJSON; except on E: Exception do begin FAttributeLabel.Caption := E.Message; Exit; end; end;
   if Assigned(TempoFrame) then try TempoFrame.ConfigJSON; except on E: Exception do begin FAttributeLabel.Caption := E.Message; Exit; end; end;

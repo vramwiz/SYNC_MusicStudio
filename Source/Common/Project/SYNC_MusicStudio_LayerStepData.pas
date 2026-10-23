@@ -298,8 +298,15 @@ function MusicStudioPerformanceHasLayerSteps(const ConfigJSON: string): Boolean;
 var Obj: TJSONObject;
 begin Obj := ObjectJSON(ConfigJSON); try Result := Assigned(Obj.GetValue('layerSteps')); finally Obj.Free; end; end;
 function MusicStudioPerformanceLayerAsset(const ConfigJSON: string): string;
-var Data: TMusicStudioLayerStepData;
-begin Data := TMusicStudioLayerStepData.Create; try Data.LoadJSON(ConfigJSON); Result := Data.AssetID; finally Data.Free; end; end;
+var Data: TMusicStudioLayerStepData; Root: TJSONObject; V: TJSONValue;
+begin
+  Root := ObjectJSON(ConfigJSON);
+  try
+    V := Root.GetValue('instrumentTimeline');
+    if V is TJSONObject then if TJSONObject(V).GetValue('assetId') is TJSONString then Exit(TJSONObject(V).GetValue('assetId').Value);
+  finally Root.Free; end;
+  Data := TMusicStudioLayerStepData.Create; try Data.LoadJSON(ConfigJSON); Result := Data.AssetID; finally Data.Free; end;
+end;
 function MusicStudioMergeLayerStepConfig(const BaseConfig,StepConfig: string): string;
 var Base,Step,Visibility: TJSONObject; Pair: TJSONPair;
 begin

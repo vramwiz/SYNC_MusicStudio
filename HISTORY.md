@@ -1355,3 +1355,16 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - 証拠root C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-drum-rules-20261022/。
   drum-naming.psd、drum-psd-references.json、drum-rules-tests.log、inspect/とinspect.log、regression.log、final-build、foundation-release.log、protected-after.json。
   保護開始hashはTemp/SYNC_MusicStudio-drum-rules-protected-before.json。旧実PSD欠損による全NoAudio/SDK後半未完了は前記のまま継続。
+## 2026-10-23 全楽器共通PSDの受け入れ・動的区間UI（無配備）
+
+- 添付本文1～13節をINSTRUMENT_PSD_NAMING.mdへ保存し、14節に今回の実装範囲を追記。旧ドラム専用規則は互換用として保持し、新規共通方式を優先する。
+- 上位名自由の再帰探索、表情/顔色/記号/ポーズと四肢のキーワード、隠れた直下候補、任意パターン/数値差分を読込時に解析。同名を行・候補へ統合し、表示既定を除外する。描画cloneは解析結果を複製する。
+- 演奏編集を解析済みPSDから共通UIへ切替。区間追加/移動/両端伸縮/削除、候補・数値差分選択、Undo/Redo、全幅fit、無音時計に対応。旧step入り作品は自動変換しない。
+- performance.instrumentTimelineへPSD素材IDと意味名・区間・stageを保存。未知情報/旧notes等を保持し、重複/不正範囲/別PSDを拒否。再Bindで候補が欠けても保存区間を破棄しない。
+- 確定後は既存SceneCache経路で同名差分を全枝へ適用。欠損段階は前差分を残さず隠す。先頭*の兄弟排他を祖先にも適用。ポーズは同じ親の通常身体と他の制御/母音を抑制し、終了時点の区間へ復帰する。
+- 専用NoAudioTests --instrument成功: 合成PSDの任意3ルート/4行、隠れた候補、可変差分、枝連動/欠損消去、標準復帰、ポーズ中と終了後の画素、JSON保持/失敗原子性、clone、実フォーム自動切替/区間操作/Undo/保存、原本hash不変を確認。最終先頭*排他の変更後も専用ケース成功。--instrument-psdは同合成PSDから4行の診断JSONを出力成功。
+- Delphi37 Win64 Debug→ReleaseをScripts/BuildLocal.ps1で直列無配備ビルドし、警告/エラーなし。EditorPreview/Foundationを再コンパイル。ReleaseのFoundationを一度だけ実行して全成功。DPI試験、音声fixture/decode/再生/waveOut、全体回帰の反復は行っていない。
+- 共通UIのPaintTo画像を目視確認。実PSDは未提供。区間内stageは現在手動指定の保持であり、自動巡回/反復は楽器別戦略として後続。編集中の未確定区間の画像プレビューは未接続で、OK確定後に描画する。旧ドラム9行UIの自動変換は行わない。
+- 変更した全DPRの参照欠損0、日本語pas/dprのUTF-8 BOM/CRLFとgit diff --checkを確認。追加unit/dfmには使用先があり、不要ソース/外部DLL依存の追加なし。誤って作成したBOMだけの一時ソース1件を内容確認後削除。継承UI/参照元を保持。過去に削除拒否された生成物は再試行せず、今回のInstrumentDCU 92件/15454999Bも保持する。
+- 作業開始終了のAup2/sample.aup2と配備auf2のSHA256一致。実共有設定/原PSD/参照元変更、配備、commit/pushなし。
+- 証拠root: C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-instrument-20261023/。common-instrument.psd、common-editor.png、common-project.json、common-analysis.json、instrument-analysis.json、build/、protected-before/after.json。初期のGUID API/欠損JSON項目例外を修正し、上記は修正後の結果。

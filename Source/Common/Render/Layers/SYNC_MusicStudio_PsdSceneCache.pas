@@ -7,7 +7,8 @@ interface
 uses Winapi.Windows, System.Classes, System.JSON, System.Generics.Collections,
   Vcl.Graphics, SYNC_MusicStudio_PatternData, SYNC_MusicStudio_SharedPsdLibrary,
   SYNC_MusicStudio_VisualCache, SYNC_MusicStudio_MotionData,
-  SYNC_MusicStudio_PsdLayers, SYNC_MusicStudio_PsdLayerJobs, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_LayerStepData;
+  SYNC_MusicStudio_PsdLayers, SYNC_MusicStudio_PsdLayerJobs, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_LayerStepData,
+  SYNC_MusicStudio_InstrumentData, SYNC_MusicStudio_InstrumentRules;
 
 type
   TMusicStudioSceneBeatResolver = function(Seconds: Double): Double of object;
@@ -56,6 +57,7 @@ type
     MidiTrack: Integer;
     Visibility: TJSONObject;
     Steps: TMusicStudioLayerStepData;
+    Instrument: TMusicStudioInstrumentData;
     StepConfigs: TObjectList<TJSONObject>;
     Motion: TMusicStudioMotionConfig;
     destructor Destroy; override;
@@ -197,7 +199,7 @@ begin inherited; BaseImages := TObjectDictionary<string,TBitmap>.Create([doOwnsV
 destructor TMusicStudioSceneSource.Destroy;
 begin Document.Free; Config.Free; BaseImages.Free; inherited; end;
 destructor TMusicStudioScenePlacement.Destroy;
-begin StepConfigs.Free; Steps.Free; Visibility.Free; Motion.Free; inherited; end;
+begin Instrument.Free; StepConfigs.Free; Steps.Free; Visibility.Free; Motion.Free; inherited; end;
 constructor TMusicStudioSceneTrack.Create;
 begin inherited; Placements := TObjectList<TMusicStudioScenePlacement>.Create(True); end;
 destructor TMusicStudioSceneTrack.Destroy;
@@ -309,6 +311,11 @@ begin
         try
           if Pattern.Kind='singing' then Continue;
           if Pattern.Kind='performance' then begin
+            if MusicStudioHasInstrumentTimeline(Pattern.ConfigJSON) then begin
+              Entry.Instrument := TMusicStudioInstrumentData.Create; Entry.Instrument.Load(Pattern.ConfigJSON);
+              Entry.Instrument.BindAsset(Track.PsdAssetID);
+              Continue;
+            end;
             if not MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) then Continue;
             Entry.Steps := TMusicStudioLayerStepData.Create; Entry.Steps.LoadJSON(Pattern.ConfigJSON);
             if (Entry.Steps.AssetID<>'') and (Entry.Steps.AssetID<>Track.PsdAssetID) then
@@ -396,10 +403,12 @@ end;
 procedure TMusicStudioPsdSceneCache.RefreshTrack(Track: TMusicStudioSceneTrack);
 var Entry,Singing,Performance: TMusicStudioScenePlacement; Overrides,Config: TJSONObject;
     Transforms: TMusicStudioSceneTransforms; T: TMusicStudioMotionTransform;
-    Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor: Double; Pair: TJSONPair;
+    Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor: Double; Pair: TJSONPair; CommonVisibility: TJSONObject;
+    CommonStates: TArray<TInstrumentState>; CommonState: TInstrumentState; PoseActive: Boolean;
 begin
   if (Track.Source=nil) or (Track.Source.Document=nil) or (Track.Source.Config=nil) then Exit;
   Overrides := nil; Config := nil; Singing := nil; Performance := nil; ActiveIndex := -1; Mouth := 0; Warning := '';
+  PoseActive := False;
   try
     try
       Overrides := BuildMusicStudioPsdOverrides(Track.Source.Document,Track.Source.Config,-1);
@@ -432,7 +441,16 @@ begin
             raise Exception.Create('演奏stepのPSDレイヤーが見つかりません: '+Pair.JsonString.Value);
         MergeVisibility(Track.Source.Document,Overrides,Performance.StepConfigs[ActiveIndex]);
       end;
-      if Singing<>nil then Mouth := MouthAt(Singing);
+      if (Performance<>nil) and (Performance.Instrument<>nil) then begin
+        CommonStates := Performance.Instrument.StatesAt(FBeatPosition,Performance.StartBeat);
+        for CommonState in CommonStates do if (CommonState.Row='ポーズ') and
+          Track.Source.Document.InstrumentRules.HasChoice(CommonState.Row,CommonState.Choice) then PoseActive := True;
+        CommonVisibility := Track.Source.Document.InstrumentRules.Visibility(CommonStates);
+        try for Pair in CommonVisibility do MusicStudioSetJsonBoolean(Overrides,Pair.JsonString.Value,TJSONBool(Pair.JsonValue).AsBoolean);
+        finally CommonVisibility.Free; end;
+      end;
+      if (Singing<>nil) and not PoseActive then Mouth := MouthAt(Singing);
+      if PoseActive then Mouth := -1;
       Config := TJSONObject(Track.Source.Config.Clone);
       Config.RemovePair('visibility').Free; Config.AddPair('visibility',Overrides); Overrides := nil;
       Overrides := BuildMusicStudioPsdOverrides(Track.Source.Document,Config,Mouth);

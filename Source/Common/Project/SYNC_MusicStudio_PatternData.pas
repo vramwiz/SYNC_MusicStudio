@@ -79,7 +79,7 @@ implementation
 
 uses
   System.Math, System.Generics.Collections, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_TempoPatternData,
-  SYNC_MusicStudio_ProjectData, SYNC_MusicStudio_DrumData;
+  SYNC_MusicStudio_ProjectData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData;
 
 function ValidColor(const Value: string): Boolean;
 var
@@ -102,6 +102,7 @@ var
   Duration: TJSONValue;
   SourceTrack: Integer; Performance: TMusicStudioPerformanceData; Timing: TMusicStudioTempoMap; Steps: TMusicStudioLayerStepData; Tempo: TMusicStudioTempoPatternData;
   Drums: TMusicStudioDrumData;
+  Instrument: TMusicStudioInstrumentData;
 begin
   Result := False;
   ErrorText := '';
@@ -177,6 +178,12 @@ begin
           try Steps.LoadJSON(Obj.GetValue('performance').ToJSON);
           except on E: Exception do begin ErrorText := E.Message; Exit; end; end;
         finally Steps.Free; end;
+        if MusicStudioHasInstrumentTimeline(Obj.GetValue('performance').ToJSON) then begin
+          Instrument := TMusicStudioInstrumentData.Create;
+          try try Instrument.Load(Obj.GetValue('performance').ToJSON);
+            except on E: Exception do begin ErrorText := E.Message; Exit; end; end;
+          finally Instrument.Free; end;
+        end;
         if MusicStudioHasDrums(Obj.GetValue('performance').ToJSON) then begin
           Drums := TMusicStudioDrumData.Create;
           try

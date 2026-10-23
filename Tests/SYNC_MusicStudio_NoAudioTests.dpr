@@ -1,6 +1,10 @@
 ﻿program SYNC_MusicStudio_NoAudioTests;
 {$APPTYPE CONSOLE}
 uses
+  SYNC_MusicStudio_InstrumentChecks in 'SYNC_MusicStudio_InstrumentChecks.pas',
+  SYNC_MusicStudio_InstrumentRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas',
+  SYNC_MusicStudio_InstrumentData in '..\Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas',
+  SYNC_MusicStudio_InstrumentFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentFrame.pas',
   SYNC_MusicStudio_DrumPsdChecks in 'SYNC_MusicStudio_DrumPsdChecks.pas',
   SYNC_MusicStudio_DrumPsdRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_DrumPsdRules.pas',
   SYNC_MusicStudio_DrumChecks in 'SYNC_MusicStudio_DrumChecks.pas',
@@ -94,6 +98,8 @@ begin
   try
     SetTextCodePage(Output,65001); SetTextCodePage(ErrOutput,65001);
     Application.Initialize;
+    if ParamStr(2)='--instrument' then begin RunInstrumentChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--instrument-psd' then begin InspectInstrumentPSD(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--drum-rules' then begin RunDrumPsdChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--drum-psd' then begin InspectDrumPsd(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--drums' then begin RunDrumChecks(ParamStr(1)); Exit; end;
