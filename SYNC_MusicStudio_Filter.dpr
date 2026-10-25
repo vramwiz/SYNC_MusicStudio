@@ -5,6 +5,9 @@
 {$ALIGN 8}
 
 uses
+  SYNC_MusicStudio_InstrumentPreview in 'Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentPreview.pas',
+  SYNC_MusicStudio_FileDropList in 'Source\Plugin\Filter\SYNC_MusicStudio_FileDropList.pas',
+  SYNC_MusicStudio_PsdImport in 'Source\Common\Project\SYNC_MusicStudio_PsdImport.pas',
   SYNC_MusicStudio_SmallSlotData in 'Source\Common\Project\Performer\SYNC_MusicStudio_SmallSlotData.pas',
   SYNC_MusicStudio_SmallSlotEditor in 'Source\Plugin\Filter\Performer\SYNC_MusicStudio_SmallSlotEditor.pas',
   SYNC_MusicStudio_PerformanceKinds in 'Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceKinds.pas',
@@ -15,6 +18,7 @@ uses
   SYNC_MusicStudio_PerformanceEditor in 'Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas',
   SYNC_MusicStudio_InstrumentRules in 'Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas',
   SYNC_MusicStudio_InstrumentData in 'Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas',
+  SYNC_MusicStudio_InstrumentPlayback in 'Source\Common\Project\SYNC_MusicStudio_InstrumentPlayback.pas',
   SYNC_MusicStudio_InstrumentFrame in 'Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentFrame.pas',
   SYNC_MusicStudio_DrumPsdRules in 'Source\Common\Render\Layers\SYNC_MusicStudio_DrumPsdRules.pas',
   SYNC_MusicStudio_DrumData in 'Source\Common\Project\SYNC_MusicStudio_DrumData.pas',

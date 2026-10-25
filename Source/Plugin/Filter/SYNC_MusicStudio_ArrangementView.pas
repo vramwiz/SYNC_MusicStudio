@@ -26,6 +26,8 @@ type
     FRows: TArray<TMusicStudioArrangementRow>;
     FMouseOffset, FProposedStart, FPixelsPerSecond: Double;
     FDragging: Boolean;
+    FRulerPanning: Boolean;
+    FRulerStartScroll: Integer;
     FDragStarted: Boolean;
     FMouseDownPoint: TPoint;
     FResizeEdge: Integer; // -1:left, 0:move, 1:right. 文書はmouse-upまで変更しない。
@@ -219,7 +221,7 @@ var I: Integer;
 begin Result := 0; for I := 0 to SlotIndex-1 do if SlotVisible(Track,I) then Inc(Result,Scale(48)); end;
 function TMusicStudioArrangementView.SlotHeight(const Kind: string): Integer;
 begin
-  if (Kind='singing') or (Kind='performance') then Result := Scale(104)
+  if (Kind='singing') or (Kind='performance') then Result := RowHeight
   else if MusicStudioSmallSlot(Kind) then Result := Scale(28)
   else if Kind='psd' then Result := Scale(32) else Result := RowHeight;
 end;
@@ -229,7 +231,6 @@ begin
   T := FDocument.TrackAt(FRows[Index].TrackIndex);
   if FRows[Index].SlotIndex>=0 then Exit(SlotHeight(T.Slots[FRows[Index].SlotIndex].Kind));
   Result := RowHeight;
-  if T.Kind='psd' then Result := Scale(104);
   if (FRows[Index].SlotIndex < 0) and not TrackExpanded(FRows[Index].TrackIndex) then begin
     Result := Max(Result,SummaryOffset(T,Length(T.Slots)));
   end;
@@ -456,7 +457,7 @@ begin
   Result := Rect(0,0,0,0);
   if (FDocument=nil) or (TrackIndex<0) or (TrackIndex>=FDocument.TrackCount) then Exit;
   if FDocument.TrackAt(TrackIndex).Kind<>'psd' then Exit;
-  Y := TrackRowTop(TrackIndex); Result := Rect(Scale(8),Y+Scale(34),Scale(76),Y+Scale(100));
+  Y := TrackRowTop(TrackIndex); Result := Rect(Scale(8),Y+Scale(8),Scale(50),Y+Scale(50));
 end;
 function TMusicStudioArrangementView.SlotThumbnailRect(TrackIndex,SlotIndex: Integer): TRect;
 begin
@@ -748,15 +749,17 @@ begin
     if SlotIndex < 0 then begin
       if TrackExpanded(TrackIndex) then Detail := '▼ '+T.Name else Detail := '▶ '+T.Name;
     end else Detail := '  '+Slot.Name;
-    DrawLabel(Canvas,Rect(Scale(14),LabelY + Min(Scale(10),Max(Scale(3),(H-Scale(18)) div 2)),TextRight,LabelY + H),Detail);
+    if (SlotIndex<0) and (T.Kind='psd') then
+      DrawLabel(Canvas,Rect(Scale(60),LabelY+Scale(2),TextRight,LabelY+Scale(21)),Detail)
+    else DrawLabel(Canvas,Rect(Scale(14),LabelY + Min(Scale(10),Max(Scale(3),(H-Scale(18)) div 2)),TextRight,LabelY + H),Detail);
     Canvas.Font.Color := $00AAAAAA;
     if SlotIndex<0 then begin
       if T.Kind='psd' then begin
-        DrawLabel(Canvas,Rect(Scale(84),LabelY+Scale(36),TextRight,LabelY+Scale(60)),PerformanceKindName(T.PerformanceAttribute));
+        DrawLabel(Canvas,Rect(Scale(60),LabelY+Scale(21),TextRight,LabelY+Scale(38)),PerformanceKindName(T.PerformanceAttribute));
         Detail := 'PSD未割当';
         if FSceneCache<>nil then Detail := FSceneCache.StatusForTrack(TrackIndex)
         else if T.PsdPath<>'' then Detail := '演奏者';
-        DrawLabel(Canvas,Rect(Scale(84),LabelY+Scale(64),TextRight,LabelY+Scale(100)),Detail);
+        DrawLabel(Canvas,Rect(Scale(60),LabelY+Scale(38),TextRight,LabelY+Scale(56)),Detail);
       end else DrawLabel(Canvas,Rect(Scale(14),LabelY+Scale(36),TextRight,LabelY+H),'音楽');
     end;
     if not IsRectEmpty(ThumbRect) then begin
@@ -826,15 +829,15 @@ begin
 end;
 function TMusicStudioArrangementView.CancelInteraction: Boolean;
 begin
-  Result := FDragging; FDragging := False; FDragStarted := False; FResizeEdge := 0;
+  Result := FDragging or FRulerPanning; FDragging := False; FRulerPanning := False; FDragStarted := False; FResizeEdge := 0;
   MouseCapture := False; Cursor := crDefault; if Result then Invalidate;
 end;
 procedure TMusicStudioArrangementView.WMCaptureChanged(var Message: TMessage);
-begin inherited; if FDragging and (HWND(Message.LParam)<>Handle) then PostMessage(Handle,WM_APP+107,0,0); end;
+begin inherited; if (FDragging or FRulerPanning) and (HWND(Message.LParam)<>Handle) then PostMessage(Handle,WM_APP+107,0,0); end;
 procedure TMusicStudioArrangementView.WMDeferredCaptureLost(var Message: TMessage);
-begin if FDragging and (GetCapture<>Handle) then CancelInteraction; end;
+begin if (FDragging or FRulerPanning) and (GetCapture<>Handle) then CancelInteraction; end;
 procedure TMusicStudioArrangementView.WMCancelMode(var Message: TMessage);
-begin inherited; if FDragging then CancelInteraction; end;
+begin inherited; if FDragging or FRulerPanning then CancelInteraction; end;
 procedure TMusicStudioArrangementView.KeyDown(var Key: Word; Shift: TShiftState);
 begin
   if (Key=VK_ESCAPE) and CancelInteraction then Key := 0;
@@ -847,7 +850,8 @@ begin
   CancelInteraction;
   if (Button=mbRight) and (Y<RulerHeight) and (X>=HeaderWidth) then Exit;
   if (Button=mbLeft) and (Y<RulerHeight) and (X>=HeaderWidth) then begin
-    if Assigned(FOnSeek) then FOnSeek(SecondsAtPoint(X)); Exit;
+    FRulerPanning := True; FRulerStartScroll := FHScroll.Position; FMouseDownPoint := Point(X,Y);
+    FDragStarted := False; MouseCapture := True; Cursor := crHandPoint; Exit;
   end;
   TrackIndex := TrackAtPoint(X,Y); SlotIndex := SlotAtPoint(X,Y); ClipIndex := ClipAtPoint(X,Y);
   if (Button = mbLeft) and (X < HeaderWidth) and (SlotIndex < 0) and not (ssDouble in Shift) then begin
@@ -877,7 +881,7 @@ end;
 
 procedure TMusicStudioArrangementView.DblClick;
 begin
-  FDragging := False; FDragStarted := False; MouseCapture := False;
+  CancelInteraction;
   if (FDocument<>nil) and (FSelectedTrack>=0) and (FSelectedSlot>=0) then
     if MusicStudioSmallSlot(FDocument.TrackAt(FSelectedTrack).Slots[FSelectedSlot].Kind) then Exit;
   inherited;
@@ -915,9 +919,14 @@ begin
 end;
 
 procedure TMusicStudioArrangementView.MouseMove(Shift: TShiftState; X,Y: Integer);
-var EdgeBeat,EdgeTime,EndTime,MinimumLength,StartBeat,EndBeat: Double; Clip: TMusicStudioPlacement;
+var EdgeBeat,EdgeTime,EndTime,MinimumLength,StartBeat,EndBeat,PatternLimit: Double; Clip: TMusicStudioPlacement;
 begin
   inherited;
+  if FRulerPanning then begin
+    if Abs(X-FMouseDownPoint.X)>Scale(3) then FDragStarted := True;
+    if FDragStarted then FHScroll.Position := EnsureRange(FRulerStartScroll-Round((X-FMouseDownPoint.X)/Metrics.PixelsPerBeat*64),0,FHScroll.Max);
+    Exit;
+  end;
   if FDragging and Assigned(FDocument) then begin
     if not FDragStarted then begin
       if Abs(X-FMouseDownPoint.X)<Max(Scale(3),GetSystemMetrics(SM_CXDRAG)) then Exit;
@@ -940,10 +949,15 @@ begin
         FProposedStart := FOriginalStart; FProposedLength := FOriginalLength; Invalidate; Exit;
       end;
       EdgeTime := FDocument.BeatToSeconds(Metrics.SnapBeat(EdgeBeat));
+      PatternLimit := FDocument.PatternLengthBeats(Clip.PatternID);
       if FResizeEdge<0 then begin
+        if (Clip.TimeBase='beats') and (PatternLimit>0) then
+          EdgeTime := Max(EdgeTime,FDocument.BeatToSeconds(Max(0.0,Clip.StartBeat+Clip.LengthBeats-PatternLimit)));
         FProposedStart := EnsureRange(EdgeTime,0.0,Max(0.0,EndTime-MinimumLength));
         FProposedLength := Max(MinimumLength,EndTime-FProposedStart);
       end else begin
+        if (Clip.TimeBase='beats') and (PatternLimit>0) then
+          EdgeTime := Min(EdgeTime,FDocument.BeatToSeconds(Clip.StartBeat+PatternLimit));
         FProposedStart := FOriginalStart;
         FProposedLength := Max(MinimumLength,EnsureRange(EdgeTime,FOriginalStart+MinimumLength,604800.0)-FOriginalStart);
       end;
@@ -957,12 +971,18 @@ begin
       EndBeat := StartBeat+Clip.LengthBeats; FProposedLength := FDocument.BeatToSeconds(EndBeat)-FProposedStart;
     end;
     Invalidate;
-  end else if EmotionResizeEdgeAt(X,Y)<>0 then Cursor := crSizeWE else Cursor := crDefault;
+  end else if (Y<RulerHeight) and (X>=HeaderWidth) then Cursor := crHandPoint
+  else if EmotionResizeEdgeAt(X,Y)<>0 then Cursor := crSizeWE else Cursor := crDefault;
 end;
 
 procedure TMusicStudioArrangementView.MouseUp(Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
+var Click: Boolean;
 begin
   inherited;
+  if (Button=mbLeft) and FRulerPanning then begin
+    MouseMove(Shift,X,Y); Click := not FDragStarted; CancelInteraction;
+    if Click and Assigned(FOnSeek) then FOnSeek(SecondsAtPoint(X)); Exit;
+  end;
   if (Button <> mbLeft) or not FDragging then Exit;
   MouseMove(Shift,X,Y);
   if not FDragStarted then begin CancelInteraction; Exit; end;

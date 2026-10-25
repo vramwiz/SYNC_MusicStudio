@@ -71,7 +71,7 @@ function MusicStudioLibraryItems(Document: TMusicStudioDocument; Store: TMusicSt
   const Kinds: TArray<string>; const AssetID: string; const Attribute: string): TArray<TMusicStudioLibraryItem>;
 var L: TList<TMusicStudioLibraryItem>; Item: TMusicStudioLibraryItem; A: TMusicStudioPsdAsset;
   SP: TMusicStudioSharedPattern; I: Integer; P: TMusicStudioPattern; Present: Boolean; Kind: string;
-  Performance: TMusicStudioPerformanceLibrary;
+  Performance: TMusicStudioPerformanceLibrary; ErrorText: string;
   function Accepts(const Value: string): Boolean;
   var K: string;
   begin Result := False; for K in Kinds do if K=Value then Exit(True); end;
@@ -92,9 +92,11 @@ begin
       finally Performance.Free; end;
     end;
     if Accepts('psd') and Assigned(Store) then for A in Store.Assets do begin
+      if A.HiddenFromLibrary then Continue;
       Item := Default(TMusicStudioLibraryItem); Item.PatternIndex := MusicStudioReferenceIndex(Document,'psd',A.ID,'');
       Item.Shared := True; Item.Missing := A.Missing; Item.Pattern.Kind := 'psd'; Item.Pattern.AssetID := A.ID;
       Item.Pattern.ID := 'asset:'+A.ID; Item.Pattern.Name := A.Name; Item.Pattern.Color := A.Color;
+      Item.Pattern.LibraryRevision := A.Revision;
       Item.PsdVersion := A.Revision+':'+THashSHA2.GetHashString(A.ConfigJSON);
       Item.Pattern.FilePath := A.FilePath; Item.Pattern.ConfigJSON := A.ConfigJSON;
       Item.ThumbnailConfigJSON := A.ConfigJSON; L.Add(Item);
@@ -117,6 +119,9 @@ begin
       P := Document.PatternAt(I);
       Kind := P.Kind;
       if not Accepts(Kind) then Continue;
+      // 一覧から削除したPSDの作品参照を、欠損項目として再掲しない。
+      if (Kind='psd') and (P.AssetID<>'') and (Store<>nil) and
+        Store.TryRead(P.AssetID,A,ErrorText) and A.HiddenFromLibrary then Continue;
       if (Kind='performance') and (P.PerformanceAttribute<>'') then begin
         // 旧版snapshotは配置済み作品の再生用。正本一覧へ別項目として増やさない。
         Continue;

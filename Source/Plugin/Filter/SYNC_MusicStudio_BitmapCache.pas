@@ -12,11 +12,12 @@ type
   private
     FItems: TObjectDictionary<string,TMusicStudioCachedBitmap>;
     FStamp: UInt64;
+    FMaxItems: Integer;
   public
-    constructor Create;
+    constructor Create(MaxItems: Integer = 128);
     destructor Destroy; override;
     function Find(const Key: string): TBitmap;
-    // Bitmapの所有権を引き取る。上限128個、最も古い画像を解放する。
+    // Bitmapの所有権を引き取る。指定上限（既定128個）で最も古い画像を解放する。
     procedure Add(const Key: string; Bitmap: TBitmap);
     procedure Clear;
     function Count: Integer;
@@ -43,8 +44,12 @@ function MusicStudioDoubleKey(Value: Double): string;
 begin Result := IntToHex(PUInt64(@Value)^,16); end;
 destructor TMusicStudioCachedBitmap.Destroy;
 begin Bitmap.Free; inherited; end;
-constructor TMusicStudioBitmapCache.Create;
-begin inherited; FItems := TObjectDictionary<string,TMusicStudioCachedBitmap>.Create([doOwnsValues]); end;
+constructor TMusicStudioBitmapCache.Create(MaxItems: Integer);
+begin
+  inherited Create; FMaxItems := MaxItems;
+  if FMaxItems<1 then FMaxItems := 1; if FMaxItems>128 then FMaxItems := 128;
+  FItems := TObjectDictionary<string,TMusicStudioCachedBitmap>.Create([doOwnsValues]);
+end;
 destructor TMusicStudioBitmapCache.Destroy;
 begin FItems.Free; inherited; end;
 procedure TMusicStudioBitmapCache.Clear;
@@ -61,7 +66,7 @@ procedure TMusicStudioBitmapCache.Add(const Key: string; Bitmap: TBitmap);
 var Item,Oldest: TMusicStudioCachedBitmap; Pair: TPair<string,TMusicStudioCachedBitmap>; OldKey: string;
 begin
   if FItems.ContainsKey(Key) then FItems.Remove(Key);
-  if FItems.Count >= 128 then begin
+  if FItems.Count >= FMaxItems then begin
     Oldest := nil; OldKey := '';
     for Pair in FItems do if (Oldest = nil) or (Pair.Value.Stamp < Oldest.Stamp) then begin Oldest := Pair.Value; OldKey := Pair.Key; end;
     FItems.Remove(OldKey);

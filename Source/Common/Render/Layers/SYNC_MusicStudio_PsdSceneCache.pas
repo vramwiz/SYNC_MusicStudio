@@ -58,6 +58,7 @@ type
     Visibility: TJSONObject;
     Steps: TMusicStudioLayerStepData;
     Instrument: TMusicStudioInstrumentData;
+    PlaybackBlocks: TArray<TInstrumentBlock>; // Bind時の値コピー。frameごとの全区間複製を避ける。
     HasSelection: Boolean;
     Selection: TInstrumentState; // 独立スロットの意味指定。配置の秒区間と共に評価する。
     StepConfigs: TObjectList<TJSONObject>;
@@ -132,20 +133,7 @@ type
 implementation
 
 uses System.SysUtils, System.Math, SYNC_MusicStudio_ArrangementData,
-  SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_BitmapCache;
-
-procedure SmallImage(Source, Dest: TBitmap; MaximumDimension: Integer);
-var Factor: Double; X,Y,W,H,SX,SY: Integer; Row,SourceRow: PByte;
-begin
-  Factor := 1;
-  if MaximumDimension>0 then Factor := Min(1.0,MaximumDimension/Max(Source.Width,Source.Height));
-  W := Max(1,Round(Source.Width*Factor)); H := Max(1,Round(Source.Height*Factor));
-  Dest.PixelFormat := pf32bit; Dest.SetSize(W,H); Dest.AlphaFormat := afPremultiplied;
-  for Y := 0 to H-1 do begin
-    SY := Int64(Y)*Source.Height div H; SourceRow := Source.ScanLine[SY]; Row := Dest.ScanLine[Y];
-    for X := 0 to W-1 do begin SX := Int64(X)*Source.Width div W; Move(SourceRow[SX*4],Row[X*4],4); end;
-  end;
-end;
+  SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_InstrumentPlayback;
 
 constructor TMusicStudioSceneRenderJob.Create(Document: TMusicStudioLayerDocument;
   Overrides: TJSONObject; CachedBase: TBitmap; const Transforms: TMusicStudioSceneTransforms;
@@ -176,8 +164,8 @@ begin
     try
       if FBase=nil then begin
         Full := TBitmap.Create;
-        if not FDocument.Render(Full,FOverrides) then begin ErrorText := FDocument.LastError; Exit; end;
-        FBase := TBitmap.Create; SmallImage(Full,FBase,FMaximumDimension); Composed := True;
+        if not FDocument.Render(Full,FOverrides,FMaximumDimension) then begin ErrorText := FDocument.LastError; Exit; end;
+        FBase := Full; Full := nil; Composed := True;
       end;
       if Terminated then Exit;
       FImage := TBitmap.Create; FImage.Assign(FBase);
@@ -325,6 +313,7 @@ begin
             if MusicStudioHasInstrumentTimeline(Pattern.ConfigJSON) then begin
               Entry.Instrument := TMusicStudioInstrumentData.Create; Entry.Instrument.Load(Pattern.ConfigJSON);
               Entry.Instrument.BindAsset(Track.PsdAssetID);
+              Entry.PlaybackBlocks := Entry.Instrument.Blocks.ToArray;
               Continue;
             end;
             if not MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) then Continue;
@@ -417,6 +406,7 @@ var Entry,Singing,Performance: TMusicStudioScenePlacement; Overrides,Config: TJS
     Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor: Double; Pair: TJSONPair; CommonVisibility: TJSONObject;
     CommonStates: TArray<TInstrumentState>; CommonState: TInstrumentState; PoseActive: Boolean;
     Independent: array[0..3] of TMusicStudioScenePlacement; I,K: Integer; HasIndependent: Boolean;
+    ActionRanges: TArray<TInstrumentPlaybackRange>; RangeCount: Integer;
 begin
   if (Track.Source=nil) or (Track.Source.Document=nil) or (Track.Source.Config=nil) then Exit;
   Overrides := nil; Config := nil; Singing := nil; Performance := nil; ActiveIndex := -1; Mouth := 0; Warning := '';
@@ -425,11 +415,18 @@ begin
   try
     try
       Overrides := BuildMusicStudioPsdOverrides(Track.Source.Document,Track.Source.Config,-1);
+      SetLength(ActionRanges,Track.Placements.Count); RangeCount := 0;
       Transforms := nil;
       Factor := 1;
       if FMaximumImageDimension>0 then
         Factor := Min(1.0,FMaximumImageDimension/Max(Track.Source.Document.Width,Track.Source.Document.Height));
       for Entry in Track.Placements do begin
+        if (Entry.Instrument<>nil) and (Entry.ErrorText='') and (FBeatPosition>=Entry.StartBeat) then begin
+          ActionRanges[RangeCount].Blocks := Entry.PlaybackBlocks;
+          ActionRanges[RangeCount].StartBeat := Entry.StartBeat;
+          ActionRanges[RangeCount].EndBeat := Min(Entry.StartBeat+Entry.Instrument.LengthBeats,StartBeat(Entry.StartSeconds+Entry.LengthSeconds));
+          Inc(RangeCount);
+        end;
         if (FSeconds<Entry.StartSeconds) or (FSeconds>=Entry.StartSeconds+Entry.LengthSeconds) then Continue;
         if Entry.ErrorText<>'' then begin Warning := Entry.ErrorText; Continue; end;
         if Entry.HasSelection then begin
@@ -461,7 +458,11 @@ begin
       end;
       if (Performance<>nil) and (Performance.Instrument<>nil) then begin
         CommonStates := Performance.Instrument.StatesAt(FBeatPosition,Performance.StartBeat);
+        K := 0; for CommonState in CommonStates do if not MusicStudioActionRow(CommonState.Row) then begin CommonStates[K] := CommonState; Inc(K); end;
+        SetLength(CommonStates,K);
       end;
+      SetLength(ActionRanges,RangeCount);
+      CommonStates := CommonStates+MusicStudioInstrumentActionStates(ActionRanges,Track.Source.Document.InstrumentRules,FBeatPosition);
       for I := 0 to High(Independent) do if Independent[I]<>nil then begin
         Entry := Independent[I];
         // 独立ポーズの実要素は演奏配置外で使う。明示通常は内部ポーズも打ち消せる。
@@ -469,7 +470,7 @@ begin
         K := 0; for CommonState in CommonStates do if CommonState.Row<>Entry.Selection.Row then begin CommonStates[K] := CommonState; Inc(K); end;
         SetLength(CommonStates,K+1); CommonStates[K] := Entry.Selection; HasIndependent := True;
       end;
-      if HasIndependent or ((Performance<>nil) and (Performance.Instrument<>nil)) then begin
+      if HasIndependent or (RangeCount>0) or ((Performance<>nil) and (Performance.Instrument<>nil)) then begin
         for CommonState in CommonStates do if (CommonState.Row='ポーズ') and
           Track.Source.Document.InstrumentRules.HasChoice(CommonState.Row,CommonState.Choice) then PoseActive := True;
         CommonVisibility := Track.Source.Document.InstrumentRules.Visibility(CommonStates,(Performance=nil) or (Performance.Instrument=nil));

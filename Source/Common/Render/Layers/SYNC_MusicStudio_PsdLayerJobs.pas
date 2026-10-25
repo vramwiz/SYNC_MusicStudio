@@ -32,12 +32,13 @@ type
     FBitmap: TBitmap;
     FError: string;
     FGeneration: Integer;
+    FMaximumDimension: Integer;
     FStarted: Boolean;
   protected
     procedure Execute; override;
   public
     // Clones metadata before Start; original document may be freed immediately afterwards.
-    constructor Create(Document: TMusicStudioLayerDocument; Overrides: TJSONObject; Generation: Integer);
+    constructor Create(Document: TMusicStudioLayerDocument; Overrides: TJSONObject; Generation: Integer; MaximumDimension: Integer = 0);
     destructor Destroy; override;
     procedure Start; reintroduce;
     function TakeBitmap: TBitmap;
@@ -75,9 +76,10 @@ function TMusicStudioPsdLayerLoadJob.TakeDocument: TMusicStudioLayerDocument;
 begin Result := FDocument; FDocument := nil; end;
 
 constructor TMusicStudioPsdLayerRenderJob.Create(Document: TMusicStudioLayerDocument;
-  Overrides: TJSONObject; Generation: Integer);
+  Overrides: TJSONObject; Generation,MaximumDimension: Integer);
 begin
   inherited Create(True); FreeOnTerminate := False; FGeneration := Generation;
+  FMaximumDimension := MaximumDimension;
   FDocument := Document.Clone;
   if Overrides<>nil then FOverrides := TJSONObject(Overrides.Clone);
 end;
@@ -96,7 +98,7 @@ begin
   if Terminated then Exit;
   try
     FBitmap := TBitmap.Create;
-    if not FDocument.Render(FBitmap,FOverrides) then begin
+    if not FDocument.Render(FBitmap,FOverrides,FMaximumDimension) then begin
       FError := FDocument.LastError; FreeAndNil(FBitmap);
     end;
     if Terminated then FreeAndNil(FBitmap);

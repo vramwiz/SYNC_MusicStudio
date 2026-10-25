@@ -44,8 +44,16 @@ type
     FBackgroundFrame: Integer;
     FBackgroundStatus: string;
     FPlacement: TMusicStudioPsdPlacementEditor;
+    FViewZoom: Double;
+    FViewPan: TPointF;
+    FViewDragging: Boolean;
+    FViewDown: TPoint;
     FFlipped: array[0..3] of Vcl.Graphics.TBitmap;
     FFlipSerial,FFlipFlags: array[0..3] of Integer;
+    procedure EndViewDrag;
+    procedure LayoutTransport(Sender: TObject);
+    procedure StageWheel(Sender: TObject; Shift: TShiftState; Delta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure StageFit(Sender: TObject);
     function DisplayImage(Index: Integer): Vcl.Graphics.TBitmap;
     procedure StageMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
     procedure StageMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
@@ -98,6 +106,13 @@ type
     function IsAudioEngineAllocated: Boolean;
     function PlaybackSnapshot: TMusicStudioPlaybackSnapshot;
     function CharacterBounds(TrackIndex: Integer; out Video,Bounds: TRect): Boolean;
+    procedure ZoomAt(Delta: Integer; const Point: TPoint);
+    procedure FitView;
+    // 同じ操作部品を上側のHostへ移し、映像欄をプレビュー専用にする。
+    procedure DockTransport(Host: TWinControl);
+    property ViewZoom: Double read FViewZoom;
+    property ViewPan: TPointF read FViewPan;
+    property ViewDragging: Boolean read FViewDragging;
     property PlacementEditor: TMusicStudioPsdPlacementEditor read FPlacement;
     property SilentVisualMode: Boolean read FSilentVisualMode write SetSilentVisualMode;
     property AudioEngineAllocated: Boolean read IsAudioEngineAllocated;
@@ -127,10 +142,11 @@ constructor TMusicStudioPreviewFrame.Create(AOwner: TComponent);
   begin Result := TMusicStudioButton.Create(Self); Result.Parent := FFooter;
     Result.SetBounds(X,8,W,28); Result.Caption := Caption; Result.OnClick := Event; end;
 begin
-  inherited; ApplySyncMusicStudioDarkFrame(Self); ApplyMusicStudioEditorFont(Self); FEnd := 10; DoubleBuffered := True;
+  inherited; ApplySyncMusicStudioDarkFrame(Self); ApplyMusicStudioEditorFont(Self); FEnd := 10; DoubleBuffered := True; FViewZoom := 1;
   FSceneCache := TMusicStudioPsdSceneCache.Create;
   FHostBackground := Vcl.Graphics.TBitmap.Create;
   FFooter := TPanel.Create(Self); FFooter.Parent := Self; FFooter.Align := alBottom;
+  FFooter.OnResize := LayoutTransport;
   FFooter.Height := 84; FFooter.BevelOuter := bvNone; ApplySyncMusicStudioDarkPanel(FFooter);
   PlayButton := ButtonAt(12,104,'▶ 再生',PlayClick);
   PlayButton.ShowHint := True;
@@ -143,7 +159,9 @@ begin
   FTransport := TLabel.Create(Self); FTransport.Parent := FFooter; FTransport.AutoSize := False;
   FTransport.SetBounds(370,10,400,24);
   FTransport.ShowHint := True;
+  FTransport.EllipsisPosition := epEndEllipsis;
   FStatus := TLabel.Create(Self); FStatus.Parent := FFooter; FStatus.AutoSize := False;
+  FStatus.EllipsisPosition := epEndEllipsis;
   FStatus.SetBounds(12,38,Width-24,20); FStatus.Anchors := [akLeft,akTop,akRight];
   FStatus.Caption := 'PSD部位・母音・表情・アニメーションの編集プレビュー。歌声生成は未対応。';
   SeekBar := TTrackBar.Create(Self); SeekBar.Parent := FFooter; SeekBar.SetBounds(8,59,Width-16,24);
@@ -154,12 +172,15 @@ begin
   FPlacement := TMusicStudioPsdPlacementEditor.Create(Stage); FPlacement.OnBounds := CharacterBounds;
   Stage.OnMouseDown := StageMouseDown; Stage.OnMouseMove := StageMouseMove; Stage.OnMouseUp := StageMouseUp;
   Stage.OnCaptureLost := StageCaptureLost;
+  Stage.OnMouseWheel := StageWheel; Stage.OnDblClick := StageFit;
   Stage.ShowHint := True; FStatus.ShowHint := True;
   FTimer := TTimer.Create(Self); FTimer.Interval := 30; FTimer.OnTimer := Tick;
   UpdatePosition;
 end;
 destructor TMusicStudioPreviewFrame.Destroy;
 begin FTimer.Enabled := False; FOnReadHostBackground := nil; FOnPositionChange := nil;
+  FFooter.OnResize := nil;
+  EndViewDrag;
   FOnTempoEdit := nil;
   Stage.OnCaptureLost := nil; FreeAndNil(FPlacement);
   ReleasePlayback; ClearAssets; FSceneCache.Free; FHostBackground.Free; FDocument := nil; inherited; end;
@@ -204,17 +225,44 @@ begin
 end;
 
 function TMusicStudioPreviewFrame.VideoRect: TRect;
-var W,H,M: Integer;
+var W,H,M: Integer; Center: TPointF;
 begin
   M := MulDiv(24,CurrentPPI,96); W := 16; H := 9;
   if FBackgroundSerial<>0 then begin W := FBackgroundWidth; H := FBackgroundHeight; end;
   Result := MusicStudioFitFrameRect(Rect(M,M,Max(M+1,Stage.Width-M),Max(M+1,Stage.Height-M)),W,H);
+  Center := PointF((Result.Left+Result.Right)/2+FViewPan.X,(Result.Top+Result.Bottom)/2+FViewPan.Y);
+  W := Max(1,Round(Result.Width*FViewZoom)); H := Max(1,Round(Result.Height*FViewZoom));
+  Result := Rect(Round(Center.X-W/2),Round(Center.Y-H/2),Round(Center.X-W/2)+W,Round(Center.Y-H/2)+H);
 end;
 procedure TMusicStudioPreviewFrame.Resize;
 begin
-  inherited;
-  if Assigned(FPlacement) then FPlacement.Cancel;
-  if Assigned(FTransport) then FTransport.Width := Max(1,FFooter.ClientWidth-FTransport.Left-12);
+  inherited; EndViewDrag; if Assigned(FPlacement) then FPlacement.Cancel; LayoutTransport(nil);
+end;
+procedure TMusicStudioPreviewFrame.DockTransport(Host: TWinControl);
+begin
+  FFooter.Parent := Host; FFooter.Align := alTop; FFooter.Top := Host.ClientHeight; LayoutTransport(nil);
+end;
+procedure TMusicStudioPreviewFrame.LayoutTransport(Sender: TObject);
+var PPI,W: Integer;
+  function P(Value: Integer): Integer;
+  begin Result := MulDiv(Value,PPI,96); end;
+begin
+  if (FTransport=nil) or (SeekBar=nil) then Exit;
+  PPI := Max(CurrentPPI,MulDiv(Abs(Font.Height),96,13));
+  W := FFooter.ClientWidth;
+  if W<P(600) then begin
+    FFooter.Height := P(120); W := Min(P(104),Max(1,(FFooter.ClientWidth-P(24)) div 2));
+    PlayButton.SetBounds(P(8),P(8),W,P(28)); StopButton.SetBounds(P(16)+W,P(8),W,P(28));
+    FTempoLabel.SetBounds(P(8),P(46),P(32),P(20)); TempoEdit.SetBounds(P(44),P(42),P(70),P(28));
+    FTransport.SetBounds(P(122),P(46),Max(1,FFooter.ClientWidth-P(130)),P(20));
+    FStatus.SetBounds(P(8),P(74),Max(1,FFooter.ClientWidth-P(16)),P(18));
+    SeekBar.SetBounds(P(8),P(96),Max(1,FFooter.ClientWidth-P(16)),P(24));
+  end else begin
+    FFooter.Height := P(84); PlayButton.SetBounds(P(12),P(8),P(104),P(28)); StopButton.SetBounds(P(124),P(8),P(104),P(28));
+    FTempoLabel.SetBounds(P(238),P(13),P(32),P(20)); TempoEdit.SetBounds(P(274),P(8),P(82),P(28));
+    FTransport.SetBounds(P(370),P(10),Max(1,FFooter.ClientWidth-P(382)),P(24));
+    FStatus.SetBounds(P(12),P(38),Max(1,FFooter.ClientWidth-P(24)),P(20)); SeekBar.SetBounds(P(8),P(59),Max(1,FFooter.ClientWidth-P(16)),P(24));
+  end;
 end;
 procedure TMusicStudioPreviewFrame.ClearAssets;
 var I: Integer;
@@ -228,6 +276,7 @@ end;
 procedure TMusicStudioPreviewFrame.Bind(Document: TMusicStudioDocument);
 var I,N: Integer; T: TMusicStudioTrack; P: TMusicStudioPattern; Clips: TMusicStudioPreviewClips;
 begin
+  if FDocument<>Document then FitView;
   Stop; ClearAssets; FDocument := Document;
   FPlacement.Bind(Document);
   Stage.Hint := '';
@@ -394,8 +443,9 @@ begin
   FChanging := True;
   try SeekBar.Position := Round(EnsureRange(FPosition/Max(0.001,FEnd),0.0,1.0)*10000);
   finally FChanging := False; end;
-  FTransport.Caption := Format('%.2f / %.2f 秒   ·   30 fps位置 %d',[FPosition,FEnd,Floor(FPosition*30)]);
-  FTransport.Hint := Format('プレビュー範囲: %.2f秒 / 素材配置の終端: %.2f秒。BPM編集後も音源の長さは変えません。',[FEnd,FContentEnd]);
+  FTransport.Caption := Format('%.2f / %.2f 秒',[FPosition,FEnd]);
+  FTransport.Hint := Format('%.2f / %.2f 秒   ·   30 fps位置 %d',[FPosition,FEnd,Floor(FPosition*30)]);
+  FTransport.Hint := FTransport.Hint+sLineBreak+Format('プレビュー範囲: %.2f秒 / 素材配置の終端: %.2f秒。BPM編集後も音源の長さは変えません。',[FEnd,FContentEnd]);
   FSceneCache.SetPosition(FPosition);
   if Assigned(FOnPositionChange) then FOnPositionChange(Self); Stage.Invalidate;
 end;
@@ -426,7 +476,7 @@ begin
     end;
     UpdatePosition;
   end;
-  FStatus.Hint := FStatus.Caption+sLineBreak+Stage.Hint;
+  FStatus.Hint := FStatus.Caption+sLineBreak+'ホイール: 拡縮 / 左ドラッグ: 表示移動 / ダブルクリック: 全体表示 / Ctrl+ドラッグ: PSD配置編集'+sLineBreak+Stage.Hint;
 end;
 procedure TMusicStudioPreviewFrame.PlayClick(Sender: TObject);
 begin TogglePlayback; end;
@@ -478,15 +528,54 @@ begin
   end;
 end;
 procedure TMusicStudioPreviewFrame.StageMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
-begin FPlacement.MouseDown(Button,X,Y); end;
+begin
+  if (Button=mbLeft) and not (ssCtrl in Shift) then begin
+    FPlacement.Cancel; FViewDragging := True; FViewDown := Point(X,Y); SetCapture(Stage.Handle); Stage.Cursor := crSizeAll;
+  end else begin EndViewDrag; FPlacement.MouseDown(Button,X,Y); end;
+end;
 procedure TMusicStudioPreviewFrame.StageMouseMove(Sender: TObject; Shift: TShiftState; X,Y: Integer);
-begin FPlacement.MouseMove(X,Y); end;
+begin
+  if FViewDragging then begin
+    FViewPan := PointF(FViewPan.X+X-FViewDown.X,FViewPan.Y+Y-FViewDown.Y); FViewDown := Point(X,Y); Stage.Invalidate;
+  end else if FPlacement.Dragging or (ssCtrl in Shift) then FPlacement.MouseMove(X,Y)
+  else Stage.Cursor := crHandPoint;
+end;
 procedure TMusicStudioPreviewFrame.StageMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
-begin FPlacement.MouseUp(Button,X,Y); end;
+begin
+  if FViewDragging and (Button=mbLeft) then begin StageMouseMove(Sender,Shift,X,Y); EndViewDrag; end
+  else FPlacement.MouseUp(Button,X,Y);
+end;
+procedure TMusicStudioPreviewFrame.EndViewDrag;
+begin
+  FViewDragging := False;
+  if Stage=nil then Exit;
+  if Stage.HandleAllocated and (GetCapture=Stage.Handle) then ReleaseCapture;
+  Stage.Cursor := crDefault;
+end;
+procedure TMusicStudioPreviewFrame.ZoomAt(Delta: Integer; const Point: TPoint);
+var Old: TRect; Zoom,Ratio: Double;
+begin
+  EndViewDrag; FPlacement.Cancel; Old := VideoRect;
+  Zoom := EnsureRange(FViewZoom*Power(1.2,Delta/120),0.1,32.0); Ratio := Zoom/FViewZoom;
+  FViewPan := PointF(FViewPan.X+(1-Ratio)*(Point.X-(Old.Left+Old.Right)/2),
+    FViewPan.Y+(1-Ratio)*(Point.Y-(Old.Top+Old.Bottom)/2));
+  FViewZoom := Zoom; Stage.Invalidate;
+end;
+procedure TMusicStudioPreviewFrame.FitView;
+begin EndViewDrag; if FPlacement<>nil then FPlacement.Cancel; FViewZoom := 1; FViewPan := PointF(0,0); if Stage<>nil then Stage.Invalidate; end;
+procedure TMusicStudioPreviewFrame.StageFit(Sender: TObject);
+begin FitView; end;
+procedure TMusicStudioPreviewFrame.StageWheel(Sender: TObject; Shift: TShiftState; Delta: Integer; MousePos: TPoint; var Handled: Boolean);
+var Point: TPoint;
+begin Point := Stage.ScreenToClient(MousePos); Handled := PtInRect(Stage.ClientRect,Point); if Handled then ZoomAt(Delta,Point); end;
 procedure TMusicStudioPreviewFrame.StageCaptureLost(Sender: TObject);
 begin PostMessage(Handle,WM_APP+108,0,0); end;
 procedure TMusicStudioPreviewFrame.WMPlacementCaptureLost(var Message: TMessage);
-begin if Assigned(FPlacement) and FPlacement.Dragging and (GetCapture<>Stage.Handle) then FPlacement.Cancel; end;
+begin
+  if GetCapture=Stage.Handle then Exit;
+  if FViewDragging then EndViewDrag;
+  if Assigned(FPlacement) and FPlacement.Dragging then FPlacement.Cancel;
+end;
 function TMusicStudioPreviewFrame.CharacterBounds(TrackIndex: Integer; out Video,Bounds: TRect): Boolean;
 var I: Integer; Image: Vcl.Graphics.TBitmap; Transform: TMusicStudioPsdTransform;
 begin
@@ -545,7 +634,7 @@ begin
   if Stage.Height<128 then Text := '編集プレビュー'+sLineBreak+'PSD部位 / MIDI歌詞';
   if FBackgroundSerial<>0 then Text := 'AviUtl2 静止背景'+sLineBreak+
     Format('フレーム %d',[FBackgroundFrame])+sLineBreak+'PSD / 母音・表情';
-  LabelIn(Rect(12,12,Video.Left-8,Stage.Height),Text,DT_WORDBREAK);
+  if (Stage.Width>=500) and (Video.Left>120) then LabelIn(Rect(12,12,Video.Left-8,Stage.Height),Text,DT_WORDBREAK);
   N := Length(FTrackIndices);
   if N=0 then LabelIn(Video,'PSDトラック未設定',DT_CENTER or DT_VCENTER or DT_SINGLELINE)
   else for I := 0 to N-1 do begin

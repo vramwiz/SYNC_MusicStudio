@@ -93,6 +93,27 @@
     <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentPreview.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_FileDropList.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_PsdImport.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_MeterMap.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_ClipTempo.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_TimelineMetrics.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_TimelineContent.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_TempoRulerEditor.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_TempoPatternData.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_TempoPatternFrame.pas">
+      <Form>MusicStudioTempoPatternFrame</Form><FormType>dfm</FormType><DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Common\Singing\SYNC_MusicStudio_MidiTempo.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_LayerStepData.pas" />
+    <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_LayerStepFrame.pas">
+      <Form>MusicStudioLayerStepFrame</Form><FormType>dfm</FormType><DesignClass>TFrame</DesignClass>
+    </DCCReference>
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_EditHistory.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_PsdTransform.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_PsdPlacementEditor.pas" />
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_LibraryThumbnails.pas" />
     <DCCReference Include="Source\Common\Project\Performer\SYNC_MusicStudio_SmallSlotData.pas" />
     <DCCReference Include="Source\Plugin\Filter\Performer\SYNC_MusicStudio_SmallSlotEditor.pas" />
     <DCCReference Include="Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceKinds.pas" />
@@ -103,6 +124,7 @@
     <DCCReference Include="Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas" />
     <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas" />
+    <DCCReference Include="Source\Common\Project\SYNC_MusicStudio_InstrumentPlayback.pas" />
     <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentFrame.pas">
       <Form>MusicStudioInstrumentFrame</Form><FormType>dfm</FormType><DesignClass>TFrame</DesignClass>
     </DCCReference>

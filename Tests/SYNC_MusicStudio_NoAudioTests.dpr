@@ -1,6 +1,16 @@
 ﻿program SYNC_MusicStudio_NoAudioTests;
 {$APPTYPE CONSOLE}
 uses
+  SYNC_MusicStudio_InstrumentEndChecks in 'SYNC_MusicStudio_InstrumentEndChecks.pas',
+  SYNC_MusicStudio_InstrumentAppliedChecks in 'SYNC_MusicStudio_InstrumentAppliedChecks.pas',
+  SYNC_MusicStudio_InstrumentPhaseChecks in 'SYNC_MusicStudio_InstrumentPhaseChecks.pas',
+  SYNC_MusicStudio_HiHatRoutingChecks in 'SYNC_MusicStudio_HiHatRoutingChecks.pas',
+  SYNC_MusicStudio_InstrumentPreviewChecks in 'SYNC_MusicStudio_InstrumentPreviewChecks.pas',
+  SYNC_MusicStudio_InstrumentPreview in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentPreview.pas',
+  SYNC_MusicStudio_PsdListChecks in 'SYNC_MusicStudio_PsdListChecks.pas',
+  SYNC_MusicStudio_FileDropList in '..\Source\Plugin\Filter\SYNC_MusicStudio_FileDropList.pas',
+  SYNC_MusicStudio_PsdImport in '..\Source\Common\Project\SYNC_MusicStudio_PsdImport.pas',
+  SYNC_MusicStudio_PsdDropChecks in 'SYNC_MusicStudio_PsdDropChecks.pas',
   SYNC_MusicStudio_SlotUIChecks in 'SYNC_MusicStudio_SlotUIChecks.pas',
   SYNC_MusicStudio_SmallSlotData in '..\Source\Common\Project\Performer\SYNC_MusicStudio_SmallSlotData.pas',
   SYNC_MusicStudio_SmallSlotEditor in '..\Source\Plugin\Filter\Performer\SYNC_MusicStudio_SmallSlotEditor.pas',
@@ -14,6 +24,7 @@ uses
   SYNC_MusicStudio_InstrumentChecks in 'SYNC_MusicStudio_InstrumentChecks.pas',
   SYNC_MusicStudio_InstrumentRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas',
   SYNC_MusicStudio_InstrumentData in '..\Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas',
+  SYNC_MusicStudio_InstrumentPlayback in '..\Source\Common\Project\SYNC_MusicStudio_InstrumentPlayback.pas',
   SYNC_MusicStudio_InstrumentFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_InstrumentFrame.pas',
   SYNC_MusicStudio_DrumPsdChecks in 'SYNC_MusicStudio_DrumPsdChecks.pas',
   SYNC_MusicStudio_DrumPsdRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_DrumPsdRules.pas',
@@ -108,7 +119,32 @@ begin
   try
     SetTextCodePage(Output,65001); SetTextCodePage(ErrOutput,65001);
     Application.Initialize;
-    if ParamStr(2)='--slot-ui' then begin RunSlotUIChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--snare-trace' then begin RunSnareTrace(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
+    if ParamStr(2)='--snare-video-trace' then begin RunSnareVideoTrace(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
+    if ParamStr(2)='--snare-frames' then begin ExportSnareFrames(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
+    if ParamStr(2)='--instrument-end' then begin RunInstrumentEndChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--instrument-applied' then begin RunInstrumentAppliedChecks(ParamStr(1),ParamStr(3),ParamStr(4),ParamStr(5)); Exit; end;
+    if ParamStr(2)='--instrument-phases' then begin RunInstrumentPhaseChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--instrument-resonance' then begin RunInstrumentResonanceChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--instrument-cymbal' then begin RunInstrumentCymbalVisibilityChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--psd-render-cost' then begin RunPsdRenderCostChecks(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
+    if ParamStr(2)='--instrument-effects' then begin RunInstrumentEffectChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--instrument-repeat' then begin RunInstrumentRepeatChecks(ParamStr(1),ParamStr(3),ParamStr(4)='all'); Exit; end;
+    if ParamStr(2)='--psd-render-core' then begin RunMusicStudioPsdLayerChecks(ParamStr(1),False); RunMusicStudioPsdSceneChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--psd-sampled' then begin RunPsdSampledChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--bass-pedal-candidate' then begin BuildBassPedalCandidate(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--bass-assignment' then begin RunBassAssignmentChecks(ParamStr(1),ParamStr(3),ParamStr(4),ParamStr(5),ParamStr(6)='moving'); Exit; end;
+    if ParamStr(2)='--hihat-pedal-candidate' then begin BuildHiHatPedalCandidate(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--hihat-routing' then begin RunHiHatRoutingChecks(ParamStr(1),ParamStr(3),ParamStr(4),ParamStr(5)); Exit; end;
+    if ParamStr(2)='--hihat' then begin InspectHiHat(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--hihat-candidate' then begin BuildHiHatCandidate(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--bass-rest-candidate' then begin BuildBassRestCandidate(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--drum-rest' then begin InspectBassRest(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--instrument-gestures' then begin RunInstrumentGestureChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--instrument-preview' then begin RunInstrumentPreviewChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--psd-list' then begin RunPsdListChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--psd-drop' then begin RunPsdDropChecks(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
+    if ParamStr(2)='--slot-ui' then begin RunSlotUIChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--performer-management' then begin RunPerformerChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--instrument' then begin RunInstrumentChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--instrument-psd' then begin InspectInstrumentPSD(ParamStr(1),ParamStr(3)); Exit; end;

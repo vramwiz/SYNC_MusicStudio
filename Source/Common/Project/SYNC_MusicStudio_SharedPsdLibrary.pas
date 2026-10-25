@@ -1,7 +1,7 @@
 ﻿unit SYNC_MusicStudio_SharedPsdLibrary;
 
 // 作品をまたぐPSD/設定の正本。原本を変更せず管理コピーと固定IDを保存する。
-// 構築/一覧/解決は読取のみ。Import/Save時だけ Known Folder Documents 配下へ書く。
+// 構築/一覧/解決は読取のみ。Import/Save/Hide時だけ Known Folder Documents 配下へ書く。
 interface
 uses System.JSON, System.Classes;
 type
@@ -10,7 +10,7 @@ type
   end;
   TMusicStudioPsdAsset = record
     ID, Name, Color, FilePath, OriginalPath, ContentHash, ConfigJSON, Revision: string;
-    Missing: Boolean;
+    Missing, HiddenFromLibrary: Boolean;
     Patterns: TArray<TMusicStudioSharedPattern>;
   end;
   TMusicStudioSharedPsdLibrary = class
@@ -29,14 +29,17 @@ type
   public
     // OverrideRootはテスト隔離用。空ならKnown Folder Documentsを使用する。
     constructor Create(const OverrideRoot: string = '');
+    // 固定ID参照と重複照合用に一覧削除済みも含む。表示側がHiddenFromLibraryを除外する。
     function Assets: TArray<TMusicStudioPsdAsset>;
     function TryRead(const ID: string; out Asset: TMusicStudioPsdAsset; out ErrorText: string): Boolean;
     function ResolvePath(const ID: string): string;
     // 同一内容は既存ID。同名異内容は新規ID。UIで合成可能と確認後に呼び出す。
     function TryImport(const SourcePath, Name, Color: string; out Asset: TMusicStudioPsdAsset;
-      out Duplicate: Boolean; out ErrorText: string): Boolean;
+      out Duplicate: Boolean; out ErrorText: string; const ExpectedRevision: string = ''): Boolean;
     // 同一フォルダーの排他書込ロックと楽観的版照合。競合時は上書きせずFalse。
     function TrySave(var Asset: TMusicStudioPsdAsset; out ErrorText: string): Boolean;
+    // 一覧からの削除。作品の固定ID/管理コピーは保持し、同内容の再登録で復帰する。
+    function TryHide(const ID, ExpectedRevision: string; out ErrorText: string): Boolean;
     // 管理コピー欠損の復旧。同一hashのPSDだけを同じIDへコピーする。
     function TryRelocate(const ID, SourcePath: string; out ErrorText: string): Boolean;
     property Root: string read FRoot;
@@ -201,6 +204,7 @@ begin
       CheckNameColor(Asset.Name,Asset.Color);
       Asset.OriginalPath := Text(O,'originalPath'); Asset.ContentHash := Text(O,'contentHash');
       Asset.Revision := Text(O,'revision'); Asset.FilePath := TPath.Combine(AssetDirectory(Key),'source.psd');
+      Asset.HiddenFromLibrary := O.GetValue<Boolean>('hiddenFromLibrary',False);
       Asset.Missing := not TFile.Exists(Asset.FilePath);
       if not (O.GetValue('config') is TJSONObject) then raise Exception.Create('共有PSD configが不正です。');
       Asset.ConfigJSON := O.GetValue('config').ToJSON;
@@ -242,7 +246,7 @@ begin
   try Result := TPath.Combine(AssetDirectory(ID),'source.psd'); except on E: Exception do Result := ''; end;
 end;
 function TMusicStudioSharedPsdLibrary.TryImport(const SourcePath,Name,Color: string; out Asset: TMusicStudioPsdAsset;
-  out Duplicate: Boolean; out ErrorText: string): Boolean;
+  out Duplicate: Boolean; out ErrorText: string; const ExpectedRevision: string): Boolean;
 var A: TMusicStudioPsdAsset; Hash,Dir,CopyPath,ImportedID: string; O: TJSONObject; Handle: NativeUInt;
   Imported,Published: Boolean;
 begin
@@ -253,8 +257,19 @@ begin
     Handle := LockLibrary;
     try
       for A in Assets do if SameText(A.ContentHash,Hash) then begin
+        if (ExpectedRevision<>'') and (A.Revision<>ExpectedRevision) then
+          raise Exception.Create('共有PSDは他の画面で更新されました。一覧から設定を開き直してください。');
         if A.Missing then PublishPsdCopy(SourcePath,A.FilePath,Hash);
-        Asset := A; Asset.Missing := False; Duplicate := True; Result := True; Exit;
+        Asset := A;
+        if A.HiddenFromLibrary then begin
+          O := ReadMetadata(A.ID);
+          try
+            Put(O,'hiddenFromLibrary',TJSONBool.Create(False));
+            Asset.Revision := NewID; Put(O,'revision',TJSONString.Create(Asset.Revision));
+            AtomicSave(MetadataPath(A.ID),O.ToJSON); Asset.HiddenFromLibrary := False;
+          finally O.Free; end;
+        end;
+        Asset.Missing := False; Duplicate := True; Result := True; Exit;
       end;
       Asset.ID := NewID; Dir := AssetDirectory(Asset.ID); Imported := False; Published := False;
       if not CreateDirectory(PChar(Dir),nil) then RaiseLastOSError;
@@ -277,6 +292,23 @@ begin
         end;
       end;
     finally UnlockLibrary(Handle); end;
+  except on E: Exception do ErrorText := E.Message; end;
+end;
+function TMusicStudioSharedPsdLibrary.TryHide(const ID, ExpectedRevision: string; out ErrorText: string): Boolean;
+var O: TJSONObject; H: NativeUInt;
+begin
+  Result := False; ErrorText := '';
+  try
+    H := LockLibrary;
+    try
+      O := ReadMetadata(ID);
+      try
+        if Text(O,'revision')<>ExpectedRevision then
+          raise Exception.Create('共有PSDは他の画面で更新されました。一覧を更新してから削除してください。');
+        Put(O,'hiddenFromLibrary',TJSONBool.Create(True)); Put(O,'revision',TJSONString.Create(NewID));
+        AtomicSave(MetadataPath(ID),O.ToJSON); Result := True;
+      finally O.Free; end;
+    finally UnlockLibrary(H); end;
   except on E: Exception do ErrorText := E.Message; end;
 end;
 function TMusicStudioSharedPsdLibrary.TrySave(var Asset: TMusicStudioPsdAsset; out ErrorText: string): Boolean;

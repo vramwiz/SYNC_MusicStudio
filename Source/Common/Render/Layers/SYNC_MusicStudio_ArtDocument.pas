@@ -5,7 +5,7 @@ unit SYNC_MusicStudio_ArtDocument;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.Generics.Collections;
+  System.SysUtils, System.Classes, System.Types, System.Generics.Collections;
 
 type
   EArtFormat = class(Exception);
@@ -69,7 +69,9 @@ type
     procedure DeleteLayer(Layer: TArtLayer);
     procedure Changed;
     procedure ValidateForNewSave;
-    function RenderRGBA: TBytes;
+    // Output size samples the same canvas pixels as nearest-neighbour reduction of a full render.
+    // Layer/mask coordinates remain in the original PSD; zero keeps the native dimensions.
+    function RenderRGBA(OutputWidth: Integer = 0; OutputHeight: Integer = 0): TBytes;
   end;
 
 const
@@ -447,8 +449,31 @@ begin
   ValidateStructure(False);
 end;
 
-function TArtDocument.RenderRGBA: TBytes;
-var Output: TBytes;
+function TArtDocument.RenderRGBA(OutputWidth,OutputHeight: Integer): TBytes;
+var Output: TBytes; W,H,I: Integer; XMap,YMap: TArray<Integer>; Area: TRect;
+  procedure IncludeArea(var Target: TRect; const Added: TRect);
+  begin
+    if (Added.Right<=Added.Left) or (Added.Bottom<=Added.Top) then Exit;
+    if (Target.Right<=Target.Left) or (Target.Bottom<=Target.Top) then Target := Added
+    else begin Target.Left := Min(Target.Left,Added.Left); Target.Top := Min(Target.Top,Added.Top);
+      Target.Right := Max(Target.Right,Added.Right); Target.Bottom := Max(Target.Bottom,Added.Bottom); end;
+  end;
+  function SinglePlainImage(List: TList<TArtLayer>; var Count: Integer): Boolean;
+  var L: TArtLayer;
+  begin
+    Result := False;
+    for L in List do begin
+      if not L.Visible or (L.Opacity=0) then Continue;
+      if (L.Opacity<>255) or (L.HasMask and not L.MaskDisabled) then Exit;
+      if L.Kind=alkGroup then begin
+        if not SinglePlainImage(L.Children,Count) then Exit;
+      end else begin
+        if L.BlendKey<>'norm' then Exit;
+        Inc(Count); if Count>1 then Exit;
+      end;
+    end;
+    Result := True;
+  end;
   function MaskCoverage(L: TArtLayer; X,Y: Int64): Double;
   var MX,MY: Int64; Value: Integer;
   begin
@@ -460,39 +485,77 @@ var Output: TBytes;
     if L.MaskInvert then Value := 255-Value;
     Result := Value/255.0;
   end;
-  procedure Draw(List: TList<TArtLayer>; var Target: TBytes; Depth: Integer);
-  var I, X, Y, P, Q, C: Integer; L: TArtLayer;
-      SX, SY: Int64; SA, DA, OA, Value: Double; Group: TBytes;
+  procedure Draw(List: TList<TArtLayer>; var Target: TBytes; Depth: Integer; out Area: TRect);
+  var I, X, Y, P, Q, C,Left,Top,Right,Bottom,Alpha,Inv,ImageCount: Integer; L: TArtLayer;
+      SX, SY: Int64; SA, DA, OA, Value: Double; Group: TBytes; ChildArea: TRect; Unmasked: Boolean;
   begin
+    Area := Rect(0,0,0,0);
     for I := List.Count - 1 downto 0 do begin
       L := List[I];
-      if not L.Visible then Continue;
+      if not L.Visible or (L.Opacity=0) then Continue;
+      Unmasked := not L.HasMask or L.MaskDisabled;
       if L.Kind = alkGroup then begin
-        if L.BlendKey='pass' then Draw(L.Children,Target,Depth+1)
+        ImageCount := 0;
+        // An unmodified single normal image has the same straight RGBA when
+        // isolated. Its wrapper groups need no intermediate canvas buffers.
+        if (L.BlendKey='pass') or ((L.Opacity=255) and Unmasked and SinglePlainImage(L.Children,ImageCount)) then begin
+          Draw(L.Children,Target,Depth+1,ChildArea); IncludeArea(Area,ChildArea);
+        end
         else begin
           if Int64(Depth+1)*Length(Target)>ART_MAX_BYTES then raise EArtFormat.Create('Group composite memory limit');
           SetLength(Group,Length(Target)); if Length(Group)>0 then FillChar(Group[0],Length(Group),0);
-          Draw(L.Children,Group,Depth+1);
-          for Q := 0 to Length(Target) div 4-1 do begin
-            P := Q*4; SA := Group[P+3]/255.0*L.Opacity/255.0*
-              MaskCoverage(L,Q mod Width,Q div Width); DA := Target[P+3]/255.0;
-            OA := SA+DA*(1-SA); if OA<=0 then Continue;
-            for C := 0 to 2 do Target[P+C] := EnsureRange(Round((Group[P+C]*SA+Target[P+C]*DA*(1-SA))/OA),0,255);
-            Target[P+3] := EnsureRange(Round(OA*255),0,255);
-          end;
+          Draw(L.Children,Group,Depth+1,ChildArea);
+          // A normal group affects only its visible children. Transparent canvas
+          // pixels need no source-over calculation, even for nested groups.
+          for Y := ChildArea.Top to ChildArea.Bottom-1 do
+            for X := ChildArea.Left to ChildArea.Right-1 do begin
+              P := (Y*W+X)*4;
+              if Group[P+3]=0 then Continue;
+              if (L.Opacity=255) and Unmasked then begin
+                if (Group[P+3]=255) or (Target[P+3]=0) then begin
+                  PCardinal(@Target[P])^ := PCardinal(@Group[P])^; Continue;
+                end;
+                if Target[P+3]=255 then begin
+                  Alpha := Group[P+3]; Inv := 255-Alpha;
+                  for C := 0 to 2 do Target[P+C] := (Group[P+C]*Alpha+Target[P+C]*Inv+127) div 255;
+                  Continue;
+                end;
+              end;
+              SA := Group[P+3]/255.0*L.Opacity/255.0*MaskCoverage(L,XMap[X],YMap[Y]);
+              if SA<=0 then Continue;
+              DA := Target[P+3]/255.0; OA := SA+DA*(1-SA);
+              for C := 0 to 2 do Target[P+C] := EnsureRange(Round((Group[P+C]*SA+Target[P+C]*DA*(1-SA))/OA),0,255);
+              Target[P+3] := EnsureRange(Round(OA*255),0,255);
+            end;
+          IncludeArea(Area,ChildArea);
           Group := nil;
         end;
         Continue;
       end;
-      for Y := 0 to L.Bounds.Height - 1 do begin
-        SY := Int64(L.Bounds.Top) + Y;
-        if (SY < 0) or (SY >= Height) then Continue;
-        for X := 0 to L.Bounds.Width - 1 do begin
-          SX := Int64(L.Bounds.Left) + X;
-          if (SX < 0) or (SX >= Width) then Continue;
-          P := (Y * L.Bounds.Width + X) * 4;
-          Q := (Integer(SY) * Width + Integer(SX)) * 4;
+      Left := (Int64(EnsureRange(L.Bounds.Left,0,Width))*W+Width-1) div Width;
+      Right := (Int64(EnsureRange(L.Bounds.Right,0,Width))*W+Width-1) div Width;
+      Top := (Int64(EnsureRange(L.Bounds.Top,0,Height))*H+Height-1) div Height;
+      Bottom := (Int64(EnsureRange(L.Bounds.Bottom,0,Height))*H+Height-1) div Height;
+      IncludeArea(Area,Rect(Left,Top,Right,Bottom));
+      for Y := Top to Bottom-1 do begin
+        SY := YMap[Y];
+        for X := Left to Right-1 do begin
+          SX := XMap[X];
+          P := ((Integer(SY)-L.Bounds.Top)*L.Bounds.Width+Integer(SX)-L.Bounds.Left)*4;
+          Q := (Y*W+X)*4;
+          if L.Pixels[P+3]=0 then Continue;
+          if (L.Opacity=255) and Unmasked and (L.BlendKey='norm') then begin
+            if (L.Pixels[P+3]=255) or (Target[Q+3]=0) then begin
+              PCardinal(@Target[Q])^ := PCardinal(@L.Pixels[P])^; Continue;
+            end;
+            if Target[Q+3]=255 then begin
+              Alpha := L.Pixels[P+3]; Inv := 255-Alpha;
+              for C := 0 to 2 do Target[Q+C] := (L.Pixels[P+C]*Alpha+Target[Q+C]*Inv+127) div 255;
+              Continue;
+            end;
+          end;
           SA := (L.Pixels[P+3] / 255.0) * (L.Opacity / 255.0) * MaskCoverage(L,SX,SY);
+          if SA<=0 then Continue;
           DA := Target[Q+3] / 255.0;
           OA := SA + DA * (1 - SA);
           if OA <= 0 then Continue;
@@ -510,8 +573,13 @@ var Output: TBytes;
   end;
 begin
   ValidateStructure(True);
-  SetLength(Output, PixelByteCount(Width, Height, 4));
-  Draw(Roots,Output,0);
+  W := OutputWidth; H := OutputHeight;
+  if W=0 then W := Width; if H=0 then H := Height;
+  if (W<1) or (H<1) or (W>Width) or (H>Height) then raise EArtFormat.Create('Invalid preview dimensions');
+  SetLength(XMap,W); for I := 0 to W-1 do XMap[I] := Int64(I)*Width div W;
+  SetLength(YMap,H); for I := 0 to H-1 do YMap[I] := Int64(I)*Height div H;
+  SetLength(Output, PixelByteCount(W,H,4));
+  Draw(Roots,Output,0,Area);
   Result := Output;
 end;
 

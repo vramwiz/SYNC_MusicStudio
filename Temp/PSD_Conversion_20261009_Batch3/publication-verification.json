@@ -1,9 +1,0 @@
-{
-  "passed": true,
-  "published_psds": 9,
-  "published_poses": 36,
-  "source_files_unchanged": 58,
-  "existing_batch_preserved": true,
-  "total_psds": 20,
-  "total_poses": 100
-}

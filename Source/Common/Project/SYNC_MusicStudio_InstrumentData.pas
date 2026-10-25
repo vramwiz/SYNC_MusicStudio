@@ -24,6 +24,8 @@ type
     function PutBlock(Index: Integer; Value: TInstrumentBlock): Boolean;
     procedure DeleteBlock(Index: Integer);
     procedure SetLength(Value: Double);
+    // 設定内の試写は最後の区間まで。保存用の手動長さは変更しない。
+    function PlaybackEndBeat: Double;
     function StatesAt(Beat: Double; OriginBeat: Double = 0): TArray<TInstrumentState>;
     property Blocks: TList<TInstrumentBlock> read FBlocks;
     property LengthBeats: Double read FLength;
@@ -62,6 +64,14 @@ begin
   if IsNan(Value) or IsInfinite(Value) or (Value<=0) or (Value>1000000) then raise Exception.Create('演奏長は0より大きく100万拍以下です。');
   for B in FBlocks do if B.EndBeat>Value then raise Exception.Create('区間があるため短縮できません。');
   FLength := Value;
+end;
+function TMusicStudioInstrumentData.PlaybackEndBeat: Double;
+var B: TInstrumentBlock;
+begin
+  Result := 0;
+  for B in FBlocks do Result := Max(Result,B.EndBeat);
+  if Result<=0 then Result := FLength;
+  Result := Min(Result,FLength);
 end;
 function TMusicStudioInstrumentData.PutBlock(Index: Integer; Value: TInstrumentBlock): Boolean;
 var I: Integer; G: TGUID; B: TInstrumentBlock;

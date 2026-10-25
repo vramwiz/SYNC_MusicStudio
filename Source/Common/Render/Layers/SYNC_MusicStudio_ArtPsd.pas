@@ -10,7 +10,7 @@ function ReadPsd(const FileName: string): TArtDocument;
 // Parse an existing immutable archive without writing a temporary source file.
 // The document shares Data as SourceBytes; callers must not modify that array.
 function ReadPsdBytes(const Data: TBytes): TArtDocument;
-function RenderPsdLayers(Document: TArtDocument): TBytes;
+function RenderPsdLayers(Document: TArtDocument; OutputWidth: Integer = 0; OutputHeight: Integer = 0): TBytes;
 procedure SaveImageCompositionPsd(Document: TArtDocument; const FileName: string);
 procedure SaveLayerPropertiesPsd(Document: TArtDocument; const FileName: string);
 procedure SaveExternalLayerPropertiesPsd(Document: TArtDocument; const FileName: string);
@@ -505,7 +505,7 @@ begin
        (Reason<>'Additional info retained in archive: FMsk') then raise EArtFormat.Create(Reason);
 end;
 
-function RenderPsdLayers(Document: TArtDocument): TBytes;
+function RenderPsdLayers(Document: TArtDocument; OutputWidth,OutputHeight: Integer): TBytes;
 var Snapshot: TArtDocument;
   procedure CopyLayers(List: TList<TArtLayer>; Parent: TArtLayer);
   var L,N: TArtLayer;
@@ -524,7 +524,7 @@ begin
   Snapshot := TArtDocument.Create;
   try
     Snapshot.Width := Document.Width; Snapshot.Height := Document.Height;
-    CopyLayers(Document.Roots,nil); Result := Snapshot.RenderRGBA;
+    CopyLayers(Document.Roots,nil); Result := Snapshot.RenderRGBA(OutputWidth,OutputHeight);
   finally Snapshot.Free; end;
 end;
 

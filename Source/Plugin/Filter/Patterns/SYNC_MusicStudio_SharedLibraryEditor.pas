@@ -29,7 +29,7 @@ begin
 end;
 function AddMusicStudioSharedItem(Owner: TComponent; Store: TMusicStudioSharedPsdLibrary;
   const Kind,AssetID: string; out Pattern: TMusicStudioPattern; out ErrorText: string): Boolean;
-var FileDialog: TOpenDialog; Source,Hash: string; A,Existing: TMusicStudioPsdAsset;
+var FileDialog: TOpenDialog; Source,Hash,ExpectedRevision: string; A,Existing: TMusicStudioPsdAsset;
   Found,Dup: Boolean; N: Integer;
 begin
   Result := False; ErrorText := ''; Pattern := Default(TMusicStudioPattern);
@@ -48,9 +48,10 @@ begin
       if Found then begin Pattern.Name := A.Name; Pattern.Color := A.Color; Pattern.ConfigJSON := A.ConfigJSON; end;
       if not ShowEditor(Owner,Pattern,Source,Pattern.ConfigJSON) then Exit;
       if not SameText(Hash,THashSHA2.GetHashStringFromFile(Source)) then raise Exception.Create('設定中にPSD原本が変わりました。再度登録してください。');
-      if not Store.TryImport(Source,Pattern.Name,Pattern.Color,Existing,Dup,ErrorText) then Exit;
-      if not Dup then A := Existing
-      else if not Found then raise Exception.Create('同じPSDが別画面から登録されました。一覧から設定を開き直してください。');
+      ExpectedRevision := ''; if Found then ExpectedRevision := A.Revision;
+      if not Store.TryImport(Source,Pattern.Name,Pattern.Color,Existing,Dup,ErrorText,ExpectedRevision) then Exit;
+      if Dup and not Found then raise Exception.Create('同じPSDが別画面から登録されました。一覧から設定を開き直してください。');
+      A := Existing;
       Pattern.AssetID := A.ID; Pattern.FilePath := A.FilePath;
       A.Name := Pattern.Name; A.Color := Pattern.Color; A.ConfigJSON := Pattern.ConfigJSON;
       Result := Store.TrySave(A,ErrorText);

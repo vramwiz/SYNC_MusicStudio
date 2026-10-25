@@ -45,7 +45,7 @@ type
     // Honors PSDTool '*' exclusivity at the selected layer and every opened ancestor.
     procedure SelectLayerOverride(Overrides: TJSONObject; const Key: string);
     // Caller owns Target and Overrides. BGRA is premultiplied for VCL alpha drawing.
-    function Render(Target: TBitmap; Overrides: TJSONObject = nil): Boolean;
+    function Render(Target: TBitmap; Overrides: TJSONObject = nil; MaximumDimension: Integer = 0): Boolean;
     property Loaded: Boolean read GetLoaded;
     property FilePath: string read FFilePath;
     property LastError: string read FLastError;
@@ -216,36 +216,39 @@ begin
   end;
 end;
 
-function TMusicStudioLayerDocument.Render(Target: TBitmap; Overrides: TJSONObject): Boolean;
-var Key: string; Cache: TBitmap; Snapshot: TMusicStudioLayerDocument;
+function TMusicStudioLayerDocument.Render(Target: TBitmap; Overrides: TJSONObject; MaximumDimension: Integer): Boolean;
+var Key,VisibilityKey: string; Cache: TBitmap; Snapshot: TMusicStudioLayerDocument;
     Info: TMusicStudioLayerInfo; Value: TJSONValue; Layer: TArtLayer;
-    Pixels: TBytes; Row: PByte; X,Y,P,A: Integer;
+    Pixels: TBytes; Row: PByte; X,Y,P,A,W,H: Integer; Factor: Double;
 begin
   Result := False; FLastError := '';
   if Target=nil then begin FLastError := '表示先がありません。'; Exit; end;
   if not Loaded then begin FLastError := 'PSDが読み込まれていません。'; Exit; end;
   Snapshot := nil; Cache := nil;
   try
-    Key := '';
+    Factor := 1; if MaximumDimension>0 then Factor := Min(1.0,MaximumDimension/Max(Width,Height));
+    W := Max(1,Round(Width*Factor)); H := Max(1,Round(Height*Factor));
+    VisibilityKey := '';
     for Info in FLayers do begin
       Value := nil; if Overrides<>nil then Value := Overrides.GetValue(Info.Key);
       if (Value<>nil) and not (Value is TJSONBool) then
         raise EArtFormat.Create('PSDレイヤーの表示設定が不正です。');
-      if Value=nil then begin if Info.Visible then Key := Key+'1' else Key := Key+'0'; end
-      else if TJSONBool(Value).AsBoolean then Key := Key+'1' else Key := Key+'0';
+      if Value=nil then begin if Info.Visible then VisibilityKey := VisibilityKey+'1' else VisibilityKey := VisibilityKey+'0'; end
+      else if TJSONBool(Value).AsBoolean then VisibilityKey := VisibilityKey+'1' else VisibilityKey := VisibilityKey+'0';
     end;
+    Key := IntToStr(W)+'x'+IntToStr(H)+':'+VisibilityKey;
     if FImages.TryGetValue(Key,Cache) then begin Target.Assign(Cache); Exit(True); end;
     Snapshot := Clone;
     for X := 0 to High(FLayers) do begin
-      Layer := Snapshot.FByKey[FLayers[X].Key]; Layer.Visible := Key[X+1]='1';
+      Layer := Snapshot.FByKey[FLayers[X].Key]; Layer.Visible := VisibilityKey[X+1]='1';
     end;
-    Inc(FRenderCount); Pixels := RenderPsdLayers(Snapshot.FDocument);
+    Inc(FRenderCount); Pixels := RenderPsdLayers(Snapshot.FDocument,W,H);
     Cache := TBitmap.Create; Cache.PixelFormat := pf32bit;
-    Cache.SetSize(Width,Height); Cache.AlphaFormat := afPremultiplied;
-    for Y := 0 to Height-1 do begin
+    Cache.SetSize(W,H); Cache.AlphaFormat := afPremultiplied;
+    for Y := 0 to H-1 do begin
       Row := Cache.ScanLine[Y];
-      for X := 0 to Width-1 do begin
-        P := (Y*Width+X)*4; A := Pixels[P+3];
+      for X := 0 to W-1 do begin
+        P := (Y*W+X)*4; A := Pixels[P+3];
         Row[X*4] := (Integer(Pixels[P+2])*A+127) div 255;
         Row[X*4+1] := (Integer(Pixels[P+1])*A+127) div 255;
         Row[X*4+2] := (Integer(Pixels[P])*A+127) div 255;
@@ -254,11 +257,11 @@ begin
     end;
     Target.Assign(Cache);
     if (FImages.Count>=MAX_RENDER_CACHE_ITEMS) or
-       (FCacheBytes+Int64(Width)*Height*4>MAX_RENDER_CACHE_BYTES) then begin
+       (FCacheBytes+Int64(W)*H*4>MAX_RENDER_CACHE_BYTES) then begin
       FImages.Clear; FCacheBytes := 0;
     end;
-    if Int64(Width)*Height*4<=MAX_RENDER_CACHE_BYTES then begin
-      FImages.Add(Key,Cache); Inc(FCacheBytes,Int64(Width)*Height*4); Cache := nil;
+    if Int64(W)*H*4<=MAX_RENDER_CACHE_BYTES then begin
+      FImages.Add(Key,Cache); Inc(FCacheBytes,Int64(W)*H*4); Cache := nil;
     end;
     Result := True;
   except on E: Exception do FLastError := E.Message; end;

@@ -40,6 +40,8 @@ type
     function TrySave(out Text, ErrorText: string): Boolean;
     function PatternCount: Integer;
     function PatternAt(Index: Integer): TMusicStudioPattern;
+    // 演奏パターンに保存された末尾。秒素材など制限しない属性は0。
+    function PatternLengthBeats(const PatternID: string): Double;
     function AddAudio: Integer;
     function AddSinging: Integer;
     function AddPerformance: Integer;
@@ -56,6 +58,8 @@ type
     function ImportPerformance(const Pattern: TMusicStudioPattern): Integer;
     // 共通UIDの名称だけを全配置snapshotへ反映する。演奏データと配置時の版は保持する。
     procedure RenamePerformance(const Attribute,SharedID,Name: string);
+    // 明示保存した共通演奏を、現在作品の同じ共通UIDのsnapshotへ反映する。配置ID/位置/長さは保持。
+    function RefreshPerformanceSnapshots(const Pattern: TMusicStudioPattern): Integer;
     property AssetResolver: TMusicStudioAssetResolver read FAssetResolver write FAssetResolver;
     // 指定IDの属性だけを変更し、そのパターンの拡張属性を保持する。
     procedure UpdatePattern(const Pattern: TMusicStudioPattern);
@@ -486,6 +490,27 @@ begin
       SetValue(O,'name',TJSONString.Create(Name));
   end;
 end;
+function TMusicStudioDocument.RefreshPerformanceSnapshots(const Pattern: TMusicStudioPattern): Integer;
+var Before: TJSONObject; Current: TMusicStudioPattern; I: Integer; Error: string;
+begin
+  Result := 0;
+  if (Pattern.Kind<>'performance') or (PerformanceKindIndex(Pattern.PerformanceAttribute)<0) or
+    (Pattern.SharedPatternID='') or (Pattern.LibraryRevision='') then raise Exception.Create('保存済み共通演奏の参照が不正です。');
+  Before := FRoot.Clone as TJSONObject;
+  try
+    try
+      for I := 0 to PatternCount-1 do begin
+        Current := PatternAt(I);
+        if (Current.Kind<>'performance') or (Current.PerformanceAttribute<>Pattern.PerformanceAttribute) or
+          (Current.SharedPatternID<>Pattern.SharedPatternID) then Continue;
+        Current.Name := Pattern.Name; Current.Color := Pattern.Color;
+        Current.ConfigJSON := Pattern.ConfigJSON; Current.LibraryRevision := Pattern.LibraryRevision;
+        UpdatePattern(Current); Inc(Result);
+      end;
+      if not ValidateMusicStudioPatterns(FRoot,Error) then raise Exception.Create(Error);
+    except FRoot.Free; FRoot := Before; Before := nil; raise; end;
+  finally Before.Free; end;
+end;
 function TMusicStudioDocument.ImportPerformance(const Pattern: TMusicStudioPattern): Integer;
 var I: Integer; P: TMusicStudioPattern;
 begin
@@ -666,9 +691,20 @@ begin
   end;
   Result := MusicStudioAddPlacement(FRoot,TrackIndex,SlotIndex,PatternID,StartSeconds,LengthSeconds,ErrorText);
 end;
+function TMusicStudioDocument.PatternLengthBeats(const PatternID: string): Double;
+var I: Integer; P: TMusicStudioPattern; Data: TMusicStudioPerformanceData;
+begin
+  Result := 0;
+  for I := 0 to PatternCount-1 do begin
+    P := PatternAt(I); if (P.ID<>PatternID) or (P.Kind<>'performance') then Continue;
+    Data := TMusicStudioPerformanceData.Create;
+    try Data.LoadJSON(P.ConfigJSON); Result := Data.LengthBeats; finally Data.Free; end;
+    Exit;
+  end;
+end;
 function TMusicStudioDocument.AddBeatPlacement(TrackIndex,SlotIndex: Integer; const PatternID: string;
   StartBeat,LengthBeats: Double; out ErrorText: string): Boolean;
-var Before: TJSONObject; Start,Len: Double; K,I: Integer; P: TMusicStudioPattern;
+var Before: TJSONObject; Start,Len,Limit: Double; K,I: Integer; P: TMusicStudioPattern;
 begin
   Result := False; ErrorText := '拍の開始/長さが範囲外です。';
   if IsNan(StartBeat) or IsInfinite(StartBeat) or IsNan(LengthBeats) or IsInfinite(LengthBeats) or
@@ -686,6 +722,10 @@ begin
       ErrorText := '演奏stepと配置先PSDの素材IDが一致しません。'; Exit;
     end;
     Break;
+  end;
+  Limit := PatternLengthBeats(PatternID);
+  if (Limit>0) and (MusicStudioComparePositions(LengthBeats,Limit)>0) then begin
+    ErrorText := Format('パターンの末尾（%g拍）を超えて配置できません。',[Limit]); Exit;
   end;
   Before := TJSONObject(FRoot.Clone);
   try
@@ -722,11 +762,16 @@ begin
   MusicStudioMovePlacement(FRoot,TrackIndex,SlotIndex,ClipIndex,StartSeconds,LengthSeconds);
 end;
 function TMusicStudioDocument.MoveBeatPlacement(TrackIndex,SlotIndex,ClipIndex: Integer; StartBeat,LengthBeats: Double; out ErrorText: string): Boolean;
-var Start,Len: Double; Before: TJSONObject;
+var Start,Len,Limit: Double; Before: TJSONObject; C: TMusicStudioPlacement;
 begin
   Result := False; ErrorText := '開始/長さの拍が範囲外です。';
   if IsNan(StartBeat) or IsInfinite(StartBeat) or IsNan(LengthBeats) or IsInfinite(LengthBeats) or
     (StartBeat<0) or (LengthBeats<0.001) or (StartBeat+LengthBeats>1000000) then Exit;
+  C := TrackAt(TrackIndex).Slots[SlotIndex].Clips[ClipIndex]; Limit := PatternLengthBeats(C.PatternID);
+  // 旧作品の長過ぎる配置は移動/短縮できるが、さらに伸ばさない。
+  if (Limit>0) and (MusicStudioComparePositions(LengthBeats,Max(Limit,C.LengthBeats))>0) then begin
+    ErrorText := Format('パターンの末尾（%g拍）を超えて伸ばせません。',[Limit]); Exit;
+  end;
   Start := BeatToSeconds(StartBeat); Len := BeatToSeconds(StartBeat+LengthBeats)-Start;
   if (Start+Len>604800) or (Len<=0) then Exit;
   Before := TJSONObject(FRoot.Clone);

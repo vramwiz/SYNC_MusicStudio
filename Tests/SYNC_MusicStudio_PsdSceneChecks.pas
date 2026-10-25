@@ -136,7 +136,9 @@ begin
   Singing := Document.AddSinging; Pattern := Document.PatternAt(Singing);
   Pattern.FilePath := MidiPath; Pattern.SourceTrack := 0; Pattern.Duration := 1; Document.UpdatePattern(Pattern);
   for I := 0 to 4 do begin Index := Document.AddTrack('psd'); Document.AssignPsd(Index,Asset.ID); end;
-  for I := 0 to 1 do Check(Document.AddPlacement(I,1,Pattern.ID,2,1,Error),Error);
+  for I := 0 to 1 do begin
+    Slot := Document.AddSlot(I,'singing'); Check(Document.AddPlacement(I,Slot,Pattern.ID,2,1,Error),Error);
+  end;
   for J := 0 to High(Asset.Patterns) do begin
     Pattern := Default(TMusicStudioPattern); Pattern.Kind := Asset.Patterns[J].Kind;
     Pattern.Name := Asset.Patterns[J].Name; Pattern.Color := Asset.Patterns[J].Color;
