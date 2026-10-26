@@ -7,7 +7,7 @@ interface
 uses
   AviUtl2FilterTypes;
 
-// 「SYNC / 演奏スタジオ」と設定・JSONデータの2項目だけを登録する。
+// 「SYNC / 演奏スタジオ」と設定・JSON・全体X/Y/倍率を登録する。
 function GetMusicStudioFilterTable: PFILTER_PLUGIN_TABLE;
 procedure SetMusicStudioHostVersion(Version: Cardinal);
 
@@ -43,6 +43,7 @@ type
 var
   SettingsButton: TFILTER_ITEM_BUTTON;
   JSONDataItem: TFILTER_ITEM_STRING;
+  StageXItem,StageYItem,StageScaleItem: TFILTER_ITEM_TRACK;
   PluginTableInitialized: Boolean;
   HostVersion: Cardinal;
 
@@ -97,7 +98,14 @@ var
   Form: TFormMusicStudioSettings;
   Obj: OBJECT_HANDLE;
   RawValue: PAnsiChar;
+  VX,VY,Zoom: Double;
   Session: TMusicStudioSettingsSession;
+  function Number(const Name: PWideChar; Default: Double): Double;
+  var Value: PAnsiChar;
+  begin
+    Result := Default; Value := Edit^.GetObjectItemValue(Obj,MUSIC_STUDIO_EFFECT_NAME,Name);
+    if Value<>nil then if not TryStrToFloat(string(UTF8String(Value)),Result,TFormatSettings.Invariant) then Result := Default;
+  end;
 begin
   try
     if (Edit = nil) or not Assigned(Edit^.GetFocusObject) or
@@ -117,6 +125,8 @@ begin
     try
       Form := TFormMusicStudioSettings.Create(nil);
       try
+        VX := Number('X',StageXItem.Value); VY := Number('Y',StageYItem.Value); Zoom := Number('拡大率',StageScaleItem.Value)/100;
+        Form.Preview.SetOutputView(VX,VY,Zoom);
         Form.LoadDocument(CurrentJSON);
         Form.OnApplyJSON := Session.ApplyJSON;
         Form.Preview.OnReadHostBackground := Session.ReadBackground;
@@ -205,7 +215,7 @@ begin
         Video^.Object_^.Time,PreviewBackground,CaptureStatus);
     end else Session.Background.Clear(CaptureStatus);
     // Invalid JSON/PSD cannot prevent a valid input background being captured.
-    if not Session.Render(JSON,Video^.Object_^.Time,Width,Height,Overlay,Error) then Exit;
+    if not Session.Render(JSON,Video^.Object_^.Time,Width,Height,Overlay,Error,StageXItem.Value,StageYItem.Value,StageScaleItem.Value/100) then Exit;
     if Length(Background)=Length(Overlay) then begin
       for I := 0 to High(Overlay) do begin
         Inv := 255-Overlay[I].A;
@@ -242,6 +252,8 @@ begin
       '音楽素材とPSDによる演奏シーンの編集スタジオ', MusicStudioProcVideo, nil);
     AddButton(SettingsButton, '設定', SettingsButtonCallback);
     AddString(JSONDataItem, MUSIC_STUDIO_JSON_ITEM_NAME, MUSIC_STUDIO_DEFAULT_JSON);
+    AddTrack(StageXItem,'X',0,-30720,30720,0.1); AddTrack(StageYItem,'Y',0,-17280,17280,0.1);
+    AddTrack(StageScaleItem,'拡大率',100,0.1,10000,0.1);
     GetPluginTable^.Func_Create := MusicStudioCreate;
     GetPluginTable^.Func_Destroy := MusicStudioDestroy;
     PluginTableInitialized := True;

@@ -59,10 +59,12 @@ uses
   SYNC_MusicStudio_Controls in '..\Source\Plugin\Filter\SYNC_MusicStudio_Controls.pas',
   SYNC_MusicStudio_AudioClipFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_AudioClipFrame.pas',
   SYNC_MusicStudio_Vowels in '..\Source\Common\Singing\SYNC_MusicStudio_Vowels.pas',
+  SYNC_MusicStudio_SingingFormats in '..\Source\Common\Singing\SYNC_MusicStudio_SingingFormats.pas',
   SYNC_MusicStudio_SingingData in '..\Source\Common\Singing\SYNC_MusicStudio_SingingData.pas',
   SYNC_MusicStudio_SingingFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SingingFrame.pas',
   SYNC_MusicStudio_SlotFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SlotFrame.pas',
   SYNC_MusicStudio_PsdTrackFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PsdTrackFrame.pas',
+  SYNC_MusicStudio_DarkScrollBar in '..\Source\Plugin\Filter\SYNC_MusicStudio_DarkScrollBar.pas',
   SYNC_MusicStudio_ArrangementView in '..\Source\Plugin\Filter\SYNC_MusicStudio_ArrangementView.pas',
   SYNC_MusicStudio_PatternSettingsForm in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PatternSettingsForm.pas',
   SYNC_MusicStudio_DarkTheme in '..\Source\Lib\SYNC_MusicStudio_DarkTheme.pas',
@@ -82,6 +84,7 @@ uses
   SYNC_MusicStudio_ArtPsd in '..\Source\Common\Render\Layers\SYNC_MusicStudio_ArtPsd.pas',
   SYNC_MusicStudio_ArtPsdOrigin in '..\Source\Common\Render\Layers\SYNC_MusicStudio_ArtPsdOrigin.pas',
   SYNC_MusicStudio_PsdLayers in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayers.pas',
+  SYNC_MusicStudio_LayerScale in '..\Source\Common\Render\Layers\SYNC_MusicStudio_LayerScale.pas',
   SYNC_MusicStudio_PsdLayerConfig in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerConfig.pas',
   SYNC_MusicStudio_PsdLayerFrameUI in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerFrameUI.pas',
   SYNC_MusicStudio_PsdLayerJobs in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerJobs.pas',
@@ -97,7 +100,7 @@ type
   TInitializePlugin = function(Version: Cardinal): Byte; cdecl;
   TUninitializePlugin = procedure; cdecl;
   TGetFilterPluginTable = function: PFILTER_PLUGIN_TABLE; cdecl;
-  TFilterItems = array[0..2] of Pointer;
+  TFilterItems = array[0..5] of Pointer;
   PFilterItems = ^TFilterItems;
 
 procedure Check(Condition: Boolean; const MessageText: string);
@@ -249,12 +252,15 @@ begin
       Check(Table^.Flag = FILTER_FLAG_VIDEO or FILTER_FLAG_FILTER or FILTER_FLAG_USERDATA, 'Wrong filter flags');
       Check(Assigned(Table^.Func_Create) and Assigned(Table^.Func_Destroy), 'Video instance lifecycle missing');
       Items := PFilterItems(Table^.Items);
-      Check((Items^[0] <> nil) and (Items^[1] <> nil) and (Items^[2] = nil), 'Expected exactly two settings');
+      Check((Items^[0] <> nil) and (Items^[1] <> nil) and (Items^[2] <> nil) and (Items^[3] <> nil) and (Items^[4] <> nil) and (Items^[5] = nil), 'Expected settings, JSON and three stage controls');
       Check(string(PFILTER_ITEM_BUTTON(Items^[0])^.ItemType) = 'button', 'Setting opener is not a button');
       Check(string(PFILTER_ITEM_BUTTON(Items^[0])^.Name) = '設定', 'Wrong setting button label');
       Check(Assigned(PFILTER_ITEM_BUTTON(Items^[0])^.Callback), 'Setting button callback missing');
       Check(string(PFILTER_ITEM_STRING(Items^[1])^.Name) = 'JSONデータ', 'Wrong JSON item label');
       Check(string(PFILTER_ITEM_STRING(Items^[1])^.Value) = MUSIC_STUDIO_DEFAULT_JSON, 'Wrong plugin default document');
+      Check((string(PFILTER_ITEM_TRACK(Items^[2])^.ItemType)='track') and (string(PFILTER_ITEM_TRACK(Items^[2])^.Name)='X') and (PFILTER_ITEM_TRACK(Items^[2])^.Value=0),'stage X');
+      Check((string(PFILTER_ITEM_TRACK(Items^[3])^.Name)='Y') and (PFILTER_ITEM_TRACK(Items^[3])^.Value=0),'stage Y');
+      Check((string(PFILTER_ITEM_TRACK(Items^[4])^.Name)='拡大率') and (PFILTER_ITEM_TRACK(Items^[4])^.Value=100),'stage scale');
       Check(Table = GetTable, 'Plugin table is not stable across calls');
       Check(Table^.Func_Proc_Video(nil) = 1, 'Pass-through callback failed');
       Check(not Assigned(Table^.Func_Proc_Audio), 'Preview WAV must not become output audio');

@@ -236,3 +236,32 @@ IDE実画面の読込/欄表示は、接続にcomputer-useのnode_replが提供�
 試用JSONと実フォームPNGは各実行のphrase-roll-<GUID>/phrase-roll-demo.json・phrase-roll-integrated-*.png。実モニター間DPIは別途確認する。
 今回の追加版はPostBuildEventを呼出時だけDeployDirectoryなしのCompleteへ上書きしてローカルauf2を生成する。
 .dprojのIDEビルドイベントは保持する。この検証版を既定配備先へ上書きするには別途承認を得る。
+
+## 統合編集省スペース化の専用確認（2026-10-26）
+
+NoAudioTestsの `<Temp証拠先> --compact-editor` は合成PSD/MIDIと隔離PSDAssets/PerformancePatternsだけを使用する。PSD行非表示・見出しdrop・一覧切替・＋/−手動展開・5トラック中1展開・歌唱優先の重ね表示画素・折りたたみdrop受入・番号/色/部位別候補記憶・右クリック削除Undo/Redo・旧ノート/歌唱参照Undo・実モーダル終了後の作品/共通正本Undo/Redo・外部競合・新規正本の削除/再登録・連続版履歴を確認する。音声エンジン未確保/decode0をassertし、音声/DPI試験は呼ばない。関連操作は --slot-ui と --instrument-gestures。旧候補popup試験は候補表操作へ更新する。
+画面画像はVCL PaintToで取り、owner drawボタンは同じWM_PRINTCLIENTで補う。PrintWindowはこの環境でfalseとなるため画像生成の成功条件に使用しない。
+
+## ステージ編集の専用確認（2026-10-26）
+
+`Tests/Win64/SYNC_MusicStudio_NoAudioTests.exe <Temp証拠先> --stage-editor [無配備auf2絶対パス]`。合成PSD/MIDIと隔離ライブラリで能力判定、別列メニュー/Del対象、挿入線付き並替、5人の前後、配置/拡縮/反転/Undo、目/solo、非表示の描画停止、母音3サイズと連続同母音、命名不要の表情capture/別口枝/Undoを確認する。削除確認は注入した応答でYes/Noを確認し、実機dialogのクリックとは区別する。
+
+auf2指定時は実DLLのSDK映像callbackへX/Y/拡大率を渡し、pixelで移動と倍率を検証する。音声処理とDPI変更は呼ばない。ビルドは引き続きBuildLocalの無配備上書き。新規LayerScaleユニットはdpr/dprojの両方へ登録し、追加DLL依存はない。実AviUtl2での操作/aup2保存再読込は別途確認。
+
+
+音声一覧の選択/参照登録だけの専用確認はNoAudioTestsの `<Temp証拠先> --audio-library <既存WAV絶対パス>`。既存WAVは参照/存在/hash確認のみ、音声fixture生成・decode・再生を行わない。SilentVisualModeでトラック/枠の一覧切替、HDROP、modalのファイル参照、配置、Undo、不正drop拒否、音声エンジン未生成を確認する。MP3のdecodeや実ファイル選択dialogの自動操作は含まない。
+
+
+PSD設定のリスト操作だけの専用確認はNoAudioTestsの `<Temp証拠先> --mouth-list`。小型の合成PSDで中段toolbar非表示、通常/*差分/!*親子の排他、装飾保持、確認母音の別枝を重ねないこと、選択でJSON不変、キーボード、menu割当/解除/12母音確認/再読込を確認する。音声/DPI変更なし。旧--psd-mouth全体はDPI試験を含むため実行しない。
+
+
+歌唱タイムライン表示の専用確認はNoAudioTestsの `<Temp証拠先> --lyric-timeline`。合成MIDIの読込とひらがな/カタカナ/空歌詞、音高変更によるpixel不変、同じ帯高、左寄せ、tile/可視端clip、透過summary、bitmap再利用/MIDI読込1回を確認する。音声処理/DPI変更は実行しない。
+
+
+歌唱の追加形式はNoAudioTestsの `<Temp証拠先> --singing-formats`。合成UST（UTF-8/CP932）、VSQX3/4、MusicXML/XML/MXL、MSCX/MSCZで歌詞/母音/音符/tempo変更/休符/part-preMeasure/名前/複数track/MusicXML tie、圧縮主ファイル選択、破損と欠損、設定workerと歌詞帯を確認する。音声/DPI試験なし。既存SMFは--lyric-timelineと--stage-editorで共通読込経路を回帰確認する。新SingingFormatsをproduct dpr/dprojおよびSingingDataを参照する独立hostへ登録する。
+
+
+歌唱clipのhover/開始線はNoAudioTestsの `<Temp証拠先> --singing-gestures`。展開/折りたたみ、未選択/選択、左右端/中央、click/drag直後のcursor、端dragの移動と長さ保持/Undo、pixelで開始線X一致を確認する。参照なしの合成作品JSONで、音声/DPI処理を実行しない。
+
+
+ダークscrollbarとdragの実cursorはNoAudioTestsの `<Temp証拠先> --dark-scroll`。水平/垂直thumb、矢印/page/keyboard、range clamp、capture取消、背景消去抑制、同値再設定の描画回数、timelineの連続30回再描画でbarを再描画しないこと、Win32 cursorをarrowへ戻してからWM_SETCURSORで復元することを確認する。--slot-ui/--compact-editorで横scrollと既存layout操作を回帰確認する。音声/DPI処理なし。

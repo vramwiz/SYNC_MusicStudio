@@ -102,19 +102,17 @@ begin
     RejectPoint(20,1); RejectPoint(20,UI.TimelineBox.TrackRowTop(T)+10,UI.StatusLabel);
     Before := JSON; Check(not UI.DropSelectedLibraryAt(UI.Document.TrackCount+1,-1,0,Error),'out-of-range track accepted');
     Check(JSON=Before,'invalid track changed document');
-    // 従来のPSD割当スロットの時間領域も引き続き使える。
-    SelectAsset(A); if not UI.TimelineBox.TrackExpanded(T) then UI.TimelineBox.ToggleTrack(T);
-    AtPoint(UI.TimelineBox.HeaderWidth+20,UI.TimelineBox.SlotRowTop(T,0)+12,True);
-    UI.TimelineBox.OnDragDrop(UI.TimelineBox,UI.PatternList,UI.TimelineBox.HeaderWidth+20,UI.TimelineBox.SlotRowTop(T,0)+12);
-    Check(UI.Document.TrackAt(T).PsdAssetID=A.ID,'legacy PSD-slot drop failed');
-    SelectAsset(B); RejectPoint(20,UI.TimelineBox.SlotRowTop(T,1)+12);
+    // PSD枠は内部互換だけを保持し、時間軸の行は表示しない。
+    HeaderDrop(A,True); Check(UI.TimelineBox.SlotRowTop(T,0)=-1,'PSD row still visible');
+    SelectAsset(B); RejectPoint(UI.TimelineBox.TrackColumnWidth+20,UI.TimelineBox.SlotRowTop(T,1)+12);
     Held := A.FilePath+'.held'; TFile.Move(A.FilePath,Held);
     try
-      UI.SharedLibraryChanged; SelectAsset(A); RejectPoint(20,UI.TimelineBox.TrackRowTop(T)+60);
+      UI.SharedLibraryChanged; SelectAsset(A); RejectPoint(20,UI.TimelineBox.TrackRowTop(T)+15);
     finally TFile.Move(Held,A.FilePath); end;
-    UI.SharedLibraryChanged; SelectAsset(A); AtPoint(20,UI.TimelineBox.TrackRowTop(T)+60,True);
+    UI.SharedLibraryChanged; SelectAsset(A); AtPoint(20,UI.TimelineBox.TrackRowTop(T)+15,True);
     // PSD以外の項目は固定列へ置かず、時間領域だけで配置する。
     TempoSlot := UI.Document.AddSlot(Music,'tempo'); UI.Document.AddTempo; LoadModel;
+    if not UI.TimelineBox.TrackExpanded(Music) then UI.TimelineBox.ToggleTrack(Music);
     UI.TimelineBox.SelectSlot(Music,TempoSlot); Check(UI.PatternList.Count>0,'tempo list missing'); UI.PatternList.ItemIndex := 0;
     RejectPoint(20,UI.TimelineBox.SlotRowTop(Music,TempoSlot)+12);
     AtPoint(UI.TimelineBox.HeaderWidth+20,UI.TimelineBox.SlotRowTop(Music,TempoSlot)+12,True);
@@ -131,7 +129,7 @@ begin
     Text := JSON; UI.LoadDocument(Text); Check(UI.Document.TrySave(Before,Error) and (Text=Before),'save reload changed assignment');
     Check(not UI.Preview.AudioEngineAllocated and (UI.TimelineBox.WaveCache.DecodeCount=0),'audio used by PSD drop checks');
     TFile.WriteAllText(TPath.Combine(Root,'psd-drop-project.json'),Text,TEncoding.UTF8);
-    Writeln('PSD_HEADER_DROP_EXPANDED_COLLAPSED_POSE_UNDO_REJECT_MISSING_RESTORE_LEGACY_TEMPO_NO_AUDIO_OK real=',Images);
+    Writeln('PSD_HEADER_DROP_EXPANDED_COLLAPSED_POSE_UNDO_REJECT_MISSING_RESTORE_HIDDEN_PSD_TEMPO_NO_AUDIO_OK real=',Images);
   finally UI.Free; end;
 end;
 end.

@@ -4,7 +4,7 @@
 // 読込/合成は最大各2 worker。旧世代も上限に数え、UI callbackや音声を使用しない。
 interface
 
-uses Winapi.Windows, System.Classes, System.JSON, System.Generics.Collections,
+uses Winapi.Windows, System.Types, System.Classes, System.JSON, System.Generics.Collections,
   Vcl.Graphics, SYNC_MusicStudio_PatternData, SYNC_MusicStudio_SharedPsdLibrary,
   SYNC_MusicStudio_VisualCache, SYNC_MusicStudio_MotionData,
   SYNC_MusicStudio_PsdLayers, SYNC_MusicStudio_PsdLayerJobs, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_LayerStepData,
@@ -22,6 +22,8 @@ type
     FTransforms: TMusicStudioSceneTransforms;
     FStarted: Boolean;
     FMaximumDimension: Integer;
+    FScaleKey: string;
+    FPartScale: Double;
   protected
     procedure Execute; override;
   public
@@ -30,7 +32,7 @@ type
     Composed: Boolean;
     constructor Create(Document: TMusicStudioLayerDocument; Overrides: TJSONObject;
       CachedBase: TBitmap; const Transforms: TMusicStudioSceneTransforms;
-      MaximumDimension: Integer = 512);
+      MaximumDimension: Integer = 512; const ScaleKey: string = ''; PartScale: Double = 1);
     destructor Destroy; override;
     procedure Start; reintroduce;
     function TakeBase: TBitmap;
@@ -59,7 +61,7 @@ type
     Steps: TMusicStudioLayerStepData;
     Instrument: TMusicStudioInstrumentData;
     PlaybackBlocks: TArray<TInstrumentBlock>; // Bind時の値コピー。frameごとの全区間複製を避ける。
-    HasSelection: Boolean;
+    HasSelection,IsCustomExpression: Boolean;
     Selection: TInstrumentState; // 独立スロットの意味指定。配置の秒区間と共に評価する。
     StepConfigs: TObjectList<TJSONObject>;
     Motion: TMusicStudioMotionConfig;
@@ -69,6 +71,9 @@ type
   TMusicStudioSceneTrack = class
   public
     TrackIndex, RequestGeneration: Integer;
+    Enabled: Boolean;
+    MouthKey: string;
+    MouthScale: Double;
     Source: TMusicStudioSceneSource; // Scene source listが所有する。
     Placements: TObjectList<TMusicStudioScenePlacement>;
     Image: TBitmap;
@@ -101,19 +106,22 @@ type
     procedure StartJobs;
     procedure RefreshTrack(Track: TMusicStudioSceneTrack);
     procedure ResetSource(Source: TMusicStudioSceneSource; const Stamp: string);
-    function MouthAt(Placement: TMusicStudioScenePlacement): Integer;
+    function MouthAt(Placement: TMusicStudioScenePlacement; out Scale: Double): Integer;
+    function SourceEnabled(Source: TMusicStudioSceneSource): Boolean;
     function StartBeat(Seconds: Double): Double;
   public
     constructor Create;
     destructor Destroy; override;
     // Document/Storeは保持しない。共有変更後は再Bindする。TempoBPMは明示された一定テンポ。
     procedure Bind(Document: TMusicStudioDocument; Store: TMusicStudioSharedPsdLibrary;
-      MidiCache: TMusicStudioVisualCache; TempoBPM: Double = 120);
+      MidiCache: TMusicStudioVisualCache; TempoBPM: Double = 120; const HiddenTrackIDs: TArray<string> = nil);
     procedure SetPosition(Seconds: Double); overload;
     // 可変テンポではBeatResolverを設定し、親のTimingMapから現在拍と開始拍を渡す。
     procedure SetPosition(Seconds, BeatPosition: Double); overload;
     function PollResults(CheckFiles: Boolean = False): Boolean;
     // 実トラック番号で参照。画像は次の位置/Bind/Poll/Clearまで借用。保持にはAssignする。
+    procedure SetTrackEnabled(TrackIndex: Integer; Enabled: Boolean);
+    function NativeSizeForTrack(TrackIndex: Integer): System.Types.TSize;
     function ImageForTrack(TrackIndex: Integer): TBitmap;
     function StatusForTrack(TrackIndex: Integer): string;
     function ActiveLoadJobs: Integer;
@@ -137,8 +145,9 @@ uses System.SysUtils, System.Math, SYNC_MusicStudio_ArrangementData,
 
 constructor TMusicStudioSceneRenderJob.Create(Document: TMusicStudioLayerDocument;
   Overrides: TJSONObject; CachedBase: TBitmap; const Transforms: TMusicStudioSceneTransforms;
-  MaximumDimension: Integer);
+  MaximumDimension: Integer; const ScaleKey: string; PartScale: Double);
 begin
+  FScaleKey := ScaleKey; FPartScale := PartScale;
   inherited Create(True); FreeOnTerminate := False;
   FTransforms := Copy(Transforms);
   FMaximumDimension := MaximumDimension;
@@ -164,7 +173,7 @@ begin
     try
       if FBase=nil then begin
         Full := TBitmap.Create;
-        if not FDocument.Render(Full,FOverrides,FMaximumDimension) then begin ErrorText := FDocument.LastError; Exit; end;
+        if not FDocument.Render(Full,FOverrides,FMaximumDimension,FScaleKey,FPartScale) then begin ErrorText := FDocument.LastError; Exit; end;
         FBase := Full; Full := nil; Composed := True;
       end;
       if Terminated then Exit;
@@ -191,7 +200,7 @@ begin Document.Free; Config.Free; BaseImages.Free; inherited; end;
 destructor TMusicStudioScenePlacement.Destroy;
 begin Instrument.Free; StepConfigs.Free; Steps.Free; Visibility.Free; Motion.Free; inherited; end;
 constructor TMusicStudioSceneTrack.Create;
-begin inherited; Placements := TObjectList<TMusicStudioScenePlacement>.Create(True); end;
+begin inherited; Enabled := True; MouthScale := 1; Placements := TObjectList<TMusicStudioScenePlacement>.Create(True); end;
 destructor TMusicStudioSceneTrack.Destroy;
 begin Placements.Free; Image.Free; Overrides.Free; inherited; end;
 
@@ -242,12 +251,12 @@ begin
 end;
 
 procedure TMusicStudioPsdSceneCache.Bind(Document: TMusicStudioDocument;
-  Store: TMusicStudioSharedPsdLibrary; MidiCache: TMusicStudioVisualCache; TempoBPM: Double);
+  Store: TMusicStudioSharedPsdLibrary; MidiCache: TMusicStudioVisualCache; TempoBPM: Double; const HiddenTrackIDs: TArray<string>);
 var Patterns: TDictionary<string,TMusicStudioPattern>; Assets: TDictionary<string,TMusicStudioPsdAsset>;
     Pattern: TMusicStudioPattern; Asset: TMusicStudioPsdAsset; Source: TMusicStudioSceneSource;
     Track: TMusicStudioTrack; SceneTrack: TMusicStudioSceneTrack; Slot: TMusicStudioSlot;
     Clip: TMusicStudioPlacement; Entry: TMusicStudioScenePlacement;
-    I,J: Integer; Path,Key,Config,Error: string;
+    I,J: Integer; Path,Key,Config,Error,HiddenID: string;
 begin
   Clear;
   if IsNan(TempoBPM) or IsInfinite(TempoBPM) or (TempoBPM<1) or (TempoBPM>1000) then
@@ -263,8 +272,8 @@ begin
     for I := 0 to Document.PatternCount-1 do begin Pattern := Document.PatternAt(I); Patterns.AddOrSetValue(Pattern.ID,Pattern); end;
     for I := 0 to Document.TrackCount-1 do begin
       Track := Document.TrackAt(I); if Track.Kind<>'psd' then Continue;
-      if FTracks.Count>=4 then Break;
       SceneTrack := TMusicStudioSceneTrack.Create; FTracks.Add(SceneTrack); SceneTrack.TrackIndex := I;
+      for HiddenID in HiddenTrackIDs do if HiddenID=Track.ID then SceneTrack.Enabled := False;
       Path := Track.PsdPath; Config := '{}'; Error := ''; Asset := Default(TMusicStudioPsdAsset);
       if Track.PsdAssetID<>'' then begin
         if not Assets.TryGetValue(Track.PsdAssetID,Asset) then begin
@@ -328,7 +337,7 @@ begin
             raise Exception.Create('配置パターンは別のPSD素材を参照しています。');
           Config := SharedConfig(Asset,Pattern);
           if Pattern.Kind='animation' then begin Entry.Motion := TMusicStudioMotionConfig.Create; Entry.Motion.LoadJSON(Config); end
-          else Entry.Visibility := ParseMusicStudioPsdConfig(Config);
+          else begin Entry.Visibility := ParseMusicStudioPsdConfig(Config); Entry.IsCustomExpression := (Pattern.Kind='emotion') and (Pattern.SharedPatternID='') and (Pattern.ConfigJSON<>''); end;
         except on E: Exception do Entry.ErrorText := E.Message; end;
       end;
     end;
@@ -355,11 +364,11 @@ begin
   for Track in FTracks do RefreshTrack(Track);
 end;
 
-function TMusicStudioPsdSceneCache.MouthAt(Placement: TMusicStudioScenePlacement): Integer;
+function TMusicStudioPsdSceneCache.MouthAt(Placement: TMusicStudioScenePlacement; out Scale: Double): Integer;
 var Source: TMusicStudioVisualSource; Roll: TMusicStudioRollTrack;
     Note,VowelIndex: Integer; Local,LatestStart,Fraction: Double; Vowels: string; C: Char;
 begin
-  Result := 0;
+  Scale := 1; Result := 0;
   if (FMidiCache=nil) or (Placement.MidiTrack<0) or (Placement.MidiPath='') then Exit;
   Source := FMidiCache.Find(vkMidi,Placement.MidiPath);
   if (Source=nil) or (Source.Status<>vsReady) or (Source.Rolls=nil) or
@@ -373,6 +382,8 @@ begin
         Fraction := (Local-LatestStart)/(Roll.Notes[Note].EndSeconds-LatestStart);
         Vowels := Roll.Notes[Note].Vowels;
         VowelIndex := EnsureRange(Integer(1+Floor(Fraction*Length(Vowels))),1,Length(Vowels));
+        Fraction := Frac(Fraction*Length(Vowels));
+        if Fraction<0.2 then Scale := 0.5 else if Fraction<0.4 then Scale := 0.75 else Scale := 1;
         C := Vowels[VowelIndex];
         case C of
           'a': Result := 1; 'i': Result := 2; 'u': Result := 3; 'e': Result := 4; 'o': Result := 5; 'n': Result := 6;
@@ -401,16 +412,17 @@ begin
 end;
 
 procedure TMusicStudioPsdSceneCache.RefreshTrack(Track: TMusicStudioSceneTrack);
-var Entry,Singing,Performance: TMusicStudioScenePlacement; Overrides,Config: TJSONObject;
+var Entry,Singing,Performance,Custom: TMusicStudioScenePlacement; Overrides,Config: TJSONObject;
     Transforms: TMusicStudioSceneTransforms; T: TMusicStudioMotionTransform;
     Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor: Double; Pair: TJSONPair; CommonVisibility: TJSONObject;
     CommonStates: TArray<TInstrumentState>; CommonState: TInstrumentState; PoseActive: Boolean;
     Independent: array[0..3] of TMusicStudioScenePlacement; I,K: Integer; HasIndependent: Boolean;
     ActionRanges: TArray<TInstrumentPlaybackRange>; RangeCount: Integer;
 begin
+  if not Track.Enabled then Exit;
   if (Track.Source=nil) or (Track.Source.Document=nil) or (Track.Source.Config=nil) then Exit;
   Overrides := nil; Config := nil; Singing := nil; Performance := nil; ActiveIndex := -1; Mouth := 0; Warning := '';
-  PoseActive := False;
+  PoseActive := False; Custom := nil;
   CommonStates := nil; HasIndependent := False; for I := 0 to High(Independent) do Independent[I] := nil;
   try
     try
@@ -447,6 +459,13 @@ begin
           N := Length(Transforms); SetLength(Transforms,N+1); Transforms[N] := T;
         end;
       end;
+      // 全レイヤーsnapshotは基本表示として先に適用し、動作と口を固定しない。
+      for Entry in Track.Placements do if Entry.IsCustomExpression and (Entry.Visibility<>nil) and (Entry.ErrorText='') and
+        (FSeconds>=Entry.StartSeconds) and (FSeconds<Entry.StartSeconds+Entry.LengthSeconds) then
+          if (Custom=nil) or (Entry.StartSeconds>=Custom.StartSeconds) then Custom := Entry;
+      // 全状態snapshotの隠れた親配下には表示ONの子もある。子から親を再表示せずそのまま復元する。
+      if Custom<>nil then for Pair in MusicStudioPsdConfigObject(Custom.Visibility,'visibility') do
+        MusicStudioSetJsonBoolean(Overrides,Pair.JsonString.Value,TJSONBool(Pair.JsonValue).AsBoolean);
       // 表情/姿勢→演奏step→母音。休符にはstepを重ねず、基本/表情を復元する。
       if (Performance<>nil) and (Performance.Steps<>nil) then
         ActiveIndex := Performance.Steps.ActiveStepAt(FBeatPosition,Performance.StartBeat);
@@ -478,15 +497,19 @@ begin
         finally CommonVisibility.Free; end;
       end;
       // 旧PSDプリセットも独立スロットとして共通演奏より後に重ねる。
-      for Entry in Track.Placements do if (Entry.Visibility<>nil) and (Entry.ErrorText='') and
+      for Entry in Track.Placements do if not Entry.IsCustomExpression and (Entry.Visibility<>nil) and (Entry.ErrorText='') and
         (FSeconds>=Entry.StartSeconds) and (FSeconds<Entry.StartSeconds+Entry.LengthSeconds) then
           MergeVisibility(Track.Source.Document,Overrides,Entry.Visibility);
-      if (Singing<>nil) and not PoseActive then Mouth := MouthAt(Singing);
+      Track.MouthScale := 1; Track.MouthKey := '';
+      if (Singing<>nil) and not PoseActive then Mouth := MouthAt(Singing,Track.MouthScale);
       if PoseActive then Mouth := -1;
       Config := TJSONObject(Track.Source.Config.Clone);
       Config.RemovePair('visibility').Free; Config.AddPair('visibility',Overrides); Overrides := nil;
       Overrides := BuildMusicStudioPsdOverrides(Track.Source.Document,Config,Mouth);
-      Key := Overrides.ToJSON; Track.BaseKey := Key;
+      if Mouth>0 then begin
+        Track.MouthKey := MusicStudioSelectedMouth(Track.Source.Document,Config,Mouth);
+      end;
+      Key := Overrides.ToJSON+'|'+Track.MouthKey+'|'+FloatToStr(Track.MouthScale,TFormatSettings.Invariant); Track.BaseKey := Key;
       for T in Transforms do Key := Key+'|'+TransformKey(T);
       Track.WarningText := Warning;
       if Key=Track.DesiredKey then Exit;
@@ -512,7 +535,7 @@ var Source: TMusicStudioSceneSource; Track: TMusicStudioSceneTrack;
 begin
   for Source in FSources do begin
     if FLoads.Count>=2 then Break;
-    if not Source.NeedLoad or (Source.LoadJob<>nil) then Continue;
+    if not SourceEnabled(Source) or not Source.NeedLoad or (Source.LoadJob<>nil) then Continue;
     Source.NeedLoad := False;
     Load := TMusicStudioPsdLayerLoadJob.Create(Source.Path,Source.Generation);
     Source.LoadJob := Load; FLoads.Add(Load); Inc(FLoadCount); Load.Start;
@@ -521,9 +544,9 @@ begin
   for I := 0 to FTracks.Count-1 do begin
     if FRenders.Count>=2 then Break;
     Index := (FNextTrack+I) mod FTracks.Count; Track := FTracks[Index];
-    if not Track.NeedRender or (Track.RenderJob<>nil) or (Track.Source.Document=nil) then Continue;
+    if not Track.Enabled or not Track.NeedRender or (Track.RenderJob<>nil) or (Track.Source.Document=nil) then Continue;
     Base := nil; Track.Source.BaseImages.TryGetValue(Track.BaseKey,Base);
-    Render := TMusicStudioSceneRenderJob.Create(Track.Source.Document,Track.Overrides,Base,Track.Transforms,FMaximumImageDimension);
+    Render := TMusicStudioSceneRenderJob.Create(Track.Source.Document,Track.Overrides,Base,Track.Transforms,FMaximumImageDimension,Track.MouthKey,Track.MouthScale);
     Render.BindGeneration := FGeneration; Render.SourceGeneration := Track.Source.Generation;
     Render.RequestGeneration := Track.RequestGeneration; Render.TrackIndex := Track.TrackIndex;
     Render.SourceKey := Track.Source.Key; Render.BaseKey := Track.BaseKey; Render.ImageKey := Track.DesiredKey;
@@ -553,7 +576,7 @@ end;
 function TMusicStudioPsdSceneCache.PollResults(CheckFiles: Boolean): Boolean;
 var I: Integer; Source: TMusicStudioSceneSource; Track: TMusicStudioSceneTrack;
     L: TMusicStudioPsdLayerLoadJob; R: TMusicStudioSceneRenderJob; Base,Image,OldImage: TBitmap;
-    Stamp: string; Before: Integer; Now: UInt64; CheckNow: Boolean;
+    Stamp: string; Resolved: TJSONObject; Before: Integer; Now: UInt64; CheckNow: Boolean;
 begin
   Before := FSerial; Now := GetTickCount64;
   CheckNow := not FFrozenSources and (CheckFiles or (Now-FLastFileCheck>=1000));
@@ -571,7 +594,11 @@ begin
       if not FFrozenSources then Stamp := MusicStudioFileStamp(Source.Path);
       if Stamp<>Source.Fingerprint then ResetSource(Source,Stamp)
       else begin
-        Source.Document := L.TakeDocument; Source.ErrorText := L.ErrorMessage; Inc(FSerial);
+        Source.Document := L.TakeDocument; Source.ErrorText := L.ErrorMessage;
+        if (Source.Document<>nil) and (Source.Config<>nil) then begin
+          Resolved := ResolveMusicStudioMouthConfig(Source.Document,Source.Config); Source.Config.Free; Source.Config := Resolved;
+        end;
+        Inc(FSerial);
         for Track in FTracks do if Track.Source=Source then RefreshTrack(Track);
       end;
       Break;
@@ -615,13 +642,32 @@ begin
   StartJobs; Result := Before<>FSerial;
 end;
 
+function TMusicStudioPsdSceneCache.SourceEnabled(Source: TMusicStudioSceneSource): Boolean;
+var Track: TMusicStudioSceneTrack;
+begin Result := False; for Track in FTracks do if Track.Enabled and (Track.Source=Source) then Exit(True); end;
+procedure TMusicStudioPsdSceneCache.SetTrackEnabled(TrackIndex: Integer; Enabled: Boolean);
+var Track: TMusicStudioSceneTrack;
+begin
+  Track := TrackFor(TrackIndex); if (Track=nil) or (Track.Enabled=Enabled) then Exit;
+  Track.Enabled := Enabled; Inc(FNextGeneration); Track.RequestGeneration := FNextGeneration;
+  if Track.RenderJob<>nil then Track.RenderJob.Terminate;
+  if Enabled then RefreshTrack(Track) else begin Track.NeedRender := False; FreeAndNil(Track.Image); Track.DesiredKey := ''; end;
+  Inc(FSerial); StartJobs;
+end;
+function TMusicStudioPsdSceneCache.NativeSizeForTrack(TrackIndex: Integer): TSize;
+var Track: TMusicStudioSceneTrack;
+begin
+  Result := TSize.Create(0,0); Track := TrackFor(TrackIndex);
+  if (Track<>nil) and (Track.Source<>nil) and (Track.Source.Document<>nil) then
+    Result := TSize.Create(Track.Source.Document.Width,Track.Source.Document.Height);
+end;
 function TMusicStudioPsdSceneCache.ImageForTrack(TrackIndex: Integer): TBitmap;
 var Track: TMusicStudioSceneTrack;
-begin Result := nil; Track := TrackFor(TrackIndex); if Track<>nil then Result := Track.Image; end;
+begin Result := nil; Track := TrackFor(TrackIndex); if (Track<>nil) and Track.Enabled then Result := Track.Image; end;
 function TMusicStudioPsdSceneCache.StatusForTrack(TrackIndex: Integer): string;
 var Track: TMusicStudioSceneTrack;
 begin
-  Track := TrackFor(TrackIndex); if Track=nil then Exit('プレビュー対象外（PSD先頭4件まで）');
+  Track := TrackFor(TrackIndex); if Track=nil then Exit('PSDトラックではありません');
   if Track.Source.ErrorText<>'' then Exit(Track.Source.ErrorText);
   if Track.ErrorText<>'' then Exit(Track.ErrorText);
   if Track.Source.Document=nil then Exit('PSDレイヤー読込中…');

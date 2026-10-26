@@ -22,6 +22,7 @@ type
     FCommonPanel,FFooterPanel: TPanel;
     FColorLabel: TLabel;
     FColorButton,FOkButton,FCancelButton: TButton;
+    FUndoButton,FRedoButton: TButton;
     FSourceTimer: TTimer;
     FSharedKind,FSourceKey: string;
     FInstrumentAsset: string;
@@ -34,6 +35,7 @@ type
     procedure EditorWheel(Sender: TObject; Shift: TShiftState; Delta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure InstrumentPositionChanged(Sender: TObject);
     procedure SourceTimer(Sender: TObject);
+    procedure HistoryClick(Sender: TObject);
     procedure PickColor(Sender: TObject);
     procedure ColorChanged(Sender: TObject);
     procedure SourceChanged(Sender: TObject);
@@ -75,7 +77,7 @@ type
 implementation
 
 uses
-  System.SysUtils, System.UITypes, System.Math, Winapi.Windows, Vcl.Graphics,
+  System.SysUtils, System.UITypes, System.Math, Winapi.Windows, Winapi.Messages, Vcl.Graphics,
   SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_Controls, SYNC_MusicStudio_SingingData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData;
 
 {$R *.dfm}
@@ -178,6 +180,10 @@ begin
   Button.Cancel := True;
   Button.ModalResult := mrCancel;
   ApplySyncMusicStudioDarkButton(Button);
+  FUndoButton := TMusicStudioButton.Create(Self); FUndoButton.Parent := CommonPanel;
+  FUndoButton.SetBounds(524,78,100,28); FUndoButton.Caption := '元に戻す'; FUndoButton.OnClick := HistoryClick; FUndoButton.Visible := False;
+  FRedoButton := TMusicStudioButton.Create(Self); FRedoButton.Parent := CommonPanel;
+  FRedoButton.SetBounds(640,78,100,28); FRedoButton.Caption := 'やり直す'; FRedoButton.OnClick := HistoryClick; FRedoButton.Visible := False;
   FColorDialog := TColorDialog.Create(Self);
   FColorDialog.Options := [cdFullOpen];
   FSourceTimer := TTimer.Create(Self); FSourceTimer.Interval := 60; FSourceTimer.Enabled := False; FSourceTimer.OnTimer := SourceTimer;
@@ -194,7 +200,14 @@ var PPI,Margin,ColorX: Integer;
   begin C.SetBounds(MulDiv(X,PPI,96),MulDiv(Y,PPI,96),MulDiv(W,PPI,96),MulDiv(H,PPI,96)); end;
 begin
   inherited;
-  if ((LayerStepFrame=nil) and (DrumFrame=nil) and (InstrumentFrame=nil)) or (FCommonPanel=nil) or (FFooterPanel=nil) then Exit;
+  if FCommonPanel=nil then Exit;
+  if (FUndoButton<>nil) and (FRedoButton<>nil) then begin
+    FUndoButton.Visible := (InstrumentFrame=nil) and ((PerformanceFrame<>nil) or (SingingFrame<>nil) or (DrumFrame<>nil) or (LayerStepFrame<>nil));
+    FRedoButton.Visible := FUndoButton.Visible;
+    FUndoButton.SetBounds(ClientWidth-236,78,104,28); FRedoButton.SetBounds(ClientWidth-120,78,104,28);
+    if FUndoButton.Visible then FAttributeLabel.Width := Max(1,ClientWidth-268);
+  end;
+  if ((LayerStepFrame=nil) and (DrumFrame=nil) and (InstrumentFrame=nil)) or (FFooterPanel=nil) then Exit;
   PPI := Max(CurrentPPI,MulDiv(Abs(Font.Height),96,13)); Margin := MulDiv(16,PPI,96);
   Constraints.MinWidth := MulDiv(860,PPI,96); Constraints.MinHeight := MulDiv(560,PPI,96);
   DisableAlign;
@@ -207,7 +220,9 @@ begin
     ColorEdit.SetBounds(ColorX,MulDiv(40,PPI,96),MulDiv(112,PPI,96),MulDiv(26,PPI,96));
     FSwatch.SetBounds(ClientWidth-MulDiv(130,PPI,96),MulDiv(40,PPI,96),MulDiv(28,PPI,96),MulDiv(26,PPI,96));
     FColorButton.SetBounds(ClientWidth-MulDiv(92,PPI,96),MulDiv(39,PPI,96),MulDiv(76,PPI,96),MulDiv(28,PPI,96));
-    FAttributeLabel.SetBounds(Margin,MulDiv(80,PPI,96),Max(1,ClientWidth-2*Margin),MulDiv(24,PPI,96));
+    FAttributeLabel.SetBounds(Margin,MulDiv(80,PPI,96),Max(1,ClientWidth-2*Margin-Ord(FUndoButton.Visible)*MulDiv(236,PPI,96)),MulDiv(24,PPI,96));
+    FUndoButton.SetBounds(ClientWidth-MulDiv(236,PPI,96),MulDiv(78,PPI,96),MulDiv(104,PPI,96),MulDiv(28,PPI,96));
+    FRedoButton.SetBounds(ClientWidth-MulDiv(120,PPI,96),MulDiv(78,PPI,96),MulDiv(104,PPI,96),MulDiv(28,PPI,96));
     FOkButton.SetBounds(ClientWidth-MulDiv(236,PPI,96),MulDiv(14,PPI,96),MulDiv(104,PPI,96),MulDiv(30,PPI,96));
     FCancelButton.SetBounds(ClientWidth-MulDiv(120,PPI,96),MulDiv(14,PPI,96),MulDiv(104,PPI,96),MulDiv(30,PPI,96));
     if FInstrumentPreview<>nil then
@@ -217,7 +232,7 @@ end;
 procedure TMusicStudioPatternSettings.LoadSharedPattern(const Pattern: TMusicStudioPattern; const Path,BaseConfig: string);
 var PPI: Integer;
 begin
-  SetCommitOnClose(False);
+  SetCommitOnClose(False); FUndoButton.Visible := False; FRedoButton.Visible := False;
   FSharedKind := Pattern.Kind; FOriginalName := Pattern.Name; FSourceKey := '';
   NameEdit.Text := Pattern.Name; ColorEdit.Text := Pattern.Color;
   FSourceTimer.Enabled := False; FreeAndNil(InstrumentFrame); FreeAndNil(FInstrumentPreview); FreeAndNil(DrumFrame); FreeAndNil(AudioFrame); FreeAndNil(SingingFrame); FreeAndNil(PsdFrame); FreeAndNil(SlotFrame); FreeAndNil(PerformanceFrame); FreeAndNil(LayerStepFrame); FreeAndNil(TempoFrame); FreeAndNil(LayersFrame); FreeAndNil(MotionFrame);
@@ -263,7 +278,7 @@ begin
         InstrumentFrame.OnPositionChange := InstrumentPositionChanged;
         InstrumentPositionChanged(InstrumentFrame);
         FreeAndNil(LayerStepFrame);
-        FAttributeLabel.Caption := '空白ドラッグで区間追加、クリックで候補を選択。ホイールで拡縮、中ボタンで横移動。閉じると確定します。';
+        FAttributeLabel.Caption := '部位を選び、右の番号・色の表で候補を指定。空白ドラッグで配置、右クリックで削除。閉じると確定します。';
         Resize;
       except on E: Exception do begin FreeAndNil(InstrumentFrame); FreeAndNil(FInstrumentPreview); FAttributeLabel.Caption := E.Message; end; end;
     end;
@@ -290,6 +305,7 @@ begin
 end;
 procedure TMusicStudioPatternSettings.LoadPattern(const Pattern: TMusicStudioPattern);
 begin
+  FUndoButton.Visible := (Pattern.Kind='performance') or (Pattern.Kind='singing'); FRedoButton.Visible := FUndoButton.Visible;
   SetCommitOnClose(Pattern.Kind='performance');
   FOriginalName := Pattern.Name;
   FNameLabel.Caption := 'パターン名';
@@ -305,7 +321,7 @@ begin
     AudioFrame.LoadAudio(Pattern.FilePath, Pattern.Volume);
   end
   else if Pattern.Kind = 'singing' then begin
-    FAttributeLabel.Caption := '歌唱  ・  歌詞MIDIはファイル参照として保存';
+    FAttributeLabel.Caption := '歌唱  ・  歌唱データはファイル参照として保存';
     SingingFrame := TMusicStudioSingingFrame.Create(Self);
     SingingFrame.Parent := Self; SingingFrame.Align := alClient;
     SingingFrame.OnSourceChange := SourceChanged;
@@ -328,6 +344,7 @@ begin
     TempoFrame.OnSourceChange := SourceChanged; TempoFrame.LoadTempo(Pattern.ConfigJSON);
   end
   else raise Exception.Create('この属性の設定UIは未実装です。');
+  Resize;
 end;
 
 procedure TMusicStudioPatternSettings.LoadPerformanceSteps(const Pattern: TMusicStudioPattern;
@@ -343,6 +360,16 @@ begin
   FSourceTimer.Enabled := True;
   Resize;
 end;
+procedure TMusicStudioPatternSettings.HistoryClick(Sender: TObject);
+var Key: Word;
+begin
+  if ActiveControl is TCustomEdit then begin TCustomEdit(ActiveControl).Perform(EM_UNDO,0,0); Exit; end;
+  if Sender=FUndoButton then Key := Ord('Z') else Key := Ord('Y');
+  if SingingFrame<>nil then SingingFrame.HandleKey(Key,[ssCtrl])
+  else if PerformanceFrame<>nil then PerformanceFrame.HandleKey(Key,[ssCtrl])
+  else if DrumFrame<>nil then DrumFrame.HandleKey(Key,[ssCtrl])
+  else if LayerStepFrame<>nil then LayerStepFrame.HandleEditorKey(Key,[ssCtrl]);
+end;
 procedure TMusicStudioPatternSettings.EditorKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if InstrumentFrame<>nil then begin
@@ -351,6 +378,13 @@ begin
   end;
   if DrumFrame<>nil then begin
     if not ((ActiveControl is TCustomEdit) or (ActiveControl is TCustomComboBox)) then DrumFrame.HandleKey(Key,Shift);
+    Exit;
+  end;
+  if SingingFrame<>nil then begin
+    if not (ActiveControl is TCustomEdit) then SingingFrame.HandleKey(Key,Shift); Exit;
+  end;
+  if PerformanceFrame<>nil then begin
+    if not ((ActiveControl is TCustomEdit) or (ActiveControl is TCustomComboBox)) then PerformanceFrame.HandleKey(Key,Shift);
     Exit;
   end;
   if LayerStepFrame=nil then Exit;
@@ -505,7 +539,7 @@ begin
   end;
   if Assigned(SingingFrame) then
     if (SingingFrame.TrackCombo.Items.Count > 0) and (SingingFrame.TrackCombo.ItemIndex < 0) then begin
-      FAttributeLabel.Caption := '保存済みのMIDIトラックがありません。利用するトラックを再選択してください。'; Exit;
+      FAttributeLabel.Caption := '保存済みの歌唱トラックがありません。利用するトラックを再選択してください。'; Exit;
     end;
   if Trim(NameEdit.Text) = '' then
   begin

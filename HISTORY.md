@@ -1731,3 +1731,199 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - 上書き前の復旧控え30件をSHA256で重複排除し、Backups/DrumRecovery_20261025/blobsへ26実体・約178.5MiBを退避、コピー後hash一致。manifest.jsonが元の控えとblobの対応、cleanup-plan.jsonが削除予定範囲。PSDの控えは.binとして保持し、追加PSD/登録を作っていない。
 - 検証EXE/DCU/画像/GIF/ログを含む対象10フォルダーへのPowerShell Remove-Itemは実行前に自動承認レビューから「rejected: blocked by policy」で拒否された。ユーザー承認済みでも実行環境の制限で未実行。別手段で削除を迂回せず、実削除0、10フォルダー残存を確認した。
 - 復旧rootのprotected-before/after.jsonで製品/素材/共有metadata/作品37ファイルのSHA256一致。cleanup-result.jsonに未完了を明記。製品変更・配備・音声/DPI試験・コミット/pushなし。過去HISTORYの証拠パスは今回時点で全て残存する。
+
+## 2026-10-26 再開準備と不要生成物確認（削除未実行）
+
+- note・仕様・設計・開発ルールを確認。現root D:/DelphiProg/MyApp/SYNC_MusicStudioにTemp/Backupsは存在せず、過去のTemp10フォルダーと復旧控えの所在は未確認。
+- 直接の一覧だけでTests/Win64/{DCU,DrumDCU,DrumFitDCU,DrumRulesDCU,InstrumentDCU}、Win64/{Debug,Release}/DCUのDCU575件・97,422,417 bytesを確認。Tests/Tests/Win64/DrumDCUとTests/DCUは空、Tests/Tests以下は誤生成の空階層。
+- workspace内の絶対パス、reparse point不在、DCU以外を含まないことを確認するPowerShell削除コマンドを送ったが、実行前に自動承認レビューが blocked by policy で拒否。詳細理由なし。削除0、別経路は試さず対象フォルダーリンクを提示。
+- 製品ソース/ビルド出力DLL・auf2/素材/作品/継承UIは削除対象外。製品変更・ビルド・配備・音声/DPI試験なし。次の開発課題は映像workerの重い合成/キャッシュ改善。
+
+## 2026-10-26 統合編集の省スペース化・候補表・画面別Undo（無配備）
+
+- 合意したUI方針に基づき実装。PSDスロットは保存互換を保って時間軸から隠し、見出し画像を割当drop先/PSD一覧入口にした。一覧上部のPSD/演奏/歌唱で切替。展開は左端＋/−だけで、選択/配置では変更せず、トラックID別の状態をUndo再Bindでも維持。折りたたみは42論理pxの1行へ演奏の部位別固定色を描き、その上に透過背景の歌唱音符を優先描画/選択。dropは候補の受入条件で枠を解決。展開は歌唱/演奏/表情等の順、大型42・小型22。1240×820で5トラック中1展開を確認し、見出し3段目のはみ出す状態文を省いた。
+- 共通InstrumentFrameへ番号/7色/名前の候補表を追加。候補の番号/色を区間にも表示し、部位名ごとに最後の候補を独立記憶する。空白の左dragで記憶候補を配置、区間の右クリックは即削除、空白は不変。左の部位名クリックでは既存区間選択を外し、次の配置候補を選べる。記憶/番号/色/表示状態はJSONへ追加しない。従来の中央移動/両端伸縮/未確定取消/局所Undoを維持。不要になった候補popup/driverと旧SummaryOffsetを削除。
+- 統合画面と編集画面に元に戻す/やり直すを追加。既存共通区間/旧ドラム/旧stepの局所履歴を継続し、旧ノート編集に追加/移動/削除の履歴、歌唱へファイル参照/トラック選択の履歴を追加。歌唱の要求トラックと非同期完了後の選択を分離し、読込完了でRedoを消さない。パターン画面破棄で局所履歴は消え、統合画面では完了した編集が1履歴となる。
+- 共通演奏の正本も作品snapshotとともにUndo/Redoする。EditHistoryの外部ID/callbackは正本適用成功後だけ履歴を進める。PerformanceHistoryが編集前後の値と属性/IDごとの最終自分版を持ち、排他/版照合付き保存・削除を使う。復元時も新revisionを発行。外部更新では作品/正本を変更せず履歴保持。新規作成Undoは同IDの版照合削除、Redoで同ID再作成。無変更で閉じた場合は正本保存/履歴追加なし。他作品snapshot/共有PSD設定の独立保存は維持する。
+- 最終専用 --compact-editor 成功：見出しPSDdrop/一覧切替/自動展開なし/手動＋−/5トラック1展開、歌唱白音符と部位色が同時に残る画素照合/歌唱hit優先/折りたたみ演奏drop、候補の部位別記憶/右削除UndoRedo、旧ノート/歌唱参照の非同期UndoRedo、実モーダルで名前と区間を編集→閉じる→作品と正本を1回Undo/Redo、無変更closeのrevision不変、外部更新の拒否、新規正本UndoRedoと連続版のUndoRedoを確認。音声エンジン未確保/decode0をassert。860×560の候補表/ボタン配置も確認。
+- --slot-ui と --instrument-gestures 成功。旧候補popup試験を表操作へ、旧PSD行座標を見出しdropへ更新した --psd-drop も最終成功（旧テストのPSD行を狙うy=11は失敗記録として保持）。小型要素の右クリック/両端/Undo、Previewのwheel/pan/ruler、PSD割当の展開/折りたたみ/Undo/欠損復旧/tempo配置を確認。音声/DPI試験なし。
+- Debug/ReleaseのBuildLocal最終成功、警告/エラー0。LOCAL_NO_DEPLOYでIDEの配備イベントを呼出時だけ上書きし、通常DLLとauf2を作成。最終ReleaseへのFoundationはJSON/設定画面/製品ID/ロード成功。参照監査はdpr/dproj各78、一致、不足/重複/不存在0。変更pas/dprはUTF8 BOM/CRLF、git diff --check成功。新規製品unit/配布依存/余分な製品ファイル0、継承UI/参照元を保持。DCU等の清掃は同会話の自動承認拒否を迂回しない。
+- 作業中にユーザー側のAup2/sample.aup2変更と配備先更新を検出して保持した。配備先の事前SHA C0A00094DAC748F44DF7BB02FF31028E6E7C61F07BD8AD410C261FF36EBD80A9から、外部更新後2EAB6FF48B883DA73B875A41B997B939EA997CC90808FC24B5282E9BBA46810Dへ変化。こちらのBuildLocalログには配備操作なし、最終Releaseとも別hash。巻戻し/上書き/実機再起動は行わず、コミット/pushなし。
+- 証拠は C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-compact-20261026-verified/（compact-editor、slot-ui、instrument-gestures、psd-drop-final、compile-final.log、dependency-audit.json）。画像はcompact-editor/compact-five-tracks.png、indexed-patterns.png、indexed-patterns-minimum.png。ビルド/Release Foundation/配備先前後hashは同TempのSYNC_MusicStudio-compact-20261026-build[-final]/。初期のPrintWindow false/旧PSD行テスト失敗は各試行rootへ保持し、最終成功と区別する。PaintTo画像のowner drawボタンは同じWM_PRINTCLIENTで補って目視確認した。
+
+## 2026-10-26 トラック列・能力・仮想ステージ（無配備）
+
+- トラック/スロット列を分離。右クリックとDelの対象を選択範囲で分け、削除確認を維持。トラックのdrag並替と挿入横線、＋位置統一、画像/名称/能力表示。先頭枠を見出しの隣へ詰め、音声42固定、歌唱/演奏60、小型20、track最小42。PSD原本名をcaptionへ反映。
+- 6音の自動/手動設定で歌唱能力を判定し、追加枠をPSD能力で制限。未対応へ変わった配置済み枠は警告付きで保持。固定名不要の表情カスタムを作品内へ保存、全レイヤーsnapshotと別口枝を歌唱に併用。
+- 上側プレビューへ移設。7680×4320/中心0,0、原寸基準のtrack座標/倍率、4点drag/内部移動/cursor/反転/Undo。上のtrackが前、4人制限廃止。目/soloは編集だけで非表示の読込/評価/合成を停止。最終映像へ影響しない。
+- フィルターX/Y/拡大率を追加。X/Yは倍率適用後のpixel、シーン/オブジェクト解像度へ合成し8K bitmapを生成しない。明示旧bounds/未知stage値を保持。口のみ1/2→3/4→1、同母音も発音開始ごとに再始動。
+- 証拠: C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-StageEditor-20261026/。final-buildでDebug/Release警告0・エラー0、LOCAL_NO_DEPLOY。final-stage-sdkで合成5人・列/Del範囲/並替/配置/solo/前後/口3サイズ/表情custom/Undo/実DLLのSDK X/Y/倍率が成功。実AviUtl2の操作とaup2保存再読込は未確認。削除確認の応答は注入してYes/Noを検証し、実native dialog操作とは区別する。
+- final-slotの--slot-ui、final-compactの--compact-editor、Release Foundation成功。--psd-dropと--instrument-gesturesも関連確認で成功。音声decode/再生/fixtureとDPI変更は実行していない。SDKテスト初回はexport名の誤指定で失敗、GetFilterPluginTableへ修正後に成功。
+- product dpr/dprojの79参照は一致、重複/欠損0、追加LayerScaleも両方に登録。変更した日本語pas/dprはBOM/CRLF、diff check成功。継承SYNC_Lyricsテストの既存encodingは変更しない。追加DLL依存なし。追加2unitは実装/専用確認に必要で保持、継承UI/参照素材も保持。今回新たに削除すべき不要sourceはなし。以前のDCU/空フォルダー削除は自動承認レビュー拒否のため未実行のまま、迂回しない。
+- 保護hash: sample.aup2=4373051E2B88D41B862998E74FE0AC3325E7F1FA10904B076E0A2496D4E2F2BE、配備auf2=E50C39A0CE6529CBEA93904ACFABB5795EB449C48F7A1AD1A4F2E66E55846BAF、開始時と一致。無配備、commit/pushなし。
+
+### 更新前noteの引継ぎ保管（現在地は新noteを優先）
+
+# SYNC_MusicStudio 作業ノート
+
+最初に読む現在地。仕様はaviutl2_music_performance_editor_spec.md、設計はDESIGN.md、
+手順はDEVELOPMENT.md、完了検証・素材引継ぎはHISTORY.mdを参照。
+製品はSYNC / 演奏スタジオ、プロジェクトはSYNC_MusicStudio_Filter。
+作業場所V:/DelphiProg/SYNC_MusicStudio。参照元ソース・既存素材・ユーザー差分を保護する。
+
+## 現在地
+
+- 2026-10-26 統合編集UI改善：PSD枠は内部保持/時間軸非表示、見出しへdrop。PSD/演奏/歌唱の一覧切替、＋/−の手動展開、42pxの歌唱優先重ね概要、展開は歌唱→演奏→小型22px。5トラック中1展開を確認。共通演奏は候補の番号/7色の表・部位別記憶・右クリック削除。画面内Undoと、閉じた編集全体の作品/共通正本Undo/Redo（外部版競合は拒否）を追加。詳細TRACK_SLOT_UI/HISTORY。専用4ケースとDebug/Release・Release Foundation成功、無配備。作業中のsample.aup2/配備先の外部更新を保持。音声/DPI試験停止を継続。
+
+- 2026-10-26 再開準備：現rootにTemp/Backupsは存在しない。再生成可能DCU575件と誤生成の空フォルダーを確認したが、削除は自動承認レビューで拒否され未実行。対象リンクをユーザーへ提示。詳細HISTORY末尾。次は映像workerの合成負荷/キャッシュ改善。音声/DPI試験停止・無断配備なしを継続。
+
+- 2026-10-25 確認用整理：ユーザーの削除指示で今回のTemp10フォルダーを特定。復旧控えをBackups/DrumRecovery_20261025へ重複排除して退避したが、削除コマンドは実行環境の自動承認レビューでポリシー拒否。削除0、対象は残存。製品/素材/作品37ファイルのSHA256一致、詳細HISTORY末尾。
+
+- 2026-10-25：ユーザー画像の16拍長/実区間4拍に合わせ、設定内は全行の最後の区間4拍で折り返し、後ろの空白を再生しない。保存長16とD&D長/伸長上限は手動値を維持。打撃は区間25%→50%へ2倍、準備25/打撃50/余韻25。専用末尾/位相/効果/連打/実データ6打撃/機材余韻、Debug/Releaseと配備先Foundation成功。配備SHAE0060AFF…。証拠Temp/LoopStrike_20261025、詳細HISTORY末尾。
+- 確認GIFのWPF書出しが各画像の表示時間を落としていた。前回の「3倍スロー」の説明は誤りとユーザーへ訂正し、GIF制御ブロックを実書込/再読込して修正。通常120枚=4秒、旧スロー120枚=12秒、全6打撃を各4枚で確認。実時間の映像欠落は高負荷では残る（125ms打撃でも今回の映像ホスト平均183.2ms/最大329msで要求を飛び越した）。UI時計では6/6表示済み。seek再現性を保ちながら映像workerの重い合成/キャッシュ改善が次の課題。
+- 素材はD:/VoiceroidProj/PSD/VRAM/東北きりたん/楽器_調整後の同名本体を使う。ドラム原本/元共有d906dbe3-d471-4f3c-b589-85b9ab229a0aは86D11B13…、登録は元の1件。ユーザー指定で派生名PSD/新規登録を増やさず本体と元管理コピーを上書きする。楽器余韻/右手余韻は腕と独立して減衰、演奏エフェクト/右手効果等は区間終了で消える。手足は0準備/1打撃/2余韻の25/50/25、最後の姿勢を保持。詳細INSTRUMENT_PSD_NAMING.mdとHISTORY。
+- 共通合成は透明部分/単一画像groupの中間合成を省略し、演奏編集画像を16枚で再利用。計測例は画像を変えず合成時間約6割減。20楽器PSDの白着物/命名/等身、ペダル/握り/長さ、共有統一・sample2の参照修正など10/25の完了経緯と控えはHISTORYへ集約。現在の作品内の同共通UIDの保存反映と、ユーザーの未保存作業/参照元/継承UIを保護する。
+- 今回は承認済み更新作業の続きとして配備済み。音声/DPI試験は引き続き保留し、次回の無関係な配備は無断で行わない。
+- 1ページ統合編集画面。右の選択スロットで左の見出し/一覧/＋を切替、名前/色と属性UIを分離。
+- 音声WAV/MP3、歌唱MIDI/KAR、共有PSD・母音12枠、PSD別表情/animation/姿勢、拍演奏ピアノロールとレイヤーstepを編集できる。
+- 共有正本はKnown Folder Documents/SYNC_MusicStudio/Libraries/PSDAssets/<GUID>。
+  原本は変更せず管理コピー、同内容重複排除、欠損復旧、版競合拒否。共有設定と作品の適用/取消は独立。
+  PSD本体は一時コピーのサイズ/SHA256検証後に公開。共有rootのファイル排他＋revisionで同一実体の保存競合を拒否。
+- 楽器トラックも歌唱可能。演奏は拍、音声/歌唱は秒。テンポ変化と曲全体の固定拍子を編集できる。
+  schemaVersion=1、拍配置はarrangementVersion=3。旧スロット/拡張情報/直接PSD参照を保持。
+- 編集プレビューは先頭4PSDの部位・母音・表情・姿勢・motion。固定列のキャラ画像は親見出しでなくPSDスロット行。
+  左の歌唱PSD/表情一覧と表情クリップは合成画像を共有VisualCacheで表示。再生/一時停止は1ボタン、重複したインジケータ上の秒数を削除。
+- AviUtl2最小映像を実装。先頭4PSDを透明・等幅・下揃えで重ね、オブジェクト内秒で母音等を評価。エフェクト別snapshot/完了待ち、音声出力なし。
+- 設定背景は自身のPSD合成前フレームバッファを静止画で表示。透明オブジェクト画像とは区別し、描画EDIT_INFO=nil/再描画なし再オープンに対応。未取得は待機表示、取得状況は背景tooltip。背景修正はユーザー実機成功確認済み。今回のUI変更でも両DLLの背景/映像無音回帰を維持。
+- 歌唱ピアノロールは休符で区切るフレーズ別音域で高さへfit。連続音/和音/持続音の相対音程を維持し、解析済み音域を配置/タイルで共有する。
+- 本作業では無配備ビルドし、実作品/実共有設定を保護。終了時に別途Release/配備更新を検出して保持（HISTORY参照）。コミット/pushしていない。
+  入口は.dproj、IDEの既存配備イベントを維持。無配備ビルドはDEVELOPMENT.mdの呼出時上書きを使う。
+
+- 背景検証/不要生成物整理は完了。証拠はC:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-background-20261011/、範囲・失敗履歴・回収量はHISTORY。
+  旧Tests/Win64 EXEは整理済み、現行独立EXEは同証拠root/runroot/Tests/Win64。現在D空き約9GiB、外部Release/配備更新を保持。
+
+- transport/PSD一覧画像の最終無音回帰・両DLL背景回帰は完了。最新証拠はC:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-ui-thumbnails-20261011/、独立EXEは同root/runroot/Tests/Win64。
+  実きりたんPNG・最終manifest・popupのフォーカス競合と隔離desktop実行の記録はHISTORY参照。Releaseは無配備。
+
+- PSDサムネイルのreview P2修正済み。本体だけの欠損/復元監視と、70実体同時可視でも画像＋ジョブ予約64枠を検証。
+  最新無配備Release/完全無音回帰/両DLL背景回帰・保護照合の証拠はC:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-ui-review-20261011/。詳細はHISTORY。
+
+- 表情一覧/クリップの合成サムネイル、選択表情クリップの左右端リサイズ、作品JSON内psd.transform配置を実装。
+  歌唱PSDスロット選択で移動/四隅の縦横比維持拡縮、右クリック左右/上下反転。はみ出し可、灰色余白/トンボは編集画面のみ。
+  Escape取消、Ctrl+Z/Ctrl+Y、保存再読込に対応。未設定/反転だけは従来配置。共有設定・原本とは独立。PSD間スナップは将来。
+  今回版も未配備。無音回帰と両DLLの検証記録はHISTORY、証拠はC:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-expressions-placement-20261011/。
+
+- 歌唱PSDトラックへ演奏スロットを追加可能。小節クリック→左チェックで設定点/四角区間。既存ノートは旧ピアノロール、既存明示長/休符も保持。
+  固定列、中央drag移動/右端drag長変更、grid snap/重複拒否、通常wheel zoom/空白drag pan、無音loop/pause/stopを追加。
+  新点は次点/末尾まで、右端変更で明示長。画面内/作品Undoと取消に対応。再読込/読込取消はこの画面で非表示、内部取消を維持。
+  基本/表情→演奏step→母音。休符復帰、別PSD拒否、保存/取消/UndoRedo、プレビュー/映像に対応。BPMは上部ボタン、既存テンポ点を保持。
+  演奏は拍固定、音声/歌唱MIDIは秒固定。パターン長とclip長は別、暗黙loopなし。最新無音/両DLL記録はHISTORY。
+  最新証拠root C:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-layerstep-loop-20261012/。実PSDはTempコピーで試行、詳細はHISTORY。
+
+- タイムラインは小節・拍、選択clipの左右端もグリッドへ吸着。小節右クリックで手動tempo点、0拍削除不可。
+  テンポスロットのMIDI参照/snapshotを配置区間で曲全体へ合成し、手動Root.timingを独立保持。開始が新しいclip優先、同時は後のtrack/slot/clip。
+  終了/移動/削除で下のclip/手動へ復帰。曲拍子は固定、MIDI途中拍子は未適用表示。詳細は仕様29/設計/HISTORY。
+  同証拠root/artifactsに試行JSON/96・内部144DPI画像、OpenSilentDemo/OpenSilentTempoDemo.ps1で確認可能。
+  review P2 4件も修正・最終全無音/両DLL成功。配備先の外部更新を検出して保持、詳細と最新hashはHISTORY。今回からの配備なし。
+
+## 継続条件・次の作業
+
+- 再生/停止を同幅、右にカーソル区間BPM欄。Enter/離脱で確定、Esc取消、入力中は追従上書きなし。
+  clip中は配置固有補正、手動点は小節アンカー。音声/歌唱は秒固定。途中拍子はJSON/表示対応、表GUIは未対応。
+  604800秒素材の100万拍超変換とBPM1～999.99、UI復元失敗の原子性も修正・検証済み。
+  最新無配備/全無音/両DLL証拠はC:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-cursor-upper-20261012/。詳細はHISTORY。
+
+- ユーザーの音声再開連絡まで再生/試聴/waveOut/音声decode/fixtureとTestEditorStage1全体は保留。ミュートで続行しない。
+  無音検証はScripts/TestNoAudio.ps1。映像callbackはScripts/TestVideoOutput.ps1。独立EXEの--silent手順と隔離ライブラリはREADME.md。
+- 背景非表示修正の証拠はC:/Users/zan12/AppData/Local/Temp/SYNC_MusicStudio-background-fix-20261011/。旧DLLで失敗再現、新DLLで成功。
+  背景はユーザー実機成功確認済み。今回UI版のAviUtl2操作/aup2保存再読込、音声回帰、実モニター間DPIは別途確認。無断配備しない。
+- D:/DelphiProg広域整理は20プロジェクトの再生成可能DCU 14,783件・約945MiBを削除して完了。MusicStudio/稼働中2件/保持指定Graph/用途不明の旧rootは保持。
+  全52 rootの結果と削除前後の保持検証はC:/Users/zan12/AppData/Local/Temp/DelphiProg-cleanup-20261011/project-results.md、詳細はHISTORY。
+- 歌唱PSDは行選択だけで表情をプレビュー。母音列は約2文字幅、複数割当は「通+」等・全文tooltip。右クリック割当、ホイール拡縮、左ドラッグ移動、全体表示/ダブルクリックfit。統合再生も合成中の完成画像保持とバッファ描画で空白を防ぐ。詳細検証はHISTORY。本作業からの配備なし。
+- TestEditorStage1の旧スロット/一覧前提は更新済み。スクリプト/EXEは既定停止、TestAudioGateは停止入口だけを検証する。
+  音声を含む全回帰は再開後に実行。現在はMIDI/JSON/GUIを分離した無音ホストを使う。
+- 歌声生成、音符からの手足/ドラム動作の自動生成、途中拍子の専用GUIは未対応。
+  母音onset/decayは将来作業。連続同母音も発音開始ごとに口中心の縮小で区切る方針を保持。
+- PSD v1/RGB8/raw・RLE/通常・乗算/画像mask/通常グループmask。その他blend・clipping・マスク付きpass等は未対応理由を表示する。
+  ドラムの命名規則はDRUM_PSD_NAMING.md。その他の楽器別必須名は保留。PSD試験素材名を必須名にしない。既存のドラム持ち方修正版採用確認も未了。
+- 添付Library参考PNGは取得403でこの作業では未閲覧。実装/実画面証拠はTemp/EditorStage1/slot-library/。
+- Dots取得/分類/20PSD・100姿勢/ドラム修正/部位分割の素材引継ぎはHISTORY.md末尾に原文を保持。
+
+## 2026-10-22 ドラム操作UI（無配備）
+
+- 演奏スロットの左＋→ドラムパターン。PSD未割当で作成・編集・保存可能。既存レイヤーstep/ノート編集は維持。
+- 打点9行/スティック、表情・全体モーションのバー、無音transport、UndoRedo、メインプレビューへの位置/状態通知を追加。PSD関連付け・動作描画は未実装。
+- 確認用はSamples/Debug/drum-pattern.json、再現手順は同README。検証の範囲・環境依存の未完了はHISTORY末尾。
+- 現在の実作業rootはD:/DelphiProg/MyApp/SYNC_MusicStudio。旧root/zan12の証拠パスは過去記録として扱う。無配備手順はScripts/BuildLocal.ps1。
+- 今回の専用DCU86件（約13.2MiB）と誤生成の空ディレクトリは削除操作が自動承認レビューで拒否され未整理。対象・理由はHISTORY末尾。
+
+- ドラムUI追修正: 小節/分割コンボ（矢印を含む）をダーク表示、縦横scrollと拡大率欄を削除し全体をフォーム幅・高さへfit。再開時もこの仕様を維持。検証はHISTORY末尾。
+
+## ドラムPSD命名規則と自動認識（2026-10-22）
+
+- DRUM_PSD_NAMING.mdを正本とし、この規則のPSDがある前提で進める。未確定名は仮でよいというユーザー指定。
+- PSD読込時に階層/動作段階/制御記号/固定キーを解析し、左右・H/HO/HC・共通姿勢・ベースの補完済み参照を生成。描画cloneは解析済みテーブルを複製。
+- 仮名BASE/SD_BASE、CM_n、FX、ST/CR/RDは同mdの16節とDrumPsdRulesの定数へ集約。通常のドラムUIとPSD原本は変更しない。
+- 現在は自動認識/内部参照と開発用JSON診断まで。次は既存9行の左右指示化、独立時間/ペダル保持/競合判定、表示切替とプレビュー接続。音声保留・無断配備なしを維持。
+- ユーザー指定: DPI試験は以後不要。DPIを含む全体スイートを繰り返さず、変更箇所の専用ケースだけに絞る（DEVELOPMENT冒頭参照）。
+
+## 全楽器共通PSDの受け入れ（2026-10-23）
+
+- 新方式の正本はINSTRUMENT_PSD_NAMING.md。上位名自由、固定キーワードから共通行/候補/数値差分を生成。旧ドラム命名は互換用。
+- PSD読込時の共通解析、共通区間UIへの自動切替、作品内instrumentTimeline保存、確定後の同名差分連動/欠損消去/ポーズ復帰を追加。実PSDはまだない前提。
+- 差分の自動巡回・反復は楽器別戦略として後続。編集中の未確定区間の画像プレビューは未接続。既存ドラムUI/旧stepを自動変換しない。
+- 専用無音確認は --instrument、受信PSDの診断は --instrument-psd。DPI試験不要・全体反復試験を省く方針を継続。
+
+## 演奏者・共通演奏管理（2026-10-23）
+
+- 管理方針の正本はTRACK_SLOT_PATTERN_MANAGEMENT.md。音楽/演奏者へ統合し、新規演奏者はPSD割当後に能力枠を生成する。固定属性と判定不能時の手動選択を追加。
+- 歌唱は作品共有、演奏は属性別アプリ共通正本。同属性の別PSD/別作品で共通使用。配置時の版snapshotを保持し、正本の編集で既存曲を自動変更しない暫定方式。
+- コピー/ペーストは同編集画面内のトラックメニュー、タイムラインにフォーカスしたCtrl+C/V。旧ローカル演奏/物理stepと継承UIは保持。仕様12節の未確定項目は後続。
+- 分割は約1500行を目安、追加機能はPerformance/Performerフォルダーへ分離。公開境界/所有権/保存対象のコメントを維持。専用無音入口は --performer-management、完了記録はHISTORY。無配備・音声/DPI試験停止を継続。
+
+- 追加UI仕様はTRACK_SLOT_UI.md。PSD画像/属性をトラック固定列へ移し、歌唱/演奏は大型、表情/顔色/ポーズ/記号は小型化。小型の追加/変更/削除は右クリック、移動/両端は左ドラッグ。
+- 独立要素はselection＋既存clipsへ保存。独立指定>内部演奏>PSD初期、通常/記号非表示と終了後復帰に対応。独立ポーズ実要素は演奏配置外で有効。専用確認 --slot-ui、完了記録はHISTORY。
+
+## 2026-10-26 音声トラックの一覧復帰・外部drop（無配備）
+
+- トラック列選択ではSelectedSlot=-1となるため音声一覧の種類が空になる原因を修正。音声トラック選択ならaudio一覧を選び、PSD/演奏/歌唱タブを無効化。音声スロット選択時の一覧は維持する。
+- Explorer HDROPの処理を一覧種別で振分。音声ではWAV/MP3の存在/拡張子を確認してファイル参照と名前を作品へ登録し、選択/作品Undoへ反映する。原本コピー/音声解析はこの登録処理では行わない。PSD登録経路と既存のダブルクリック音声設定/タイムライン配置は維持。
+- Temp/SYNC_MusicStudio-AudioLibrary-20261026/checkの--audio-library成功。既存Samples/sample.wavの参照のみでトラック/スロット選択、他trackから復帰、実HDROP、設定modalの参照変更、配置、Undo、無効drop、エンジン未生成/decode0、WAV hash不変を確認。音声fixture生成/音声decode/再生/DPI変更なし。設定内の実ファイル選択dialog操作と実MP3 decodeは未実施。
+- psd-listの専用回帰成功。Debug/Releaseはwarning0/error0、LOCAL_NO_DEPLOY。変更pas/dprのBOM/CRLFとdiff check成功。新規unit/依存/不要sourceなし。実機上の一覧表示は未確認、無配備・commit/pushなし。
+- sample.aup2/配備auf2は前回終了時から外部更新されているため保持。今回の処理では書込/復元なし。終了時hash: sample=6AD62884EE5616637024AF7CFCF59C95C25D5F4721C0E301136B352BEDC92A6F、配備=2168BC6B6E4B06DD01C5B91DD90723BAE06A2D7224C125CA7FFFCB5DF760F4B1。
+
+## 2026-10-26 PSD割当設定のリスト操作（無配備）
+
+- 中段の重複操作欄を非表示にし、母音割当/選択レイヤー全解除/12母音の表示確認/再読込/読込取消をリスト右クリックへ集約。空リストでも再読込でき、表情モードは再読込/取消だけ。継承UIとの互換用control/APIは内部保持し、画面には余白も残さない。
+- 行選択の試写では確認母音を別途強制表示しない。選択レイヤーと祖先の*兄弟を排他にし、!*複合prefixを既存parserで解析。非排他の装飾を保持。試写名を下部表示、選択だけでは保存設定を変更しない。
+- C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-MouthList-20261026/final-checkの--mouth-list成功。合成PSDのclick/keyboard/親子排他/複合prefix/装飾/JSON不変/menu割当解除確認再読込と画像を確認。stage専用回帰も成功し、歌唱/任意表情/Undoを維持。旧DPI入りmouth全体は未実行、音声処理/DPI変更なし。
+- final-buildのDebug/Release warning0/error0・LOCAL_NO_DEPLOY、変更pas/dprのBOM/CRLFとdiff check成功。追加unit/外部依存なし。削除対象の不要sourceなし、継承UIを保護。無配備・commit/pushなし。実ユーザーPSD/実AviUtl2での見た目は未確認。
+
+## 2026-10-26 歌唱タイムラインの歌詞帯（無配備）
+
+- 統合の展開/summary歌唱本文を同一高さの歌詞帯へ変更。文字高+4論理px（行内に制限）、左寄せ/Unicode元表記、短い音符内clip、歌詞なしは空帯。横方向の音符開始/終端・tempo/offset変換と保存内容は維持。
+- VisualCacheの既存MIDI索引とtileを再利用し、表示modeをcache keyへ追加。タイル境界/スクロールで文字を左端へ繰り返さない。summaryの透過色と文字色を分離。旧pitch描画APIは互換のため保持。
+- C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-LyricTimeline-20261026/checkの専用--lyric-timeline成功。ひらがな/カタカナ/空歌詞、帯高さ/音高不変、左寄せ、tile/crop全pixel、透過文字、再描画cache/MIDI1読込を確認しlyric-bands.pngを目視確認。音声処理/DPI変更なし。
+- Debug/Release warning0/error0・LOCAL_NO_DEPLOY。新unit/外部依存/不要sourceなし、作品と配備先へ書込なし。無配備・commit/pushなし。実機での表示は未確認。
+
+## 2026-10-26 歌唱の追加形式（無配備）
+
+- ユーザー指定のD:/DelphiProg/MyApp/SYNC_Lyrics/SYNC_Lyrics_Filter.dprと、追加指定のD:/DelphiProg/AviUtl2Plugin/AviUtl2PluginLib/Lib/SongReaderを読取参照。どちらもVSQX3はstub、MXLはXML直接読込だったため、既存の継承copyも変更せずCommon/Singing/SingingFormatsへ独立して正規化readerを追加。
+- UST（UTF-8/Shift-JIS）、VSQX3/4、MusicXML/XML/MXL、MSCX/MSCZを設定のファイル選択と共通Loadへ追加。元歌詞/母音、音符、選択track、秒へ統一し、Visual/Sceneの共通経路を維持。原本/参照プロジェクト/実共有へ書込なし。旧VSQ/USTXは未対応として表示対象へ増やさない。
+- C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-SingingFormats-20261026/finalの--singing-formats成功。合成8形式でtempo/rest/文字コード/kana/vowels/VSQX partとpreMeasure・track名/複数track/MusicXML tie/ZIP container主ファイル/破損/欠損/設定worker/歌詞帯を確認。midi-lyricsの--lyric-timelineとstageの--stage-editorも成功。音声処理/DPI変更なし、実ユーザー楽譜は未検証。
+- final-buildのDebug/Releaseはwarning0/error0・LOCAL_NO_DEPLOY。product参照80/80、一致/欠損0。追加はSingingFormatsと専用確認unitのみで、依存に不要sourceなし。既存SongReader/継承UIを保持。XML/ZIPはWindows/Delphi標準機能を使用し、配布用DLL追加なし。無配備・commit/pushなし。
+- 基本楽譜を対象としMusicXMLはpartwise、反復は自動展開しない。MuseScoreの詳細記譜（連符・タイ等）は今後の対象。参照先にも実装がない旧VSQ/USTXは対応を偽装しない。
+
+## 2026-10-26 歌唱clipの開始線・hover（無配備）
+
+- ユーザー画像の細線は選択中clipの伸縮grip。歌唱ではEmotionResizeEdgeAtを0にし、左右端/中央とも全体移動へ統一。未選択でも歌唱clipの範囲内をcrSizeAllとし、click/drag開始・終了でも維持。固定列/ルーラー/scrollbar外は対象外。
+- 従来の左+2px/right-3px gripを歌唱では描かず、実際のClipRect.Leftへ水色2pxの開始線を描画。展開/summary共通で配置全体の開始を示す。歌詞音符の開始・再生縦線とは別。他種のclip伸縮は維持。
+- Temp/SYNC_MusicStudio-SingingGestures-20261026/final-checkの--singing-gestures成功。範囲全体/選択前後/展開折りたたみ/clickとdrag直後/旧端から移動/長さ保持/Undo、pixel開始X一致を確認。compact専用回帰も成功。初回test JSONに必須root/psdが欠けたため試験側を修正、製品不具合とは区別する。音声/DPI処理なし。
+- final-buildのDebug/Release warning0/error0、LOCAL_NO_DEPLOY。新unit/依存/不要sourceなし。変更pas/dprはBOM/CRLF、diff check成功。実作品/配備先へ書込なし、無配備・commit/pushなし。
+
+## 2026-10-26 drag cursor維持・独自ダークscrollbar（無配備）
+
+- Cursor propertyが同じ値でもOS側がarrowへ戻る経路に対応。capture中のWM_SETCURSORを処理し、移動/伸縮/並替/ルーラーpanのcursorをSetCursorでも適用する。クリップの移動確定/Undo境界は維持。
+- 統合timelineのnative TScrollBarをDarkScrollBarへ置換。横/縦、thumb/矢印/page/keyboard/wheel/repeat、range/visible page、capture取消を独自描画。二重buffer/背景消去抑制/親WS_CLIPCHILDRENと、同値Configureの無描画で白flash・無用な描画を避ける。他画面の継承UIは変更しない。
+- C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-DarkScroll-20261026/finalの--dark-scroll成功。thumb/arrow/page/key/clamp/cancel/WM_ERASEBKGND、同値で再描画なし、drag中timeline30回再描画でもbarのPaintCount不変、実OS cursorをarrowへ変えた後のWM_SETCURSOR復元（client/child境界）を確認。slot/compact専用回帰も成功。画像でdark barを確認。音声/DPI処理なし、実AviUtl2での体感は未確認。
+- buildのDebug/Release warning0/error0、LOCAL_NO_DEPLOY。product dpr/dproj81参照一致、欠損/重複0。新DarkScrollBarを両方と独立hostへ登録。変更pas/dprのBOM/CRLFとdiff check成功。新unitは製品に必要で保持、不要sourceなし。作品/共有/配備先へ書込なし、無配備・commit/pushなし。

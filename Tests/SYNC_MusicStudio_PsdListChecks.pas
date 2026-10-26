@@ -3,9 +3,11 @@
 // Explorerと同じHDROP通知で外部登録、一覧削除/復帰、既存作品参照を隔離検証する。
 interface
 procedure RunPsdListChecks(const Root: string; const ActualPSD: string = '');
+procedure RunAudioLibraryChecks(const Root,ExistingWav: string);
 implementation
-uses System.SysUtils, System.IOUtils, System.Hash, System.Types,
-  Winapi.Windows, Winapi.Messages, Winapi.ShlObj, Vcl.Forms,
+uses System.SysUtils, System.Classes, System.UITypes, System.IOUtils, System.Hash, System.Types,
+  Winapi.Windows, Winapi.Messages, Winapi.ShlObj, Vcl.Forms, Vcl.ExtCtrls, Vcl.StdCtrls,
+  SYNC_MusicStudio_PatternSettingsForm,
   SYNC_MusicStudio_SettingsForm, SYNC_MusicStudio_FileDropList,
   SYNC_MusicStudio_SharedPsdLibrary, SYNC_MusicStudio_PatternData,
   SYNC_MusicStudio_PerformerEditor, SYNC_MusicStudio_PerformerPsd,
@@ -101,7 +103,7 @@ begin
     Count := Length(UI.SharedLibrary.Assets); Drop(UI,TArray<string>.Create(Current.OriginalPath));
     Check(Length(UI.SharedLibrary.Assets)=Count,'duplicate created extra asset');
     UI.TimelineBox.SelectSlot(Music,0); Drop(UI,TArray<string>.Create(PathA));
-    Check(Pos('PSD割当スロット',UI.StatusLabel.Caption)>0,'wrong list mode not explained');
+    Check(Pos('WAV / MP3',UI.StatusLabel.Caption)>0,'audio list did not reject PSD');
     Check(Length(UI.SharedLibrary.Assets)=Count,'wrong list mode wrote library');
     if ActualPSD<>'' then begin
       UI.TimelineBox.SelectSlot(T,0); RealHash := THashSHA2.GetHashStringFromFile(ActualPSD);
@@ -115,5 +117,76 @@ begin
     TFile.WriteAllText(TPath.Combine(Root,'psd-list-project.json'),JSON);
     Writeln('PSD_LIST_EXTERNAL_HDROP_BATCH_RECREATE_DELETE_REFERENCE_RESTORE_REVISION_NO_AUDIO_OK');
   finally UI.Free; end;
+end;
+type TAudioDialogDriver = class
+  Timer: TTimer;
+  Path: string;
+  Done,NoDecode: Boolean;
+  procedure Tick(Sender: TObject);
+end;
+procedure TAudioDialogDriver.Tick(Sender: TObject);
+var I: Integer; D: TMusicStudioPatternSettings;
+begin
+  for I := 0 to Screen.FormCount-1 do if Screen.Forms[I] is TMusicStudioPatternSettings then begin
+    D := TMusicStudioPatternSettings(Screen.Forms[I]);
+    if D.AudioFrame=nil then Continue;
+    NoDecode := D.AudioFrame.NoDecode; D.AudioFrame.SelectFile(Path);
+    NoDecode := NoDecode and not D.AudioFrame.IsLoading;
+    Done := True; Timer.Enabled := False; D.ModalResult := mrOK; Exit;
+  end;
+end;
+procedure RunAudioLibraryChecks(const Root,ExistingWav: string);
+var UI: TFormMusicStudioSettings; Driver: TAudioDialogDriver; P: TMusicStudioPattern;
+  Music,Actor,Index: Integer; Error,Text,Before,Hash: string;
+  function JSON: string;
+  begin Check(UI.Document.TrySave(Result,Error),Error); end;
+  procedure AudioOnly;
+  var N: Integer; C: TComponent;
+  begin
+    Check(UI.LibraryKind='audio','track header did not show audio library');
+    Check(UI.AddButton.Enabled,'audio add unavailable');
+    for N := 0 to UI.PatternList.Count-1 do begin
+      UI.PatternList.ItemIndex := N;
+      Check(UI.Document.PatternAt(UI.SelectedLibraryPattern).Kind='audio','non-audio item in list');
+    end;
+    for C in UI do if C is TButton then
+      if (TButton(C).Caption='PSD') or (TButton(C).Caption='演奏') or (TButton(C).Caption='歌唱') then
+        Check(not TButton(C).Enabled,'performer tab enabled on audio track');
+  end;
+begin
+  Check(TFile.Exists(ExistingWav) and SameText(ExtractFileExt(ExistingWav),'.wav'),'pass an existing WAV; no fixture is generated');
+  Hash := THashSHA2.GetHashStringFromFile(ExistingWav); ForceDirectories(Root);
+  UI := TFormMusicStudioSettings.Create(nil); Driver := TAudioDialogDriver.Create;
+  try
+    UI.SilentVisualMode := True; UI.LibraryRoot := TPath.Combine(Root,'PSDAssets'); UI.LoadDocument('');
+    Music := UI.Document.AddTrack('audio'); Actor := UI.Document.AddTrack('performer');
+    UI.Document.AddSinging; Text := JSON; UI.LoadDocument(Text); UI.Show; Application.ProcessMessages;
+    UI.TimelineBox.SelectTrack(Music); AudioOnly; Check(UI.PatternList.Count=0,'unrelated patterns shown');
+    UI.TimelineBox.SelectTrack(Actor); Check(UI.LibraryKind='psd','performer context');
+    UI.TimelineBox.SelectTrack(Music); AudioOnly;
+    Before := JSON; Drop(UI,TArray<string>.Create(ExistingWav)); AudioOnly;
+    Check(UI.PatternList.Count=1,'WAV HDROP not registered'); P := UI.Document.PatternAt(UI.SelectedLibraryPattern);
+    Check(SameFileName(P.FilePath,ExistingWav),'WAV path not retained');
+    Check(P.Name=ChangeFileExt(ExtractFileName(ExistingWav),''),'WAV name');
+    UI.UndoEdit; Check(JSON=Before,'audio import undo'); UI.RedoEdit; AudioOnly;
+    Index := UI.SelectedLibraryPattern; if Index<0 then begin UI.PatternList.ItemIndex := 0; Index := UI.SelectedLibraryPattern; end;
+    Check(UI.DropSelectedLibraryAt(Music,0,0,Error),Error); Check(Length(UI.Document.TrackAt(Music).Slots[0].Clips)=1,'timeline placement');
+    UI.TimelineBox.SelectTrack(Music); AudioOnly; UI.PatternList.ItemIndex := 0; UI.PatternList.OnClick(UI.PatternList);
+    Driver.Path := TPath.Combine(Root,'missing-reference.mp3'); Driver.Timer := TTimer.Create(nil);
+    Driver.Timer.Interval := 20; Driver.Timer.OnTimer := Driver.Tick; Driver.Timer.Enabled := True;
+    UI.PatternList.OnDblClick(UI.PatternList);
+    Check(Driver.Done and Driver.NoDecode,'doubleclick audio settings / decode guard');
+    P := UI.Document.PatternAt(Index); Check(P.FilePath=Driver.Path,'settings file reference');
+    UI.UndoEdit; Check(SameFileName(UI.Document.PatternAt(Index).FilePath,ExistingWav),'settings undo');
+    UI.TimelineBox.SelectTrack(Music); Before := JSON;
+    Drop(UI,TArray<string>.Create(TPath.Combine(Root,'missing.mp3'),ParamStr(0)));
+    Check(JSON=Before,'invalid audio drop changed project');
+    Check(Pos('一部を登録できません',UI.StatusLabel.Caption)>0,'invalid drop not explained');
+    UI.TimelineBox.SelectSlot(Music,0); AudioOnly; TDropAccess(UI.PatternList).Rebuild;
+    UI.TimelineBox.SelectTrack(Actor); UI.TimelineBox.SelectTrack(Music); AudioOnly;
+    Check(not UI.Preview.AudioEngineAllocated and (UI.TimelineBox.WaveCache.DecodeCount=0),'audio engine used');
+    Check(THashSHA2.GetHashStringFromFile(ExistingWav)=Hash,'existing WAV changed');
+    Writeln('AUDIO_LIBRARY_TRACK_SLOT_SWITCH_WAV_DROP_SETTINGS_REFERENCE_UNDO_NO_DECODE_OK');
+  finally Driver.Timer.Free; Driver.Free; UI.Free; end;
 end;
 end.

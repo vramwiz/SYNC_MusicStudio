@@ -2,7 +2,7 @@
 interface
 procedure RunVisualCacheChecks(const Root: string);
 implementation
-uses System.Classes, System.SysUtils, System.Types, System.Math, System.IOUtils, System.JSON,
+uses SYNC_MusicStudio_DarkScrollBar, System.Classes, System.SysUtils, System.Types, System.Math, System.IOUtils, System.JSON,
   Winapi.Windows, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.Graphics, Vcl.Imaging.pngimage,
   SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_VisualCache, SYNC_MusicStudio_PatternData,
   SYNC_MusicStudio_SettingsForm, SYNC_MusicStudio_ArrangementView, SYNC_MusicStudio_TestHelpers;
@@ -15,10 +15,10 @@ procedure Check(Value: Boolean; const Text: string);
 begin if not Value then raise Exception.Create(Text); end;
 procedure TVisualViewAccess.ScrollTo(Seconds: Integer);
 var I: Integer;
-begin for I := 0 to ControlCount-1 do if (Controls[I] is TScrollBar) and (TScrollBar(Controls[I]).Kind=sbHorizontal) then TScrollBar(Controls[I]).Position := Seconds; end;
+begin for I := 0 to ControlCount-1 do if (Controls[I] is TMusicStudioDarkScrollBar) and (TMusicStudioDarkScrollBar(Controls[I]).Kind=sbHorizontal) then TMusicStudioDarkScrollBar(Controls[I]).Position := Seconds; end;
 procedure TVisualViewAccess.ScrollVerticalTo(Pixels: Integer);
 var I: Integer;
-begin for I := 0 to ControlCount-1 do if (Controls[I] is TScrollBar) and (TScrollBar(Controls[I]).Kind=sbVertical) then TScrollBar(Controls[I]).Position := Pixels; end;
+begin for I := 0 to ControlCount-1 do if (Controls[I] is TMusicStudioDarkScrollBar) and (TMusicStudioDarkScrollBar(Controls[I]).Kind=sbVertical) then TMusicStudioDarkScrollBar(Controls[I]).Position := Pixels; end;
 procedure Big16(S: TStream; Value: Word);
 var B: array[0..1] of Byte;
 begin B[0] := Value shr 8; B[1] := Value and 255; S.WriteBuffer(B,2); end;

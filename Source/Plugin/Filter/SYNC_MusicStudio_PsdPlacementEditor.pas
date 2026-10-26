@@ -6,6 +6,7 @@ uses System.Classes, System.Types, Vcl.Controls, Vcl.Graphics, Vcl.Menus,
   SYNC_MusicStudio_PatternData, SYNC_MusicStudio_PsdTransform;
 type
   TMusicStudioPlacementBounds = function(TrackIndex: Integer; out Video,Bounds: TRect): Boolean of object;
+  TMusicStudioNativeSize = function(TrackIndex: Integer): TSize of object;
   TMusicStudioPlacementCommit = procedure(TrackIndex: Integer; const Transform: TMusicStudioPsdTransform) of object;
   TMusicStudioPsdPlacementEditor = class
   private
@@ -17,10 +18,12 @@ type
     FHandle: Integer;
     FStartMouse: TPoint;
     FVideo,FStartRect: TRect;
+    FNative: TSize;
     FOriginal,FDraft: TMusicStudioPsdTransform;
     FMenu: TPopupMenu;
     FOnBounds: TMusicStudioPlacementBounds;
     FOnCommit: TMusicStudioPlacementCommit;
+    FOnNativeSize: TMusicStudioNativeSize;
     function SelectedValid: Boolean;
     function GripRect(const R: TRect; Index: Integer): TRect;
     function HitAt(X,Y: Integer): Integer;
@@ -41,6 +44,7 @@ type
     property Dragging: Boolean read FDragging;
     property FlipMenu: TPopupMenu read FMenu;
     property OnBounds: TMusicStudioPlacementBounds read FOnBounds write FOnBounds;
+    property OnNativeSize: TMusicStudioNativeSize read FOnNativeSize write FOnNativeSize;
     property OnCommit: TMusicStudioPlacementCommit read FOnCommit write FOnCommit;
   end;
 implementation
@@ -110,6 +114,7 @@ begin
   end;
   if Button<>mbLeft then Exit;
   if not FOnBounds(FTrackIndex,FVideo,FStartRect) then Exit;
+  FNative := TSize.Create(0,0); if Assigned(FOnNativeSize) then FNative := FOnNativeSize(FTrackIndex);
   FOriginal := FDocument.TrackAt(FTrackIndex).PsdTransform; FDraft := FOriginal;
   FStartMouse := Point(X,Y); FDragging := True; TSurfaceAccess(FSurface).MouseCapture := True;
 end;
@@ -139,9 +144,16 @@ begin
     W := W*Factor; H := H*Factor; L := AX; T := AY;
     if SX<0 then L := AX-W; if SY<0 then T := AY-H;
   end;
-  FDraft.HasBounds := True; FDraft.X := EnsureRange((L-FVideo.Left)/FVideo.Width,-4.0,4.0);
-  FDraft.Y := EnsureRange((T-FVideo.Top)/FVideo.Height,-4.0,4.0);
-  FDraft.Width := EnsureRange(W/FVideo.Width,0.001,4.0); FDraft.Height := EnsureRange(H/FVideo.Height,0.001,4.0);
+  FDraft.HasStage := True; FDraft.HasBounds := False;
+  FDraft.StageX := EnsureRange(((L+W/2)-(FVideo.Left+FVideo.Width/2))*MUSIC_STUDIO_STAGE_WIDTH/FVideo.Width,-30720.0,30720.0);
+  FDraft.StageY := EnsureRange(((T+H/2)-(FVideo.Top+FVideo.Height/2))*MUSIC_STUDIO_STAGE_HEIGHT/FVideo.Height,-17280.0,17280.0);
+  if (FHandle=5) and FOriginal.HasStage then begin
+    FDraft.StageX := EnsureRange(FOriginal.StageX+DX*MUSIC_STUDIO_STAGE_WIDTH/FVideo.Width,-30720.0,30720.0);
+    FDraft.StageY := EnsureRange(FOriginal.StageY+DY*MUSIC_STUDIO_STAGE_HEIGHT/FVideo.Height,-17280.0,17280.0);
+    FDraft.Scale := FOriginal.Scale;
+  end
+  else if FNative.cx>0 then FDraft.Scale := EnsureRange(W*MUSIC_STUDIO_STAGE_WIDTH/FVideo.Width/FNative.cx,0.001,256.0)
+  else FDraft.Scale := 1;
   FSurface.Invalidate;
 end;
 procedure TMusicStudioPsdPlacementEditor.MouseUp(Button: TMouseButton; X,Y: Integer);
@@ -149,7 +161,7 @@ var Changed: Boolean; Draft: TMusicStudioPsdTransform; Index: Integer;
 begin
   if (Button<>mbLeft) or not FDragging then Exit; MouseMove(X,Y);
   if not FDragging then Exit;
-  Changed := (FDraft.HasBounds<>FOriginal.HasBounds) or (FDraft.X<>FOriginal.X) or (FDraft.Y<>FOriginal.Y) or
+  Changed := (FDraft.HasStage<>FOriginal.HasStage) or (FDraft.StageX<>FOriginal.StageX) or (FDraft.StageY<>FOriginal.StageY) or (FDraft.Scale<>FOriginal.Scale) or (FDraft.HasBounds<>FOriginal.HasBounds) or (FDraft.X<>FOriginal.X) or (FDraft.Y<>FOriginal.Y) or
     (FDraft.Width<>FOriginal.Width) or (FDraft.Height<>FOriginal.Height);
   Draft := FDraft; Index := FTrackIndex; Cancel;
   if Changed and Assigned(FOnCommit) then FOnCommit(Index,Draft);
@@ -157,10 +169,10 @@ end;
 procedure TMusicStudioPsdPlacementEditor.FlipClick(Sender: TObject);
 begin Flip(TMenuItem(Sender).Tag=1); end;
 procedure TMusicStudioPsdPlacementEditor.Flip(Horizontal: Boolean);
-var Transform: TMusicStudioPsdTransform; V,R: TRect;
+var Transform: TMusicStudioPsdTransform;
 begin
   Cancel;
-  if not SelectedValid or not Assigned(FOnBounds) or not FOnBounds(FTrackIndex,V,R) then Exit;
+  if not SelectedValid then Exit;
   Transform := FDocument.TrackAt(FTrackIndex).PsdTransform;
   if Horizontal then Transform.FlipX := not Transform.FlipX else Transform.FlipY := not Transform.FlipY;
   if Assigned(FOnCommit) then FOnCommit(FTrackIndex,Transform);

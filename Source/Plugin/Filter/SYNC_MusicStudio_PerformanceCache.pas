@@ -52,6 +52,14 @@ implementation
 
 uses System.SysUtils, System.Math, System.Generics.Defaults;
 
+function InstrumentRowColor(const Row: string): TColor;
+const Names: array[0..6] of string = ('右手','左手','右足','左足','表情','顔色','ポーズ');
+  Colors: array[0..6] of TColor = ($00C98B55,$0055A9E6,$0081B75C,$00B776B4,$006E75DD,$00C0B85A,$0067BAD1);
+var I,N: Integer; C: Char;
+begin
+  for I := 0 to High(Names) do if Row=Names[I] then Exit(Colors[I]);
+  N := 0; for C in Row do N := (N+Ord(C)) mod Length(Colors); Result := Colors[N];
+end;
 function TMusicStudioPerformanceSource.FirstOverlap(Beat: Double): Integer;
 var HighIndex, Mid: Integer;
 begin
@@ -80,6 +88,7 @@ begin
         if not Found then InstrumentRows := InstrumentRows+[Block.Row];
       end;
     except on E: Exception do Message := E.Message; end;
+    TArray.Sort<string>(InstrumentRows);
     Notes := nil; PrefixEnd := nil; PitchLow := 0; PitchSpan := Max(1,Length(InstrumentRows)); PitchHigh := PitchSpan-1; Exit;
   end;
   if IsTempo then begin
@@ -220,7 +229,7 @@ begin
       LeftX := Floor(EnsureRange(StartSeconds*PixelsPerSecond-Int64(Index)*256,0.0,256.0));
       RightX := Ceil(EnsureRange(EndSeconds*PixelsPerSecond-Int64(Index)*256,0.0,256.0));
       Y := Margin+Lane*InnerHeight div Source.PitchSpan;
-      Bitmap.Canvas.Brush.Color := Foreground;
+      Bitmap.Canvas.Brush.Color := InstrumentRowColor(Block.Row);
       Bitmap.Canvas.FillRect(Rect(LeftX,Y,Max(LeftX+1,RightX),Max(Y+1,Margin+(Lane+1)*InnerHeight div Source.PitchSpan)));
     end;
     if Source.Tempo<>nil then for I := 0 to Source.Tempo.Timing.PointCount-1 do begin

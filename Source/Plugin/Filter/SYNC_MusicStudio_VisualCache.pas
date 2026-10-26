@@ -77,7 +77,7 @@ type
     procedure StartJobs;
     procedure AdoptPsd(Source: TMusicStudioVisualSource);
     function RollTile(Source: TMusicStudioVisualSource; Track,Index,Height,PPI: Integer;
-      Scale: Double; Background,Foreground: TColor): TBitmap;
+      Scale: Double; Background,Foreground: TColor; Lyrics: Boolean): TBitmap;
   public
     constructor Create;
     destructor Destroy; override;
@@ -89,7 +89,7 @@ type
     function Find(Kind: TMusicStudioVisualKind; const Path: string; const PsdVersion: string = ''): TMusicStudioVisualSource;
     function MidiMessage(Source: TMusicStudioVisualSource; Track: Integer): string;
     procedure DrawRoll(Canvas: TCanvas; const R,VisibleArea: TRect; Source: TMusicStudioVisualSource;
-      Track: Integer; Scale: Double; PPI: Integer; Background,Foreground: TColor);
+      Track: Integer; Scale: Double; PPI: Integer; Background,Foreground: TColor; Transparent: Boolean = False; Lyrics: Boolean = False);
     function Thumbnail(Source: TMusicStudioVisualSource; Width,Height,PPI: Integer; Background: TColor): TBitmap;
     function ActiveJobs: Integer;
     function BitmapCount: Integer;
@@ -418,19 +418,19 @@ begin if not FSources.TryGetValue(Key(Kind,Path,PsdVersion),Result) then Result 
 function TMusicStudioVisualCache.MidiMessage(Source: TMusicStudioVisualSource; Track: Integer): string;
 var Roll: TMusicStudioRollTrack;
 begin
-  if Source=nil then Exit('MIDI準備中…');
+  if Source=nil then Exit('歌唱データ準備中…');
   if Source.Status<>vsReady then Exit(Source.Message);
-  if Track<0 then Exit('MIDIトラック未選択');
+  if Track<0 then Exit('歌唱トラック未選択');
   if (Source.Rolls=nil) or not Source.Rolls.TryGetValue(Track,Roll) then Exit('使用トラックがありません');
   if Length(Roll.Notes)=0 then Exit('音符なし');
   Result := '';
 end;
 function TMusicStudioVisualCache.RollTile(Source: TMusicStudioVisualSource; Track,Index,Height,PPI: Integer;
-  Scale: Double; Background,Foreground: TColor): TBitmap;
+  Scale: Double; Background,Foreground: TColor; Lyrics: Boolean): TBitmap;
 var K: string; B: TBitmap; Roll: TMusicStudioRollTrack; I,J,Y,Margin,InnerHeight,NoteHeight,PreviousPhrase: Integer;
-  StartTime,EndTime,Center: Double; R,Grid: TRect; Note: TMusicStudioSingingNote; Phrase: TMusicStudioRollPhrase;
+  StartTime,EndTime,Center: Double; R,Grid,TextArea: TRect; Note: TMusicStudioSingingNote; Phrase: TMusicStudioRollPhrase; Color: Longint;
 begin
-  K := 'm:'+IntToStr(Source.Revision)+':'+IntToStr(Track)+':'+IntToStr(Index)+':'+IntToStr(Height)+':'+IntToStr(PPI)+':'+
+  K := 'm:'+IntToStr(Ord(Lyrics))+':'+IntToStr(Source.Revision)+':'+IntToStr(Track)+':'+IntToStr(Index)+':'+IntToStr(Height)+':'+IntToStr(PPI)+':'+
     MusicStudioDoubleKey(Scale)+':'+IntToStr(Background)+':'+IntToStr(Foreground);
   Result := FBitmaps.Find(K); if Assigned(Result) then Exit;
   Roll := Source.Rolls[Track];
@@ -439,13 +439,17 @@ begin
   B := TBitmap.Create;
   try
     B.PixelFormat := pf32bit; B.SetSize(256,Height); B.Canvas.Brush.Color := Background; B.Canvas.FillRect(Rect(0,0,256,Height));
+    B.Canvas.Font.Name := 'Yu Gothic UI'; B.Canvas.Font.Height := -Max(1,MulDiv(13,PPI,96));
+    Color := ColorToRGB(Foreground);
+    if (GetRValue(Color)*299+GetGValue(Color)*587+GetBValue(Color)*114)>128000 then B.Canvas.Font.Color := $00202020
+    else B.Canvas.Font.Color := clWhite;
     StartTime := Int64(Index)*256/Scale; EndTime := (Int64(Index)+1)*256/Scale;
     I := Roll.FirstOverlap(StartTime); PreviousPhrase := -1; B.Canvas.Brush.Color := Foreground;
     while I<Length(Roll.Notes) do begin
       Note := Roll.Notes[I]; if Note.StartSeconds>=EndTime then Break;
       if Note.EndSeconds>StartTime then begin
         Phrase := Roll.Phrases[Roll.NotePhrases[I]];
-        if Roll.NotePhrases[I]<>PreviousPhrase then begin
+        if not Lyrics and (Roll.NotePhrases[I]<>PreviousPhrase) then begin
           PreviousPhrase := Roll.NotePhrases[I];
           Grid := Rect(Max(0,Floor(Phrase.StartSeconds*Scale)-Index*256),0,
             Min(256,Ceil(Phrase.EndSeconds*Scale)-Index*256),Height);
@@ -459,24 +463,38 @@ begin
         NoteHeight := Min(InnerHeight,Max(Max(1,MulDiv(2,PPI,96)),Ceil(InnerHeight/Phrase.PitchSpan)));
         Center := Margin+(Phrase.PitchHigh-Note.Key+0.5)*InnerHeight/Phrase.PitchSpan;
         Y := EnsureRange(Round(Center-NoteHeight/2),Margin,Height-Margin-NoteHeight);
+        if Lyrics then begin
+          NoteHeight := Min(InnerHeight,B.Canvas.TextHeight('あ')+Max(2,MulDiv(4,PPI,96)));
+          Y := (Height-NoteHeight) div 2;
+        end;
         R := Rect(Floor(Note.StartSeconds*Scale)-Index*256,Y,
           Ceil(Note.EndSeconds*Scale)-Index*256,Y+NoteHeight);
-        R.Right := Max(R.Left+1,R.Right); B.Canvas.FillRect(R);
+        R.Right := Max(R.Left+1,R.Right); B.Canvas.Brush.Style := bsSolid; B.Canvas.FillRect(R);
+        if Lyrics and (Note.Lyric<>'') then begin
+          TextArea := R; Inc(TextArea.Left,Max(1,MulDiv(2,PPI,96)));
+          B.Canvas.Brush.Style := bsClear;
+          // 音符開始の左位置を固定し、タイル境界/可視端でも文字を再配置しない。
+          DrawTextW(B.Canvas.Handle,PChar(Note.Lyric),Length(Note.Lyric),TextArea,DT_LEFT or DT_VCENTER or DT_SINGLELINE or DT_NOPREFIX);
+        end;
       end; Inc(I);
     end;
     FBitmaps.Add(K,B); Inc(FRasterCount); Result := B;
   except B.Free; raise; end;
 end;
 procedure TMusicStudioVisualCache.DrawRoll(Canvas: TCanvas; const R,VisibleArea: TRect; Source: TMusicStudioVisualSource;
-  Track: Integer; Scale: Double; PPI: Integer; Background,Foreground: TColor);
-var Visible: TRect; I,First,Last,Saved: Integer;
+  Track: Integer; Scale: Double; PPI: Integer; Background,Foreground: TColor; Transparent,Lyrics: Boolean);
+var Visible: TRect; I,First,Last,Saved: Integer; Tile: TBitmap;
 begin
   if (R.Height<1) or (Scale<=0) or (MidiMessage(Source,Track)<>'') or not IntersectRect(Visible,R,VisibleArea) then Exit;
   First := Max(0,(Visible.Left-R.Left) div 256); Last := Max(First,(Visible.Right-1-R.Left) div 256);
   Saved := SaveDC(Canvas.Handle);
   try
     IntersectClipRect(Canvas.Handle,Visible.Left,Visible.Top,Visible.Right,Visible.Bottom);
-    for I := First to Last do Canvas.Draw(R.Left+I*256,R.Top,RollTile(Source,Track,I,R.Height,PPI,Scale,Background,Foreground));
+    for I := First to Last do begin
+      Tile := RollTile(Source,Track,I,R.Height,PPI,Scale,Background,Foreground,Lyrics);
+      Tile.TransparentColor := Background; Tile.Transparent := Transparent;
+      try Canvas.Draw(R.Left+I*256,R.Top,Tile); finally Tile.Transparent := False; end;
+    end;
   finally RestoreDC(Canvas.Handle,Saved); end;
 end;
 function TMusicStudioVisualCache.Thumbnail(Source: TMusicStudioVisualSource; Width,Height,PPI: Integer; Background: TColor): TBitmap;

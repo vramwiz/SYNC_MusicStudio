@@ -7,10 +7,11 @@ uses
   System.Classes, System.Types, Vcl.Controls, Vcl.Dialogs, Vcl.ExtCtrls,
   Vcl.Forms, Vcl.StdCtrls, Vcl.Menus, SYNC_MusicStudio_PatternData,
   SYNC_MusicStudio_ArrangementView, SYNC_MusicStudio_PreviewFrame, SYNC_MusicStudio_SharedPsdLibrary, SYNC_MusicStudio_LibraryData,
-  SYNC_MusicStudio_PsdLayerFrameUI, SYNC_MusicStudio_LibraryThumbnails, SYNC_MusicStudio_EditHistory, SYNC_MusicStudio_PsdTransform,
+  SYNC_MusicStudio_PsdLayerFrameUI, SYNC_MusicStudio_LibraryThumbnails, SYNC_MusicStudio_EditHistory, SYNC_MusicStudio_PerformanceLibrary, SYNC_MusicStudio_PsdTransform,
   SYNC_MusicStudio_TempoRulerEditor, SYNC_MusicStudio_DrumFrame, SYNC_MusicStudio_SmallSlotEditor;
 
 type
+  TMusicStudioConfirmDeleteEvent = function(const Text: string): Boolean of object;
   TMusicStudioApplyJSONEvent = function(const JSONText: string; out ErrorText: string): Boolean of object;
   TFormMusicStudioSettings = class(TForm)
     procedure FormCreate(Sender: TObject);
@@ -19,6 +20,7 @@ type
     FCancelRequested, FSyncing, FValid: Boolean;
     FInitialText: string;
     FLibraryKind: string;
+    FLibraryContext: string;
     FPerformanceAttribute,FTrackClipboard: string;
     FSmallEditor: TMusicStudioSmallSlotEditor;
     FAvailableKinds: TArray<string>;
@@ -30,15 +32,22 @@ type
     FPreview: TMusicStudioPreviewFrame;
     FLibraryThumbnails: TMusicStudioLibraryThumbnails;
     FEditHistory: TMusicStudioEditHistory;
-    FTransportSpaceDown: Boolean;
+    FPerformanceHistory: TMusicStudioPerformanceHistory;
+    FPendingPerformanceChange: Integer;
     FTempoButton: TButton;
     FTempoRuler: TMusicStudioTempoRulerEditor;
     FOverview: TPanel;
     FPatternMenu: TPopupMenu;
+    FLibraryTabs: array[0..2] of TButton;
     FPatternAdd,FPatternEdit,FPatternDelete: TMenuItem;
+    FOnConfirmDelete: TMusicStudioConfirmDeleteEvent;
     FOnApplyJSON: TMusicStudioApplyJSONEvent;
     FTrackSettingsItem, FTrackDeleteItem, FClipEditItem, FClipDeleteItem: TMenuItem;
     FSlotAddItem, FSlotSettingsItem, FSlotDeleteItem, FSlotUpItem, FSlotDownItem: TMenuItem;
+    FTransportSpaceDown: Boolean;
+    procedure LibraryTabClick(Sender: TObject);
+    procedure HistoryButtonClick(Sender: TObject);
+    function ApplyPerformanceHistory(Index: Integer; Undo: Boolean): Boolean;
     procedure PatternContext(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
     procedure PatternMenuPopup(Sender: TObject);
     procedure PreviewWheel(Sender: TObject; Shift: TShiftState; Delta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -98,9 +107,13 @@ type
     procedure ClipEditClick(Sender: TObject);
     procedure ClipDeleteClick(Sender: TObject);
     procedure ArrangementMenuPopup(Sender: TObject);
+    function DropSlotAt(X,Y: Integer): Integer;
     procedure TimelineDragOver(Sender, Source: TObject; X,Y: Integer; State: TDragState; var Accept: Boolean);
     procedure TimelineDragDrop(Sender, Source: TObject; X,Y: Integer);
     procedure TimelineDblClick(Sender: TObject);
+    function ConfirmDelete(const Text: string): Boolean;
+    procedure TimelineTrackMove(FromIndex,ToIndex: Integer);
+    procedure TimelineDelete(Sender: TObject);
     procedure TimelineSelectionChange(Sender: TObject);
     procedure TimelineClipMove(TrackIndex, SlotIndex, ClipIndex: Integer; StartSeconds: Double);
     procedure TimelineClipResize(TrackIndex, SlotIndex, ClipIndex: Integer; StartSeconds,LengthSeconds: Double);
@@ -146,6 +159,8 @@ type
     function DropSelectedLibraryAt(TrackIndex,SlotIndex: Integer; StartSeconds: Double; out Reason: string): Boolean;
     // Explorerのdropと削除ボタンの処理境界。PSD一覧以外/不正選択では書き込まない。
     function ImportDroppedPsd(const Path: string; out ErrorText: string): Boolean;
+    // 音声一覧への外部drop。原本をコピー/解析せず、作品内に参照を登録する。
+    function ImportDroppedAudio(const Path: string; out ErrorText: string): Boolean;
     function RemoveSelectedLibraryPsd(out ErrorText: string): Boolean;
     property SelectedLibraryPattern: Integer read SelectedPatternIndex;
     property Document: TMusicStudioDocument read FDocument;
@@ -154,6 +169,7 @@ type
     property LibraryThumbnails: TMusicStudioLibraryThumbnails read FLibraryThumbnails;
     property TempoRuler: TMusicStudioTempoRulerEditor read FTempoRuler;
     property SmallSlotEditor: TMusicStudioSmallSlotEditor read FSmallEditor;
+    property OnConfirmDelete: TMusicStudioConfirmDeleteEvent read FOnConfirmDelete write FOnConfirmDelete;
     property OnApplyJSON: TMusicStudioApplyJSONEvent read FOnApplyJSON write FOnApplyJSON;
   end;
 
@@ -165,13 +181,13 @@ uses
   SYNC_MusicStudio_PatternSettingsForm, SYNC_MusicStudio_SharedLibraryEditor,
   SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_TimingFrame, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_DrumData,
   SYNC_MusicStudio_InstrumentFrame, SYNC_MusicStudio_InstrumentData,
-  SYNC_MusicStudio_PerformanceLibrary, SYNC_MusicStudio_PerformanceKinds,
+  SYNC_MusicStudio_PerformanceKinds,
   SYNC_MusicStudio_PerformerPsd, SYNC_MusicStudio_PerformerEditor, SYNC_MusicStudio_PerformanceEditor,
   SYNC_MusicStudio_SmallSlotData, SYNC_MusicStudio_FileDropList, SYNC_MusicStudio_PsdImport;
 
 {$R *.dfm}
 
-const SLOT_KINDS: array[0..12] of string = ('audio','psd','singing','emotion','animation','instrument','performance','rhythm','generic','tempo','face','pose','symbol');
+const SLOT_KINDS: array[0..13] of string = ('audio','psd','singing','emotion','animation','instrument','performance','rhythm','generic','tempo','face','pose','symbol','customExpression');
 
 function Panel(Owner: TComponent; Parent: TWinControl; Align: TAlign; Size: Integer): TPanel;
 begin
@@ -243,7 +259,10 @@ begin
   PatternPanel := Panel(Self, WorkPanel, alLeft, 268);
   PatternPanel.Constraints.MinWidth := 230;
   PatternPanel.Constraints.MaxWidth := 360;
-  Header := Panel(Self, PatternPanel, alTop, 50);
+  Header := Panel(Self, PatternPanel, alTop, 82);
+  FLibraryTabs[0] := Button(Self,Header,8,46,74,'PSD',LibraryTabClick); FLibraryTabs[0].Tag := 0;
+  FLibraryTabs[1] := Button(Self,Header,88,46,74,'演奏',LibraryTabClick); FLibraryTabs[1].Tag := 1;
+  FLibraryTabs[2] := Button(Self,Header,168,46,74,'歌唱',LibraryTabClick); FLibraryTabs[2].Tag := 2;
   LibraryLabel := LabelAt(Self, Header, 16, 17, 'スロットを選択');
   AddButton := Button(Self, Header, Header.Width - 50, 10, 34, '＋', AddButtonClick);
   AddButton.Anchors := [akTop, akRight];
@@ -271,7 +290,8 @@ begin
   Splitter.Width := 6;
   Splitter.MinSize := 230;
   CenterPanel := Panel(Self, WorkPanel, alClient, 0);
-  Overview := Panel(Self, PatternPanel, alBottom, 320);
+  Overview := Panel(Self, WorkPanel, alTop, 240); Overview.Top := 0;
+  Splitter := TSplitter.Create(Self); Splitter.Parent := WorkPanel; Splitter.Align := alTop; Splitter.Top := 240; Splitter.Height := 5; Splitter.MinSize := 120;
   FOverview := Overview;
   FPreview := TMusicStudioPreviewFrame.Create(Self); FPreview.Parent := Overview;
   FPreview.Align := alClient; PreviewBox := FPreview.Stage;
@@ -281,8 +301,10 @@ begin
   TrackAddButton := Button(Self, TrackHeader, 12, 7, 120, 'トラック＋', TrackAddClick);
   SlotAddButton := Button(Self,TrackHeader,140,7,112,'スロット＋',SlotMenuClick);
   FTempoButton.Parent := TrackHeader; FTempoButton.SetBounds(264,7,130,30);
-  LabelControl := LabelAt(Self,TrackHeader,406,14,'時間目盛りをドラッグで横移動 / ホイールで拡縮');
-  LabelControl.AutoSize := False; LabelControl.Width := Max(1,TrackHeader.Width - 422);
+  Button(Self,TrackHeader,402,7,88,'元に戻す',HistoryButtonClick).Tag := 0;
+  Button(Self,TrackHeader,496,7,88,'やり直す',HistoryButtonClick).Tag := 1;
+  LabelControl := LabelAt(Self,TrackHeader,592,14,'時間目盛りをドラッグで横移動 / ホイールで拡縮');
+  LabelControl.AutoSize := False; LabelControl.Width := Max(1,TrackHeader.Width - 608);
   LabelControl.Anchors := [akLeft,akTop,akRight];
   TimelineBox := TMusicStudioArrangementView.Create(Self);
   FPreview.SharedVisualCache := TimelineBox.VisualCache;
@@ -292,6 +314,8 @@ begin
   TimelineBox.OnDragOver := TimelineDragOver; TimelineBox.OnDragDrop := TimelineDragDrop;
   TimelineBox.OnDblClick := TimelineDblClick; TimelineBox.OnClipMove := TimelineClipMove;
   TimelineBox.OnClipResize := TimelineClipResize;
+  TimelineBox.OnTrackMove := TimelineTrackMove; TimelineBox.OnDelete := TimelineDelete;
+  TimelineBox.OnVisibility := FPreview.VisibilityCommand; TimelineBox.OnTrackVisible := FPreview.TrackVisible;
   TimelineBox.OnSelectionChange := TimelineSelectionChange;
   TimelineBox.OnSeek := TimelineSeek; FPreview.OnPositionChange := PreviewPositionChange; FPreview.OnTempoEdit := PreviewTempoEdit;
   JSONMemo := TMemo.Create(Self);
@@ -352,13 +376,14 @@ end;
 procedure TFormMusicStudioSettings.FormCreate(Sender: TObject);
 begin
   FDocument := TMusicStudioDocument.Create;
-  FEditHistory := TMusicStudioEditHistory.Create;
+  FEditHistory := TMusicStudioEditHistory.Create; FEditHistory.OnApply := ApplyPerformanceHistory;
+  FPendingPerformanceChange := -1;
   FSharedLibrary := TMusicStudioSharedPsdLibrary.Create; FDocument.AssetResolver := FSharedLibrary.ResolvePath;
   ApplySyncMusicStudioDarkForm(Self);
   ApplyMusicStudioEditorFont(Self);
   BuildUI;
   FSmallEditor := TMusicStudioSmallSlotEditor.Create(Self,TimelineBox,FDocument,CommitMutation);
-  TimelineBox.OnSmallMenu := FSmallEditor.ShowMenu;
+  FSmallEditor.Store := FSharedLibrary; TimelineBox.OnSmallMenu := FSmallEditor.ShowMenu;
   FLibraryThumbnails := TMusicStudioLibraryThumbnails.Create(PatternList,TimelineBox.VisualCache);
   FLibraryThumbnails.OnMetadataChange := LibraryMetadataChanged;
   KeyPreview := True; OnKeyDown := TransportKeyDown; OnKeyUp := TransportKeyUp;
@@ -374,7 +399,7 @@ end;
 procedure TFormMusicStudioSettings.FitPreview(Sender: TObject);
 begin
   if not Assigned(FOverview) then Exit;
-  FOverview.Height := Min(MulDiv(420,CurrentPPI,96),Max(MulDiv(220,CurrentPPI,96),WorkPanel.ClientHeight div 2));
+  FOverview.Height := Min(MulDiv(220,CurrentPPI,96),Max(MulDiv(144,CurrentPPI,96),WorkPanel.ClientHeight div 4));
 end;
 procedure TFormMusicStudioSettings.PatternContext(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 begin
@@ -398,7 +423,7 @@ destructor TFormMusicStudioSettings.Destroy;
 begin
   FValid := False;
   TimelineBox.OnSmallMenu := nil; FreeAndNil(FSmallEditor);
-  FreeAndNil(FTempoRuler); FreeAndNil(FLibraryThumbnails); FreeAndNil(FEditHistory);
+  FreeAndNil(FTempoRuler); FreeAndNil(FLibraryThumbnails); FreeAndNil(FEditHistory); FreeAndNil(FPerformanceHistory);
   if Assigned(FPreview) then begin FPreview.Bind(nil); FPreview.SharedVisualCache := nil; FPreview.SharedLibrary := nil; end;
   if Assigned(TimelineBox) then begin TimelineBox.Bind(nil); TimelineBox.SceneCache := nil; end;
   if Assigned(PatternList) then PatternList.OnDrawItem := nil;
@@ -459,6 +484,7 @@ begin
   if (Key=VK_ESCAPE) and TimelineBox.CancelInteraction then begin Key := 0; Exit; end;
   if (ActiveControl=FPreview.TempoEdit) or not ((ActiveControl is TCustomEdit) or (ActiveControl is TCustomComboBox)) then begin
     if ActiveControl=TimelineBox then begin
+      if Key=VK_DELETE then begin TimelineDelete(TimelineBox); Key := 0; Exit; end;
       if (Key=Ord('C')) and (Shift=[ssCtrl]) then begin CopyTrackClick(nil); Key := 0; Exit; end;
       if (Key=Ord('V')) and (Shift=[ssCtrl]) then begin PasteTrackClick(nil); Key := 0; Exit; end;
     end;
@@ -487,15 +513,31 @@ begin Result := FSharedLibrary.Root; end;
 procedure TFormMusicStudioSettings.SetLibraryRoot(const Value: string);
 begin
   FPreview.Bind(nil); FPreview.SharedLibrary := nil; FDocument.AssetResolver := nil; FSharedLibrary.Free;
+  FreeAndNil(FPerformanceHistory); FEditHistory.Clear;
   FSharedLibrary := TMusicStudioSharedPsdLibrary.Create(Value); FDocument.AssetResolver := FSharedLibrary.ResolvePath;
-  FPreview.SharedLibrary := FSharedLibrary;
+  FSmallEditor.Store := FSharedLibrary; FPreview.SharedLibrary := FSharedLibrary;
   if FValid then begin TimelineBox.Bind(FDocument); FPreview.Bind(FDocument); end;
   UpdateLibrary;
 end;
+procedure TFormMusicStudioSettings.LibraryTabClick(Sender: TObject);
+const Kinds: array[0..2] of string = ('psd','performance','singing');
+var I: Integer; T: TMusicStudioTrack; K: string;
+begin
+  if not FValid or (TimelineBox.SelectedTrack<0) then Exit;
+  T := FDocument.TrackAt(TimelineBox.SelectedTrack); if T.Kind='audio' then Exit;
+  K := Kinds[TButton(Sender).Tag];
+  for I := 0 to High(T.Slots) do if T.Slots[I].Kind=K then begin
+    TimelineBox.SelectSlot(TimelineBox.SelectedTrack,I); Exit;
+  end;
+  FLibraryContext := K; UpdateLibrary;
+end;
+procedure TFormMusicStudioSettings.HistoryButtonClick(Sender: TObject);
+begin if TButton(Sender).Tag=0 then UndoEdit else RedoEdit; end;
 procedure TFormMusicStudioSettings.UpdateLibrary;
 var I,N: Integer; SelectedID,Kind,AssetID,K: string; T: TMusicStudioTrack; S: TMusicStudioSlot; Item: TMenuItem;
   Assets: TArray<TMusicStudioPsdAsset>; Emotions: TArray<TMusicStudioLibraryItem>; P: TMusicStudioPattern;
 begin
+  T := Default(TMusicStudioTrack);
   SelectedID := VisiblePattern(PatternList.ItemIndex).ID; Kind := ''; AssetID := ''; FPerformanceAttribute := '';
   FAvailableKinds := nil; S := Default(TMusicStudioSlot);
   if FValid and (TimelineBox.SelectedTrack >= 0) and (TimelineBox.SelectedTrack<FDocument.TrackCount) and (TimelineBox.SelectedSlot >= 0) then begin
@@ -509,9 +551,18 @@ begin
       else if Length(FAvailableKinds)>1 then Kind := 'generic';
     end;
   end;
+  if FValid and (TimelineBox.SelectedTrack>=0) then begin
+    T := FDocument.TrackAt(TimelineBox.SelectedTrack); AssetID := T.PsdAssetID;
+    FPerformanceAttribute := T.PerformanceAttribute;
+    if (T.Kind='audio') and (TimelineBox.SelectionScope=mssTrack) then begin Kind := 'audio'; FAvailableKinds := ['audio']; end
+    else if FLibraryContext<>'' then begin Kind := FLibraryContext; FAvailableKinds := [Kind]; end
+    else if (Kind='') and (T.Kind='psd') then begin Kind := 'psd'; FAvailableKinds := ['psd']; end;
+  end;
   FLibraryKind := Kind;
-  PatternList.ShowHint := Kind='psd';
-  PatternList.Hint := 'PSDファイルをここへドラッグして共有一覧へ登録。登録後、演奏者へドラッグして割り当てます。';
+  for I := 0 to High(FLibraryTabs) do FLibraryTabs[I].Enabled := FValid and (TimelineBox.SelectedTrack>=0) and (T.Kind<>'audio');
+  PatternList.ShowHint := (Kind='psd') or (Kind='audio');
+  if Kind='audio' then PatternList.Hint := 'WAV / MP3をここへドロップして音声パターンを登録。ダブルクリックでファイルを設定できます。'
+  else PatternList.Hint := 'PSDファイルをここへドラッグして共有一覧へ登録。登録後、演奏者へドラッグして割り当てます。';
   Emotions := nil;
   if FValid then begin
     Assets := FSharedLibrary.Assets;
@@ -522,9 +573,11 @@ begin
   end;
   TimelineBox.SetEmotionItems(Emotions);
   if Kind='' then LibraryLabel.Caption := 'スロットを選択' else LibraryLabel.Caption := MusicStudioSlotKindName(Kind);
+  if Kind='audio' then LibraryLabel.Caption := '音声 / パターン';
   if Kind='performance' then LibraryLabel.Caption := PerformanceKindName(FPerformanceAttribute)+' / 共通演奏';
   if Kind='singing' then LibraryLabel.Caption := '歌唱 / プロジェクト共有';
   if (S.Kind='animation') and (S.Name='ポーズ') then LibraryLabel.Caption := 'ポーズ';
+  if S.Kind='customExpression' then LibraryLabel.Caption := '表情カスタム';
   if FValid then FLibraryItems := MusicStudioLibraryItems(FDocument,FSharedLibrary,FAvailableKinds,AssetID,FPerformanceAttribute) else FLibraryItems := nil;
   FVisiblePatterns := nil; SetLength(FVisiblePatterns,Length(FLibraryItems)); PatternList.Items.BeginUpdate;
   try
@@ -763,6 +816,10 @@ end;
 procedure TFormMusicStudioSettings.AddAvailablePattern(const Kind: string);
 var Index: Integer;
 begin
+  if (TimelineBox.SelectedTrack>=0) and (TimelineBox.SelectedSlot>=0) then
+    if FDocument.TrackAt(TimelineBox.SelectedTrack).Slots[TimelineBox.SelectedSlot].Kind='customExpression' then begin
+      FSmallEditor.EditCustomAt(TimelineBox.SelectedTrack,TimelineBox.SelectedSlot,-1,FPreview.Position); Exit;
+    end;
   if Kind='performance' then EditCommonPerformance(True)
   else if Kind='tempo' then begin Index := FDocument.AddTempo; if CommitMutation then SelectPatternIndex(Index); end
   else if (Kind='psd') or (Kind='emotion') or (Kind='animation') or (Kind='instrument') then AddSharedPattern(Kind)
@@ -914,17 +971,42 @@ begin
   Result := True;
 end;
 
-procedure TFormMusicStudioSettings.LibraryFilesDropped(const Paths: TArray<string>);
-var Path,ErrorText,Errors: string; Count: Integer;
+function TFormMusicStudioSettings.ImportDroppedAudio(const Path: string; out ErrorText: string): Boolean;
+var Index: Integer; P: TMusicStudioPattern; Ext,Before: string;
 begin
+  Result := False; ErrorText := '';
+  if not FValid or (FLibraryKind<>'audio') then begin ErrorText := '音声トラックを選択してください。'; Exit; end;
+  Ext := ExtractFileExt(Path);
+  if not SameText(Ext,'.wav') and not SameText(Ext,'.mp3') then begin ErrorText := 'WAV / MP3を指定してください。'; Exit; end;
+  if not TFile.Exists(Path) then begin ErrorText := 'ファイルが見つかりません。'; Exit; end;
+  if not FDocument.TrySave(Before,ErrorText) then Exit;
+  try
+    Index := FDocument.AddAudio; P := FDocument.PatternAt(Index);
+    P.FilePath := TPath.GetFullPath(Path); P.Name := ChangeFileExt(ExtractFileName(Path),'');
+    FDocument.UpdatePattern(P);
+    if not CommitMutation then begin ErrorText := StatusLabel.Caption; Exit; end;
+    SelectPatternIndex(Index); Result := True;
+  except
+    on E: Exception do begin FDocument.TryLoad(Before,ErrorText); ErrorText := E.Message; end;
+  end;
+end;
+
+procedure TFormMusicStudioSettings.LibraryFilesDropped(const Paths: TArray<string>);
+var Path,ErrorText,Errors,LabelText: string; Count: Integer; AudioList,Imported: Boolean;
+begin
+  AudioList := FLibraryKind='audio';
+  if AudioList then LabelText := '音声' else LabelText := 'PSD';
   Count := 0; Errors := '';
   for Path in Paths do begin
     try
-      if ImportDroppedPsd(Path,ErrorText) then Inc(Count)
+      if AudioList then Imported := ImportDroppedAudio(Path,ErrorText)
+      else Imported := ImportDroppedPsd(Path,ErrorText);
+      if Imported then Inc(Count)
       else Errors := Errors+ExtractFileName(Path)+': '+ErrorText+sLineBreak;
     except on E: Exception do Errors := Errors+ExtractFileName(Path)+': '+E.Message+sLineBreak; end;
   end;
-  if Errors<>'' then StatusLabel.Caption := Format('PSD登録 %d件。一部を登録できません: %s',[Count,Trim(Errors)])
+  if Errors<>'' then StatusLabel.Caption := Format('%s登録 %d件。一部を登録できません: %s',[LabelText,Count,Trim(Errors)])
+  else if AudioList then StatusLabel.Caption := Format('音声 %d件を登録しました。タイムラインへドラッグして配置できます。',[Count])
   else StatusLabel.Caption := Format('PSD %d件を登録/選択しました。演奏者へドラッグして割り当ててください。',[Count]);
 end;
 
@@ -1036,13 +1118,22 @@ function TFormMusicStudioSettings.CommitMutation: Boolean;
 var ErrorText,BeforeText: string;
 begin
   Result := False; BeforeText := JSONMemo.Text;
-  try SyncMemo; FEditHistory.RecordChange(BeforeText,JSONMemo.Text); Result := True;
+  try SyncMemo; FEditHistory.RecordChange(BeforeText,JSONMemo.Text,FPendingPerformanceChange); FPendingPerformanceChange := -1; Result := True;
   except on E: Exception do begin
+      if FPendingPerformanceChange>=0 then begin
+        ApplyPerformanceHistory(FPendingPerformanceChange,True); FPendingPerformanceChange := -1;
+      end;
       FDocument.TryLoad(BeforeText, ErrorText);
       FSyncing := True; try JSONMemo.Text := BeforeText; finally FSyncing := False; end;
       FPreview.Bind(FDocument);
     RefreshPatterns; StatusLabel.Caption := '変更を反映できません: ' + E.Message;
   end; end;
+end;
+function TFormMusicStudioSettings.ApplyPerformanceHistory(Index: Integer; Undo: Boolean): Boolean;
+var Error: string;
+begin
+  Result := Assigned(FPerformanceHistory) and FPerformanceHistory.Apply(Index,Undo,Error);
+  if not Result then StatusLabel.Caption := 'Undo/Redoを適用できません: '+Error;
 end;
 procedure TFormMusicStudioSettings.UndoEdit;
 var Text: string; Beat,EndBeat: Double; Playing: Boolean;
@@ -1065,9 +1156,9 @@ end;
 procedure TFormMusicStudioSettings.PlacementCommit(TrackIndex: Integer; const Transform: TMusicStudioPsdTransform);
 begin FDocument.UpdatePsdTransform(TrackIndex,Transform); CommitMutation; end;
 procedure TFormMusicStudioSettings.RestoreEditText(const Text: string);
-var TrackID,SlotID,ClipID: string; T: TMusicStudioTrack; I,S,C: Integer;
+var TrackID,SlotID,ClipID: string; T: TMusicStudioTrack; I,S,C: Integer; Scope: TMusicStudioSelectionScope;
 begin
-  TrackID := ''; SlotID := ''; ClipID := '';
+  Scope := TimelineBox.SelectionScope; TrackID := ''; SlotID := ''; ClipID := '';
   if FValid and (TimelineBox.SelectedTrack>=0) then begin
     T := FDocument.TrackAt(TimelineBox.SelectedTrack); TrackID := T.ID;
     if TimelineBox.SelectedSlot>=0 then begin
@@ -1079,7 +1170,7 @@ begin
   if not FValid then Exit;
   for I := 0 to FDocument.TrackCount-1 do begin
     T := FDocument.TrackAt(I); if T.ID<>TrackID then Continue;
-    TimelineBox.SelectTrack(I);
+    TimelineBox.SelectTrack(I); if Scope=mssTrack then Break;
     for S := 0 to High(T.Slots) do if T.Slots[S].ID=SlotID then begin
       TimelineBox.SelectSlot(I,S);
       for C := 0 to High(T.Slots[S].Clips) do if T.Slots[S].Clips[C].ID=ClipID then TimelineBox.SelectClip(I,S,C);
@@ -1131,6 +1222,17 @@ begin
   end else Reason := StatusLabel.Caption;
 end;
 
+function TFormMusicStudioSettings.DropSlotAt(X,Y: Integer): Integer;
+var TrackIndex,I: Integer; Reason: string; T: TMusicStudioTrack;
+begin
+  Result := TimelineBox.SlotAtPoint(X,Y); TrackIndex := TimelineBox.TrackAtPoint(X,Y);
+  if (TrackIndex<0) or TimelineBox.TrackExpanded(TrackIndex) or (X<TimelineBox.HeaderWidth) then Exit;
+  T := FDocument.TrackAt(TrackIndex);
+  // 折りたたみ概要では、ドラッグ中の候補の受入条件から枠を選ぶ。
+  if CanDropLibraryItemAt(PatternList.ItemIndex,TrackIndex,Result,Reason) then Exit;
+  for I := 0 to High(T.Slots) do
+    if CanDropLibraryItemAt(PatternList.ItemIndex,TrackIndex,I,Reason) then Exit(I);
+end;
 procedure TFormMusicStudioSettings.TimelineDragOver(Sender, Source: TObject; X,Y: Integer;
   State: TDragState; var Accept: Boolean);
 var TrackIndex,SlotIndex: Integer; Reason: string; P: TMusicStudioPattern;
@@ -1138,7 +1240,7 @@ begin
   Accept := False;
   if not FValid or (Source <> PatternList) or (PatternList.ItemIndex < 0) then Exit;
   TrackIndex := TimelineBox.TrackAtPoint(X,Y);
-  SlotIndex := TimelineBox.SlotAtPoint(X,Y);
+  SlotIndex := DropSlotAt(X,Y);
   P := VisiblePattern(PatternList.ItemIndex);
   if (P.Kind<>'psd') and (X<TimelineBox.HeaderWidth) then Reason := 'パターンはスロットの時間領域へドロップしてください。'
   else Accept := CanDropLibraryItemAt(PatternList.ItemIndex,TrackIndex,SlotIndex,Reason);
@@ -1154,17 +1256,24 @@ begin
   TimelineDragOver(Sender,Source,X,Y,dsDragMove,Accept);
   if not Accept then Exit;
   if not DropLibraryItemAt(PatternList.ItemIndex,TimelineBox.TrackAtPoint(X,Y),
-    TimelineBox.SlotAtPoint(X,Y),TimelineBox.SecondsAtSlot(X,TimelineBox.TrackAtPoint(X,Y),TimelineBox.SlotAtPoint(X,Y)),Reason) then begin
+    DropSlotAt(X,Y),TimelineBox.SecondsAtSlot(X,TimelineBox.TrackAtPoint(X,Y),DropSlotAt(X,Y)),Reason) then begin
     if Reason<>'' then StatusLabel.Caption := Reason;
   end;
 end;
 
 procedure TFormMusicStudioSettings.ArrangementMenuPopup(Sender: TObject);
-var Selected: Boolean; T: TMusicStudioTrack;
+var Selected,TrackMenu,SlotMenu,ClipMenu: Boolean; T: TMusicStudioTrack;
 begin
+  TrackMenu := TimelineBox.SelectionScope=mssTrack; SlotMenu := TimelineBox.SelectionScope=mssSlot; ClipMenu := TimelineBox.SelectionScope=mssClip;
   Selected := FValid and (TimelineBox.SelectedTrack >= 0);
   if Selected then begin T := FDocument.TrackAt(TimelineBox.SelectedTrack);
     Selected := (T.Kind = 'audio') or (T.Kind = 'psd'); end;
+  ArrangementMenu.Items[0].Visible := TrackMenu; ArrangementMenu.Items[1].Visible := TrackMenu;
+  ArrangementMenu.Items[4].Visible := TrackMenu; ArrangementMenu.Items[5].Visible := TrackMenu;
+  FTrackSettingsItem.Visible := TrackMenu; FTrackDeleteItem.Visible := TrackMenu;
+  FSlotSettingsItem.Visible := SlotMenu; FSlotDeleteItem.Visible := SlotMenu;
+  FSlotUpItem.Visible := SlotMenu; FSlotDownItem.Visible := SlotMenu;
+  FSlotAddItem.Visible := TrackMenu or SlotMenu; FClipEditItem.Visible := ClipMenu; FClipDeleteItem.Visible := ClipMenu;
   FTrackSettingsItem.Enabled := Selected; FTrackDeleteItem.Enabled := Selected;
   FClipEditItem.Enabled := Selected and (TimelineBox.SelectedClip >= 0);
   FClipDeleteItem.Enabled := FClipEditItem.Enabled;
@@ -1199,8 +1308,9 @@ begin
   if (T.Kind <> 'audio') and (T.Kind <> 'psd') then Exit;
   for I := 0 to High(SLOT_KINDS) do begin
     SlotAddMenu.Items[I].Enabled := ((T.Kind='audio') and ((SLOT_KINDS[I]='audio') or (SLOT_KINDS[I]='tempo'))) or
-      ((T.Kind='psd') and (SLOT_KINDS[I]='psd'));
+      ((T.Kind='psd') and (T.PsdAssetID<>'') and (SLOT_KINDS[I]='customExpression'));
     for K in T.ProvidedSlots do if SLOT_KINDS[I]=K then SlotAddMenu.Items[I].Enabled := True;
+    SlotAddMenu.Items[I].Visible := SlotAddMenu.Items[I].Enabled;
   end;
   P := SlotAddButton.ClientToScreen(Point(0,SlotAddButton.Height)); SlotAddMenu.Popup(P.X,P.Y);
 end;
@@ -1233,8 +1343,7 @@ var TIndex,SIndex: Integer;
 begin
   TIndex := TimelineBox.SelectedTrack; SIndex := TimelineBox.SelectedSlot;
   if not FValid or (TIndex < 0) or (SIndex < 0) then Exit;
-  if MessageDlg('このスロットと中の配置を削除しますか？ 他のスロット・元パターン・参照ファイルは保持します。',
-    mtConfirmation,[mbYes,mbNo],0) <> mrYes then Exit;
+  if not ConfirmDelete('スロット「'+FDocument.TrackAt(TIndex).Slots[SIndex].Name+'」と中の配置を削除しますか？ 他のスロット・元パターン・参照ファイルは保持します。') then Exit;
   FDocument.RemoveSlot(TIndex,SIndex); if CommitMutation then TimelineBox.SelectTrack(TIndex);
 end;
 procedure TFormMusicStudioSettings.SlotUpClick(Sender: TObject);
@@ -1251,12 +1360,16 @@ begin
   FDocument.ReorderSlot(TIndex,SIndex,Target); if CommitMutation then TimelineBox.SelectSlot(TIndex,Target);
 end;
 
+function TFormMusicStudioSettings.ConfirmDelete(const Text: string): Boolean;
+begin
+  if Assigned(FOnConfirmDelete) then Result := FOnConfirmDelete(Text)
+  else Result := MessageDlg(Text,mtConfirmation,[mbYes,mbNo],0)=mrYes;
+end;
 procedure TFormMusicStudioSettings.TrackDeleteClick(Sender: TObject);
 var Index: Integer;
 begin
   Index := TimelineBox.SelectedTrack; if not FValid or (Index < 0) then Exit;
-  if MessageDlg('このトラックと、その中の配置を削除しますか？ 左の元パターンと素材ファイルは保持します。',
-    mtConfirmation,[mbYes,mbNo],0) <> mrYes then Exit;
+  if not ConfirmDelete('トラック「'+FDocument.TrackAt(Index).Name+'」と、その中の配置を削除しますか？ 左の元パターンと素材ファイルは保持します。') then Exit;
   FDocument.RemoveTrack(Index); CommitMutation;
 end;
 
@@ -1290,16 +1403,32 @@ end;
 
 procedure TFormMusicStudioSettings.TimelineDblClick(Sender: TObject);
 begin
+  if (TimelineBox.SelectionScope<>mssTrack) and (TimelineBox.SelectedTrack>=0) and (TimelineBox.SelectedSlot>=0) then
+    if FDocument.TrackAt(TimelineBox.SelectedTrack).Slots[TimelineBox.SelectedSlot].Kind='customExpression' then begin
+      FSmallEditor.EditCustomAt(TimelineBox.SelectedTrack,TimelineBox.SelectedSlot,TimelineBox.SelectedClip,FPreview.Position); Exit;
+    end;
+  if TimelineBox.SelectionScope=mssTrack then begin TrackSettingsClick(nil); Exit; end;
   if TimelineBox.SelectedClip >= 0 then ClipEditClick(nil)
   else if TimelineBox.SelectedSlot >= 0 then SlotSettingsClick(nil) else TrackSettingsClick(nil);
 end;
-procedure TFormMusicStudioSettings.TimelineSelectionChange(Sender: TObject);
-var T: TMusicStudioTrack; PlacementTrack: Integer;
+procedure TFormMusicStudioSettings.TimelineTrackMove(FromIndex,ToIndex: Integer);
 begin
-  PlacementTrack := -1;
-  if FValid and (TimelineBox.SelectedTrack>=0) and (TimelineBox.SelectedSlot>=0) then begin
-    T := FDocument.TrackAt(TimelineBox.SelectedTrack);
-    if (T.Kind='psd') and (T.Slots[TimelineBox.SelectedSlot].Kind='psd') then PlacementTrack := TimelineBox.SelectedTrack;
+  FDocument.ReorderTrack(FromIndex,ToIndex); if CommitMutation then TimelineBox.SelectTrack(ToIndex);
+end;
+procedure TFormMusicStudioSettings.TimelineDelete(Sender: TObject);
+begin
+  case TimelineBox.SelectionScope of
+    mssTrack: TrackDeleteClick(Sender);
+    mssSlot: SlotDeleteClick(Sender);
+    mssClip: ClipDeleteClick(Sender);
+  end;
+end;
+procedure TFormMusicStudioSettings.TimelineSelectionChange(Sender: TObject);
+var T: TMusicStudioTrack; PlacementTrack: Integer; Supported: Boolean; K: string;
+begin
+  FLibraryContext := ''; PlacementTrack := -1;
+  if FValid and (TimelineBox.SelectedTrack>=0) then begin
+    T := FDocument.TrackAt(TimelineBox.SelectedTrack); if T.Kind='psd' then PlacementTrack := TimelineBox.SelectedTrack;
   end;
   FPreview.PlacementEditor.SelectTrack(PlacementTrack);
   UpdateLibrary;
@@ -1315,6 +1444,11 @@ begin
   if TimelineBox.SelectedSlot >= 0 then InfoLabel.Caption := InfoLabel.Caption+
     '  /  スロット: '+T.Slots[TimelineBox.SelectedSlot].Name;
   InfoLabel.Caption := InfoLabel.Caption+'  ・  右クリックで設定 / 並べ替え / 削除';
+  if (TimelineBox.SelectedSlot>=0) and T.HasCapabilityMetadata then begin
+    K := T.Slots[TimelineBox.SelectedSlot].Kind; Supported := (K='psd') or (K='customExpression');
+    for K in T.ProvidedSlots do if K=T.Slots[TimelineBox.SelectedSlot].Kind then Supported := True;
+    if not Supported then InfoLabel.Caption := InfoLabel.Caption+' / 割当PSDは未対応です。配置は保持しています。';
+  end;
 end;
 
 procedure TFormMusicStudioSettings.ClipEditClick(Sender: TObject);
@@ -1402,7 +1536,7 @@ procedure TFormMusicStudioSettings.TempoRulerMenu(Beat: Double);
 begin if FValid then FTempoRuler.ShowMenu(Beat); end;
 
 function TFormMusicStudioSettings.AssignPerformerPSD(TrackIndex: Integer; const AssetID: string; out ErrorText: string): Boolean;
-var Profile: TMusicStudioPerformerProfile;
+var Profile: TMusicStudioPerformerProfile; Asset: TMusicStudioPsdAsset; Track: TMusicStudioTrack; Transform: TMusicStudioPsdTransform;
 begin
   Result := False;
   if not ReadMusicStudioPerformer(FSharedLibrary,AssetID,Profile,ErrorText) then Exit;
@@ -1410,7 +1544,16 @@ begin
     Profile.Attribute := FDocument.TrackAt(TrackIndex).PerformanceAttribute;
     if not ChooseMusicStudioAttribute(Self,Profile.Attribute) then begin ErrorText := 'PSD割当を取り消しました。'; Exit; end;
   end;
-  FDocument.AssignPsd(TrackIndex,AssetID); FDocument.SetPerformer(TrackIndex,Profile.Attribute,Profile.Slots,True,Profile.SelectionsJSON);
+  Track := FDocument.TrackAt(TrackIndex);
+  FDocument.AssignPsd(TrackIndex,AssetID);
+  if FSharedLibrary.TryRead(AssetID,Asset,ErrorText) then
+    if Asset.OriginalPath<>'' then FDocument.UpdateTrack(TrackIndex,ChangeFileExt(ExtractFileName(Asset.OriginalPath),''),Track.Color,'')
+    else FDocument.UpdateTrack(TrackIndex,Asset.Name,Track.Color,'');
+  Transform := Track.PsdTransform;
+  if not Transform.HasBounds and not Transform.HasStage then begin
+    Transform.HasStage := True; Transform.Scale := 1; FDocument.UpdatePsdTransform(TrackIndex,Transform);
+  end;
+  FDocument.SetPerformer(TrackIndex,Profile.Attribute,Profile.Slots,True,Profile.SelectionsJSON);
   Result := CommitMutation;
   if Result then begin
     if Length(Profile.Slots)=0 then StatusLabel.Caption := 'PSDを割り当てましたが、利用できる演奏・歌唱・演出枠が見つかりません。PSDのレイヤー名を確認してください。'
@@ -1435,7 +1578,7 @@ begin
 end;
 
 procedure TFormMusicStudioSettings.EditCommonPerformance(NewPattern: Boolean);
-var Store: TMusicStudioPerformanceLibrary; P: TMusicStudioPattern; Error,AssetID: string; I: Integer;
+var Store: TMusicStudioPerformanceLibrary; P,BeforePattern: TMusicStudioPattern; Error,AssetID: string; I: Integer;
 begin
   if (TimelineBox.SelectedTrack<0) or (FPerformanceAttribute='') then Exit;
   AssetID := FDocument.TrackAt(TimelineBox.SelectedTrack).PsdAssetID;
@@ -1443,14 +1586,24 @@ begin
     P := Default(TMusicStudioPattern); P.Kind := 'performance'; P.Name := PerformanceKindName(FPerformanceAttribute)+' 演奏';
     P.Color := '#EDBA70'; P.PerformanceAttribute := FPerformanceAttribute; P.ConfigJSON := '{"lengthBeats":16,"notes":[]}';
   end else P := VisiblePattern(PatternList.ItemIndex);
+  BeforePattern := P;
   if not EditMusicStudioPerformance(Self,FSharedLibrary,AssetID,FSilentVisualMode,FDocument.Timing.BPMAt(0),P,Error) then begin
     if Error<>'' then StatusLabel.Caption := Error; Exit;
   end;
+  if not NewPattern and SameMusicStudioPerformance(BeforePattern,P) then Exit;
   Store := TMusicStudioPerformanceLibrary.Create(FSharedLibrary.Root);
   try
     if not Store.TrySave(P,Error) then begin MessageDlg(Error,mtWarning,[mbOK],0); Exit; end;
   finally Store.Free; end;
-  FDocument.RefreshPerformanceSnapshots(P); if not CommitMutation then Exit;
+  if FPerformanceHistory=nil then FPerformanceHistory := TMusicStudioPerformanceHistory.Create(FSharedLibrary.Root);
+  FPendingPerformanceChange := FPerformanceHistory.RecordSaved(BeforePattern,P);
+  try
+    FDocument.RefreshPerformanceSnapshots(P);
+  except on E: Exception do begin
+    ApplyPerformanceHistory(FPendingPerformanceChange,True); FPendingPerformanceChange := -1;
+    StatusLabel.Caption := '作品へ反映できません: '+E.Message; Exit;
+  end; end;
+  if not CommitMutation then Exit;
   UpdateLibrary;
   for I := 0 to High(FLibraryItems) do if FLibraryItems[I].Pattern.SharedPatternID=P.SharedPatternID then PatternList.ItemIndex := I;
   PatternListClick(nil); StatusLabel.Caption := '共通演奏を保存し、この作品の配置へ反映しました。';

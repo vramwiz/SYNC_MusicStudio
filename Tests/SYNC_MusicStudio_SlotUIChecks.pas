@@ -4,7 +4,7 @@
 interface
 procedure RunSlotUIChecks(const Root: string; const ActualPSD: string = '');
 implementation
-uses System.SysUtils, System.Classes, System.Types, System.JSON, System.IOUtils, System.Math, System.Hash,
+uses SYNC_MusicStudio_DarkScrollBar, System.SysUtils, System.Classes, System.Types, System.JSON, System.IOUtils, System.Math, System.Hash,
   Winapi.Windows, Winapi.Messages, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Graphics, Vcl.Imaging.pngimage,
   SYNC_MusicStudio_ArtDocument, SYNC_MusicStudio_ArtPsd, SYNC_MusicStudio_PsdLayers,
   SYNC_MusicStudio_PerformerPsd, SYNC_MusicStudio_PatternData, SYNC_MusicStudio_ArrangementData,
@@ -17,7 +17,7 @@ var Art: TArtDocument; Actor,G,Pattern: TArtLayer; D: TMusicStudioLayerDocument;
   UI: TFormMusicStudioSettings; A: TMusicStudioPsdAsset; Duplicate: Boolean; Data: TMusicStudioInstrumentData;
   Block: TInstrumentBlock; P: TMusicStudioPattern; Scene: TMusicStudioPsdSceneCache; Cache: TMusicStudioVisualCache;
   Path,Hash,Error,Text,Before,PatternID,ClipID: string; T,Expr,Face,Pose,Symbol,Perf,Sing,I,X,Y,EndX: Integer;
-  C: TMusicStudioPlacement; R,R2: TRect; Scroll: TScrollBar; PNG: TPngImage; B: TBitmap;
+  C: TMusicStudioPlacement; R,R2: TRect; Scroll: TMusicStudioDarkScrollBar; PNG: TPngImage; B: TBitmap;
   Deadline: UInt64;
   function Group(const Name: string; Parent: TArtLayer): TArtLayer;
   begin Result := Art.AddLayer(alkGroup,Name,TArtBounds.Create(0,0,8,2),Parent); Result.Visible := True; end;
@@ -28,7 +28,7 @@ var Art: TArtDocument; Actor,G,Pattern: TArtLayer; D: TMusicStudioLayerDocument;
   var N: Integer;
   begin for N := 0 to High(UI.Document.TrackAt(T).Slots) do if UI.Document.TrackAt(T).Slots[N].Kind=Kind then Exit(N); raise Exception.Create('slot '+Kind); end;
   procedure Reload;
-  begin Check(UI.Document.TrySave(Text,Error),Error); UI.LoadDocument(Text); UI.TimelineBox.SelectSlot(T,Expr); UI.TimelineBox.SetZoom(80); end;
+  begin Check(UI.Document.TrySave(Text,Error),Error); UI.LoadDocument(Text); if not UI.TimelineBox.TrackExpanded(T) then UI.TimelineBox.ToggleTrack(T); UI.TimelineBox.SelectSlot(T,Expr); UI.TimelineBox.SetZoom(80); end;
   procedure Mouse(Msg: Cardinal; X,Y: Integer; Buttons: WPARAM = 0);
   begin UI.TimelineBox.Perform(Msg,Buttons,MakeLParam(X,Y)); end;
   function TimeX(Seconds: Double): Integer;
@@ -50,7 +50,7 @@ var Art: TArtDocument; Actor,G,Pattern: TArtLayer; D: TMusicStudioLayerDocument;
   begin
     Check(not UI.ToolbarPanel.Visible,'top toolbar visible');
     Check(not UI.EditButton.Parent.Visible,'pattern footer visible');
-    Check((UI.Preview.Parent.Parent=UI.PatternPanel) and (UI.Preview.Parent.Top>UI.PatternList.Top),'preview not below left library');
+    Check(UI.Preview.Parent.Parent=UI.WorkPanel,'preview not above full workspace');
     Check(UI.Preview.PlayButton.Parent.Parent=UI,'transport not above workspace');
     Check(UI.Preview.Stage.Height=UI.Preview.ClientHeight,'left preview still contains transport');
     Check(UI.Preview.PlayButton.BoundsRect.Bottom<=UI.Preview.PlayButton.Parent.Height,'compact play button clipped');
@@ -71,9 +71,9 @@ var Art: TArtDocument; Actor,G,Pattern: TArtLayer; D: TMusicStudioLayerDocument;
     Check(UI.Preview.ViewZoom>Zoom,'focused list stole preview wheel');
     Check(UI.Preview.CharacterBounds(T,V,Bounds),'preview character not ready');
     Pan := UI.Preview.ViewPan;
-    UI.Preview.Stage.Perform(WM_LBUTTONDOWN,MK_LBUTTON,MakeLParam(Point.X,Point.Y));
-    UI.Preview.Stage.Perform(WM_MOUSEMOVE,MK_LBUTTON,MakeLParam(Point.X+23,Point.Y-17));
-    UI.Preview.Stage.Perform(WM_LBUTTONUP,0,MakeLParam(Point.X+23,Point.Y-17));
+    UI.Preview.Stage.Perform(WM_MBUTTONDOWN,MK_MBUTTON,MakeLParam(Point.X,Point.Y));
+    UI.Preview.Stage.Perform(WM_MOUSEMOVE,MK_MBUTTON,MakeLParam(Point.X+23,Point.Y-17));
+    UI.Preview.Stage.Perform(WM_MBUTTONUP,0,MakeLParam(Point.X+23,Point.Y-17));
     Check(not UI.Preview.ViewDragging and (Abs(UI.Preview.ViewPan.X-Pan.X-23)<0.01) and
       (Abs(UI.Preview.ViewPan.Y-Pan.Y+17)<0.01),'main preview pan/release');
     UI.Preview.FitView; Check((UI.Preview.ViewZoom=1) and (UI.Preview.ViewPan.X=0),'main preview fit');
@@ -81,12 +81,12 @@ var Art: TArtDocument; Actor,G,Pattern: TArtLayer; D: TMusicStudioLayerDocument;
     Check(UI.Preview.CharacterBounds(T,V,Bounds),'zoomed placement bounds absent');
     Point := System.Types.Point((Bounds.Left+Bounds.Right) div 2,(Bounds.Top+Bounds.Bottom) div 2);
     Pan := UI.Preview.ViewPan;
-    UI.Preview.Stage.Perform(WM_LBUTTONDOWN,MK_LBUTTON or MK_CONTROL,MakeLParam(Point.X,Point.Y));
-    UI.Preview.Stage.Perform(WM_MOUSEMOVE,MK_LBUTTON or MK_CONTROL,MakeLParam(Point.X+12,Point.Y+8));
-    UI.Preview.Stage.Perform(WM_LBUTTONUP,MK_CONTROL,MakeLParam(Point.X+12,Point.Y+8));
-    UI.Document.TrySave(Text,Error); Check(Text<>Before,'Ctrl drag failed to edit PSD placement');
-    Check((UI.Preview.ViewPan.X=Pan.X) and (UI.Preview.ViewPan.Y=Pan.Y),'Ctrl drag moved viewport');
-    UI.UndoEdit; UI.Document.TrySave(Text,Error); Check(Text=Before,'Ctrl drag placement undo');
+    UI.Preview.Stage.Perform(WM_LBUTTONDOWN,MK_LBUTTON,MakeLParam(Point.X,Point.Y));
+    UI.Preview.Stage.Perform(WM_MOUSEMOVE,MK_LBUTTON,MakeLParam(Point.X+12,Point.Y+8));
+    UI.Preview.Stage.Perform(WM_LBUTTONUP,0,MakeLParam(Point.X+12,Point.Y+8));
+    UI.Document.TrySave(Text,Error); Check(Text<>Before,'left drag failed to edit PSD placement');
+    Check((UI.Preview.ViewPan.X=Pan.X) and (UI.Preview.ViewPan.Y=Pan.Y),'left drag moved viewport');
+    UI.UndoEdit; UI.Document.TrySave(Text,Error); Check(Text=Before,'left drag placement undo');
     UI.Preview.FitView;
     Cursor := UI.Preview.Position;
     X := UI.TimelineBox.HeaderWidth+200; Y := UI.TimelineBox.RulerHeight div 2;
@@ -97,14 +97,14 @@ var Art: TArtDocument; Actor,G,Pattern: TArtLayer; D: TMusicStudioLayerDocument;
     Mouse(WM_LBUTTONDOWN,X,Y,MK_LBUTTON); Mouse(WM_LBUTTONUP,X,Y);
     Check(Abs(UI.Preview.Position-UI.TimelineBox.SecondsAtPoint(X))<0.001,'main ruler click did not seek');
     UI.Document.TrySave(Text,Error); Check(Text=Before,'view gestures changed project');
-    for I := 0 to UI.TimelineBox.ComponentCount-1 do if UI.TimelineBox.Components[I] is TScrollBar then
-      if TScrollBar(UI.TimelineBox.Components[I]).Kind=sbHorizontal then TScrollBar(UI.TimelineBox.Components[I]).Position := 0;
+    for I := 0 to UI.TimelineBox.ComponentCount-1 do if UI.TimelineBox.Components[I] is TMusicStudioDarkScrollBar then
+      if TMusicStudioDarkScrollBar(UI.TimelineBox.Components[I]).Kind=sbHorizontal then TMusicStudioDarkScrollBar(UI.TimelineBox.Components[I]).Position := 0;
     Writeln('INTEGRATED_LAYOUT_CONTEXT_PREVIEW_WHEEL_PAN_FIT_RULER_SLIDE_CLICK_NO_DOCUMENT_CHANGE_OK');
   end;
 begin
   ForceDirectories(Root); Art := TArtDocument.Create;
   try
-    Art.Width := 8; Art.Height := 2; Actor := Group('自由な演奏者',nil); Group('演奏属性:ドラム',Actor); Group('口',Actor);
+    Art.Width := 8; Art.Height := 2; Actor := Group('自由な演奏者',nil); Group('演奏属性:ドラム',Actor); G := Group('口',Actor); Pixel('*あ',G,7,80,80,80,True); Pixel('*い',G,7,80,80,80,False); Pixel('*う',G,7,80,80,80,False); Pixel('*え',G,7,80,80,80,False); Pixel('*お',G,7,80,80,80,False); Pixel('*ん',G,7,80,80,80,False);
     G := Group('右手',Actor); Pattern := Group('打撃',G); Pixel('*0',Pattern,0,80,80,80,True); Pixel('*1',Pattern,0,230,30,20,False);
     G := Group('表情',Actor); Pixel('初期顔',G,1,80,80,80,True); Pixel('*笑顔',G,1,20,220,30,False);
     G := Group('顔色',Actor); Pixel('初期色',G,2,80,80,80,True); Pixel('*青ざめる',G,2,20,30,220,False);
@@ -124,11 +124,11 @@ begin
     Check((Length(UI.Document.TrackAt(T).Slots[Expr].Choices)=1) and (UI.Document.TrackAt(T).Slots[Expr].Choices[0]='笑顔'),'PSD choice strips flags and excludes visible default');
     UI.ClientHeight := 1100; UI.ClientWidth := 1240; Reload; UI.Show; Application.ProcessMessages;
     Check(UI.TimelineBox.SlotHeight('singing')=UI.TimelineBox.SlotHeight('performance'),'large slots same height');
-    Check(UI.TimelineBox.SlotHeight('singing')=UI.TimelineBox.SlotHeight('audio'),'singing/performance use audio row height');
+    Check(UI.TimelineBox.SlotHeight('singing')=3*UI.TimelineBox.SlotHeight('emotion'),'singing/performance triple small row height');
     Check(UI.TimelineBox.SlotHeight('singing')>UI.TimelineBox.SlotHeight('emotion'),'performance vs compact height');
     R := UI.TimelineBox.TrackThumbnailRect(T); Check((R.Width>0) and (R.Right<UI.TimelineBox.HeaderWidth),'PSD in fixed track header');
-    for I := 0 to UI.TimelineBox.ComponentCount-1 do if UI.TimelineBox.Components[I] is TScrollBar then begin
-      Scroll := TScrollBar(UI.TimelineBox.Components[I]); if Scroll.Kind=sbHorizontal then begin Scroll.Position := 64; R2 := UI.TimelineBox.TrackThumbnailRect(T); Check(R=R2,'horizontal scroll keeps track preview'); Scroll.Position := 0; end;
+    for I := 0 to UI.TimelineBox.ComponentCount-1 do if UI.TimelineBox.Components[I] is TMusicStudioDarkScrollBar then begin
+      Scroll := TMusicStudioDarkScrollBar(UI.TimelineBox.Components[I]); if Scroll.Kind=sbHorizontal then begin Scroll.Position := 64; R2 := UI.TimelineBox.TrackThumbnailRect(T); Check(R=R2,'horizontal scroll keeps track preview'); Scroll.Position := 0; end;
     end;
     UI.Document.TrySave(Before,Error); Y := UI.TimelineBox.SlotRowTop(T,Expr)+UI.TimelineBox.SlotHeight('emotion') div 2;
     Mouse(WM_LBUTTONDOWN,TimeX(0.5),Y,MK_LBUTTON); Mouse(WM_LBUTTONUP,TimeX(0.5),Y);
@@ -185,7 +185,7 @@ begin
     try B.SetSize(UI.ClientWidth,UI.ClientHeight); UI.PaintTo(B.Canvas,0,0); PNG.Assign(B); PNG.SaveToFile(TPath.Combine(Root,'slot-ui.png'));
     finally PNG.Free; B.Free; end;
     Profile.Slots := TArray<string>.Create('singing','performance'); UI.Document.SetPerformer(T,'drums',Profile.Slots);
-    UI.TimelineBox.Refresh; Check(UI.TimelineBox.SlotRowTop(T,Expr)=-1,'missing PSD capability hidden'); Check(Length(UI.Document.TrackAt(T).Slots[Expr].Clips)=1,'hidden data preserved');
+    UI.TimelineBox.Refresh; Check(UI.TimelineBox.SlotRowTop(T,Expr)>=0,'placed unsupported slot must stay visible'); UI.TimelineBox.SelectSlot(T,Expr); Check(Pos('未対応',UI.InfoLabel.Caption)>0,'unsupported slot warning missing'); Check(Length(UI.Document.TrackAt(T).Slots[Expr].Clips)=1,'hidden data preserved');
     Check(THashSHA2.GetHashStringFromFile(Path)=Hash,'PSD source unchanged');
     if ActualPSD<>'' then begin
       Check(D.LoadFile(ActualPSD),D.LastError); Profile := MusicStudioPerformerProfile(D,'{}');

@@ -49,6 +49,7 @@ procedure MusicStudioUpdateTrack(Root: TJSONObject; Index: Integer; const Name, 
 procedure MusicStudioSetPlacementBeats(Root: TJSONObject; TrackIndex,SlotIndex,ClipIndex: Integer; StartBeat,LengthBeats: Double);
 procedure MusicStudioAssignPsd(Root: TJSONObject; Index: Integer; const AssetID: string);
 procedure MusicStudioSetPsdTransform(Root: TJSONObject; Index: Integer; const Transform: TMusicStudioPsdTransform);
+procedure MusicStudioReorderTrack(Root: TJSONObject; FromIndex,ToIndex: Integer);
 procedure MusicStudioRemoveTrack(Root: TJSONObject; Index: Integer);
 procedure MusicStudioRemovePlacement(Root: TJSONObject; TrackIndex, SlotIndex, ClipIndex: Integer); overload;
 procedure MusicStudioRemovePlacement(Root: TJSONObject; TrackIndex, ClipIndex: Integer); overload;
@@ -96,6 +97,7 @@ begin
   else if Kind = 'animation' then Result := 'アニメーション'
   else if Kind = 'performance' then Result := '演奏'
   else if Kind = 'tempo' then Result := 'テンポ'
+  else if Kind = 'customExpression' then Result := '表情カスタム'
   else if Kind = 'emotion' then Result := '表情'
   else if Kind = 'face' then Result := '顔色'
   else if Kind = 'pose' then Result := 'ポーズ'
@@ -106,7 +108,8 @@ begin
 end;
 function DefaultAccepts(const Kind: string): TArray<string>;
 begin
-  if Kind = 'generic' then Result := TArray<string>.Create('audio','singing')
+  if Kind = 'customExpression' then Result := TArray<string>.Create('emotion')
+  else if Kind = 'generic' then Result := TArray<string>.Create('audio','singing')
   else Result := TArray<string>.Create(Kind);
 end;
 function ContainsKind(const Accepts: TArray<string>; const Kind: string): Boolean;
@@ -363,6 +366,16 @@ end;
 function MusicStudioAddSlot(Root: TJSONObject; TrackIndex: Integer; const Kind: string): Integer;
 var Items: TJSONArray; Color: string;
 begin
+  if (MusicStudioTrackAt(Root,TrackIndex).Kind='psd') and (Kind<>'psd') and
+    (MusicStudioTrackAt(Root,TrackIndex).PsdAssetID='') and (MusicStudioTrackAt(Root,TrackIndex).PsdPath='') then
+    raise Exception.Create('先に登録PSDを割り当ててください。');
+  if (TrackObject(Root,TrackIndex).GetValue<string>('kind')='psd') and
+    (TrackObject(Root,TrackIndex).GetValue('providedSlots') is TJSONArray) and (Kind<>'psd') and (Kind<>'customExpression') then begin
+    if not ContainsKind(MusicStudioTrackAt(Root,TrackIndex).ProvidedSlots,Kind) then
+      raise Exception.Create('割当PSDはこのスロットに対応していません。');
+  end;
+  if (Kind='customExpression') and (MusicStudioTrackAt(Root,TrackIndex).PsdAssetID='') then
+    raise Exception.Create('先に登録PSDを割り当ててください。');
   Items := SlotArray(Root,TrackIndex); Result := Items.Count; Color := '#6FBFAD';
   if Kind = 'singing' then Color := '#CC8CE0'; Items.AddElement(NewSlot(NewID,Kind,Color,Result));
 end;
@@ -376,7 +389,7 @@ begin
   Obj := TJSONObject.Create; Obj.AddPair('id',NewID);
   if Kind<>'audio' then begin Obj.AddPair('kind','psd'); Obj.AddPair('role','performer'); end
   else Obj.AddPair('kind',Kind);
-  Obj.AddPair('name',Name+' '+IntToStr(Result+1)); Obj.AddPair('color',Color); Obj.AddPair('slots',TJSONArray.Create);
+  Obj.AddPair('name','トラック'+IntToStr(Result+1)); Obj.AddPair('color',Color); Obj.AddPair('slots',TJSONArray.Create);
   if Kind<>'audio' then begin Psd := TJSONObject.Create; Psd.AddPair('filePath',''); Obj.AddPair('psd',Psd); end;
   Items.AddElement(Obj); if not Assigned(Root.GetValue('arrangementVersion')) or (Root.GetValue('arrangementVersion').Value<>'3') then Put(Root,'arrangementVersion',TJSONNumber.Create(2)); MusicStudioAddSlot(Root,Result,SlotKind);
 end;
@@ -394,7 +407,10 @@ begin
   if (TrackIndex < 0) or (TrackIndex >= TJSONArray(Root.GetValue('tracks')).Count) then begin ErrorText := '配置先トラックを選択してください。'; Exit; end;
   T := MusicStudioTrackAt(Root,TrackIndex);
   if (SlotIndex < 0) or (SlotIndex >= Length(T.Slots)) then begin ErrorText := '配置先のスロット行を選択してください。'; Exit; end;
-  Kind := PatternKind(Root,PatternID); if Kind = '' then begin ErrorText := '配置するパターンがありません。'; Exit; end;
+  Kind := PatternKind(Root,PatternID);
+  if (T.Kind='psd') and T.HasCapabilityMetadata and ((Kind='singing') or (Kind='performance')) and
+    not ContainsKind(T.ProvidedSlots,Kind) then begin ErrorText := '割当PSDはこの配置の機能に対応していません。'; Exit; end;
+  if Kind = '' then begin ErrorText := '配置するパターンがありません。'; Exit; end;
   if not MusicStudioSlotCompatible(Kind,T.Slots[SlotIndex],ErrorText) then Exit;
   if IsNan(StartSeconds) or IsInfinite(StartSeconds) or IsNan(LengthSeconds) or IsInfinite(LengthSeconds) or
     (StartSeconds < 0) or (LengthSeconds<=0) or ((Kind<>'performance') and (Kind<>'tempo') and (LengthSeconds<0.001)) or
@@ -408,11 +424,16 @@ function MusicStudioAddPlacement(Root: TJSONObject; TrackIndex: Integer; const P
 begin Result := MusicStudioAddPlacement(Root,TrackIndex,0,PatternID,StartSeconds,LengthSeconds,ErrorText); end;
 function MusicStudioUpdateSlot(Root: TJSONObject; TrackIndex,SlotIndex: Integer;
   const Name,Color: string; const Accepts: TArray<string>; out ErrorText: string): Boolean;
-var Obj: TJSONObject; A: TJSONArray; V: TJSONValue; S: string; I,J: Integer;
+var Obj: TJSONObject; A: TJSONArray; V: TJSONValue; S: string; I,J: Integer; Track: TMusicStudioTrack;
 begin
   Result := False; ErrorText := '名前、#RRGGBBの色、1つ以上の受入属性を指定してください。';
   if (Trim(Name) = '') or not ColorValid(Color) or (Length(Accepts) = 0) then Exit;
   for I := 0 to High(Accepts) do begin if Trim(Accepts[I]) = '' then Exit; for J := 0 to I - 1 do if Accepts[J] = Accepts[I] then Exit; end;
+  Track := MusicStudioTrackAt(Root,TrackIndex);
+  if (Track.Kind='psd') and Track.HasCapabilityMetadata then for S in Accepts do
+    if ((S='singing') or (S='performance')) and not ContainsKind(Track.ProvidedSlots,S) then begin
+      ErrorText := '割当PSDはこの受入属性に対応していません。'; Exit;
+    end;
   Obj := SlotObject(Root,TrackIndex,SlotIndex);
   for V in TJSONArray(Obj.GetValue('clips')) do if not ContainsKind(Accepts,PatternKind(Root,TJSONObject(V).GetValue('patternId').Value)) then begin
     ErrorText := '既存配置が使用する属性は解除できません。先にその配置を削除してください。'; Exit;
@@ -457,6 +478,19 @@ begin
   O := TJSONObject(TrackObject(Root,Index).GetValue('psd'));
   if not Assigned(O) then raise Exception.Create('PSDを割り当てるトラックを選択してください。');
   Put(O,'assetId',TJSONString.Create(AssetID)); Put(O,'filePath',TJSONString.Create(''));
+end;
+procedure MusicStudioReorderTrack(Root: TJSONObject; FromIndex,ToIndex: Integer);
+var A: TJSONArray; L: TList<TJSONValue>; V: TJSONValue; I: Integer;
+begin
+  A := TJSONArray(Root.GetValue('tracks'));
+  if (FromIndex<0) or (ToIndex<0) or (FromIndex>=A.Count) or (ToIndex>=A.Count) then
+    raise EArgumentOutOfRangeException.Create('移動するトラックがありません。');
+  if FromIndex=ToIndex then Exit;
+  L := TList<TJSONValue>.Create;
+  try
+    while A.Count>0 do L.Add(A.Remove(0)); V := L.Extract(L[FromIndex]); L.Insert(ToIndex,V);
+    for I := 0 to L.Count-1 do A.AddElement(L[I]);
+  finally L.Free; end;
 end;
 procedure MusicStudioRemoveTrack(Root: TJSONObject; Index: Integer);
 begin TJSONArray(Root.GetValue('tracks')).Remove(Index).Free; end;

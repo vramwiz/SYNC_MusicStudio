@@ -23,8 +23,55 @@ function BuildMusicStudioPsdOverrides(Document: TMusicStudioLayerDocument;
 function BuildMusicStudioExpressionOverrides(Document: TMusicStudioLayerDocument;
   BaseConfig, Expression: TJSONObject): TJSONObject;
 
+// 自動名候補は読込時に収集し、手動割当を優先する。同名別表情は表示中の親の枝から選ぶ。
+function ResolveMusicStudioMouthConfig(Document: TMusicStudioLayerDocument; Config: TJSONObject): TJSONObject;
+function MusicStudioSelectedMouth(Document: TMusicStudioLayerDocument; Config: TJSONObject; MouthIndex: Integer): string;
+function MusicStudioCanSing(Document: TMusicStudioLayerDocument; Config: TJSONObject): Boolean;
 implementation
+uses SYNC_MusicStudio_ArtLayerName;
 
+function ResolveMusicStudioMouthConfig(Document: TMusicStudioLayerDocument; Config: TJSONObject): TJSONObject;
+const Names: array[1..6] of string = ('あ','い','う','え','お','ん');
+var I: Integer; Layer: TMusicStudioLayerInfo; Auto: TJSONObject; Keys: TJSONArray;
+begin
+  if Config=nil then Result := ParseMusicStudioPsdConfig('{}') else Result := Config.Clone as TJSONObject;
+  if Document=nil then Exit;
+  Auto := TJSONObject.Create; Result.RemovePair('autoMouthLayers').Free; Result.AddPair('autoMouthLayers',Auto);
+  for I := 1 to 6 do begin
+    Keys := TJSONArray.Create;
+    for Layer in Document.Layers do if ParseLayerName(Layer.Name).DisplayName=Names[I] then Keys.Add(Layer.Key);
+    Auto.AddPair(MUSIC_STUDIO_MOUTH_NAMES[I],Keys);
+  end;
+end;
+function AutoMouth(Config: TJSONObject; Index: Integer): TJSONArray;
+var Auto: TJSONValue;
+begin
+  Result := nil; if (Config=nil) or (Index<1) or (Index>11) then Exit;
+  if Index>=7 then Dec(Index,6); Auto := Config.GetValue('autoMouthLayers');
+  if Auto is TJSONObject then if TJSONObject(Auto).GetValue(MUSIC_STUDIO_MOUTH_NAMES[Index]) is TJSONArray then
+    Result := TJSONArray(TJSONObject(Auto).GetValue(MUSIC_STUDIO_MOUTH_NAMES[Index]));
+end;
+function MusicStudioSelectedMouth(Document: TMusicStudioLayerDocument; Config: TJSONObject; MouthIndex: Integer): string;
+var Keys: TJSONArray; Key: TJSONValue; Visibility: TJSONObject;
+begin
+  Result := MusicStudioMouthLayer(Config,MouthIndex);
+  if (Result='') and (MouthIndex>=7) then Result := MusicStudioMouthLayer(Config,MouthIndex-6);
+  if Document.HasLayer(Result) then Exit; Result := ''; Keys := AutoMouth(Config,MouthIndex); if Keys=nil then Exit;
+  Visibility := MusicStudioPsdConfigObject(Config,'visibility');
+  for Key in Keys do if (Key is TJSONString) and Document.LayerBranchVisible(Key.Value,Visibility) then Exit(Key.Value);
+end;
+function MusicStudioCanSing(Document: TMusicStudioLayerDocument; Config: TJSONObject): Boolean;
+var Resolved: TJSONObject; I: Integer; Keys: TJSONArray;
+begin
+  Result := False; if Document=nil then Exit;
+  Resolved := ResolveMusicStudioMouthConfig(Document,Config);
+  try
+    for I := 1 to 6 do if not Document.HasLayer(MusicStudioMouthLayer(Resolved,I)) then begin
+      Keys := AutoMouth(Resolved,I); if (Keys=nil) or (Keys.Count=0) then Exit;
+    end;
+    Result := True;
+  finally Resolved.Free; end;
+end;
 function MusicStudioPsdConfigObject(Config: TJSONObject; const Name: string): TJSONObject;
 var Value: TJSONValue;
 begin
@@ -74,7 +121,7 @@ end;
 
 function BuildMusicStudioPsdOverrides(Document: TMusicStudioLayerDocument;
   Config: TJSONObject; MouthIndex: Integer): TJSONObject;
-var Value: TJSONValue; Pair: TJSONPair; Key, Selected: string; I: Integer;
+var Value,AutoKey: TJSONValue; Pair: TJSONPair; Key, Selected: string; I: Integer; Keys: TJSONArray;
 begin
   Result := TJSONObject.Create;
   try
@@ -86,12 +133,13 @@ begin
             MusicStudioSetJsonBoolean(Result,Pair.JsonString.Value,TJSONBool(Pair.JsonValue).AsBoolean);
     end;
     if (Document=nil) or (MouthIndex<0) or (MouthIndex>11) then Exit;
-    Selected := MusicStudioMouthLayer(Config,MouthIndex);
-    if (Selected='') and (MouthIndex>=7) then Selected := MusicStudioMouthLayer(Config,MouthIndex-6);
+    Selected := MusicStudioSelectedMouth(Document,Config,MouthIndex);
     if not Document.HasLayer(Selected) then Exit;
     for I := 0 to 11 do begin
       Key := MusicStudioMouthLayer(Config,I);
       if Document.HasLayer(Key) then MusicStudioSetJsonBoolean(Result,Key,False);
+      Keys := AutoMouth(Config,I); if Keys<>nil then for AutoKey in Keys do
+        if (AutoKey is TJSONString) and Document.HasLayer(AutoKey.Value) then MusicStudioSetJsonBoolean(Result,AutoKey.Value,False);
     end;
     Document.SelectLayerOverride(Result,Selected);
   except Result.Free; raise; end;

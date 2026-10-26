@@ -1,6 +1,7 @@
 ﻿program SYNC_MusicStudio_NoAudioTests;
 {$APPTYPE CONSOLE}
 uses
+  SYNC_MusicStudio_SingingFormatChecks in 'SYNC_MusicStudio_SingingFormatChecks.pas',
   SYNC_MusicStudio_InstrumentEndChecks in 'SYNC_MusicStudio_InstrumentEndChecks.pas',
   SYNC_MusicStudio_InstrumentAppliedChecks in 'SYNC_MusicStudio_InstrumentAppliedChecks.pas',
   SYNC_MusicStudio_InstrumentPhaseChecks in 'SYNC_MusicStudio_InstrumentPhaseChecks.pas',
@@ -22,6 +23,7 @@ uses
   SYNC_MusicStudio_PerformerEditor in '..\Source\Plugin\Filter\Performer\SYNC_MusicStudio_PerformerEditor.pas',
   SYNC_MusicStudio_PerformanceEditor in '..\Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas',
   SYNC_MusicStudio_InstrumentChecks in 'SYNC_MusicStudio_InstrumentChecks.pas',
+  SYNC_MusicStudio_StageChecks in 'SYNC_MusicStudio_StageChecks.pas',
   SYNC_MusicStudio_InstrumentRules in '..\Source\Common\Render\Layers\SYNC_MusicStudio_InstrumentRules.pas',
   SYNC_MusicStudio_InstrumentData in '..\Source\Common\Project\SYNC_MusicStudio_InstrumentData.pas',
   SYNC_MusicStudio_InstrumentPlayback in '..\Source\Common\Project\SYNC_MusicStudio_InstrumentPlayback.pas',
@@ -69,10 +71,12 @@ uses
   SYNC_MusicStudio_Controls in '..\Source\Plugin\Filter\SYNC_MusicStudio_Controls.pas',
   SYNC_MusicStudio_AudioClipFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_AudioClipFrame.pas',
   SYNC_MusicStudio_Vowels in '..\Source\Common\Singing\SYNC_MusicStudio_Vowels.pas',
+  SYNC_MusicStudio_SingingFormats in '..\Source\Common\Singing\SYNC_MusicStudio_SingingFormats.pas',
   SYNC_MusicStudio_SingingData in '..\Source\Common\Singing\SYNC_MusicStudio_SingingData.pas',
   SYNC_MusicStudio_SingingFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SingingFrame.pas',
   SYNC_MusicStudio_SlotFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SlotFrame.pas',
   SYNC_MusicStudio_PsdTrackFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PsdTrackFrame.pas',
+  SYNC_MusicStudio_DarkScrollBar in '..\Source\Plugin\Filter\SYNC_MusicStudio_DarkScrollBar.pas',
   SYNC_MusicStudio_ArrangementView in '..\Source\Plugin\Filter\SYNC_MusicStudio_ArrangementView.pas',
   SYNC_MusicStudio_PatternSettingsForm in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PatternSettingsForm.pas',
   SYNC_MusicStudio_SettingsForm in '..\Source\Plugin\Filter\SYNC_MusicStudio_SettingsForm.pas',
@@ -87,6 +91,7 @@ uses
   SYNC_MusicStudio_PsdLayerFrameUI in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerFrameUI.pas',
   SYNC_MusicStudio_PsdLayerJobs in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerJobs.pas',
   SYNC_MusicStudio_PsdLayers in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayers.pas',
+  SYNC_MusicStudio_LayerScale in '..\Source\Common\Render\Layers\SYNC_MusicStudio_LayerScale.pas',
   SYNC_MusicStudio_PsdLayersFrame in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PsdLayersFrame.pas',
   SYNC_MusicStudio_PsdLayerChecks in 'SYNC_MusicStudio_PsdLayerChecks.pas',
   SYNC_MusicStudio_LibraryData in '..\Source\Common\Project\SYNC_MusicStudio_LibraryData.pas',
@@ -119,6 +124,13 @@ begin
   try
     SetTextCodePage(Output,65001); SetTextCodePage(ErrOutput,65001);
     Application.Initialize;
+    if ParamStr(2)='--dark-scroll' then begin RunDarkScrollChecks(ParamStr(1)); RunSingingGestureChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--singing-gestures' then begin RunSingingGestureChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--singing-formats' then begin RunSingingFormatChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--lyric-timeline' then begin RunLyricTimelineChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--mouth-list' then begin RunPsdMouthListChecks(ParamStr(1)); Exit; end;
+    if ParamStr(2)='--audio-library' then begin RunAudioLibraryChecks(ParamStr(1),ParamStr(3)); Exit; end;
+    if ParamStr(2)='--stage-editor' then begin RunStageChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--snare-trace' then begin RunSnareTrace(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
     if ParamStr(2)='--snare-video-trace' then begin RunSnareVideoTrace(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
     if ParamStr(2)='--snare-frames' then begin ExportSnareFrames(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
@@ -144,6 +156,7 @@ begin
     if ParamStr(2)='--instrument-preview' then begin RunInstrumentPreviewChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--psd-list' then begin RunPsdListChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--psd-drop' then begin RunPsdDropChecks(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
+    if ParamStr(2)='--compact-editor' then begin RunCompactEditorChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--slot-ui' then begin RunSlotUIChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--performer-management' then begin RunPerformerChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--instrument' then begin RunInstrumentChecks(ParamStr(1)); Exit; end;

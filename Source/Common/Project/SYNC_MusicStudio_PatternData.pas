@@ -46,6 +46,8 @@ type
     function AddSinging: Integer;
     function AddPerformance: Integer;
     function AddTempo: Integer;
+    // PSDの全表示状態を作品内へ値コピーする。正本や素材には保存しない。
+    function AddCustomExpression(const Pattern: TMusicStudioPattern): Integer;
     function AddReference(const Pattern: TMusicStudioPattern): Integer;
     procedure AssignPsd(Index: Integer; const AssetID: string);
     // PSD解析結果を反映する。既存の配置と手動スロットを保持する。
@@ -74,11 +76,14 @@ type
     procedure ReorderSlot(TrackIndex, FromIndex, ToIndex: Integer);
     procedure UpdateTrack(Index: Integer; const Name, Color, PsdPath: string);
     procedure UpdatePsdTransform(Index: Integer; const Transform: TMusicStudioPsdTransform);
+    procedure ReorderTrack(FromIndex,ToIndex: Integer);
     procedure RemoveTrack(Index: Integer);
     function AddPlacement(TrackIndex: Integer; const PatternID: string;
       StartSeconds, LengthSeconds: Double; out ErrorText: string): Boolean; overload;
     function AddPlacement(TrackIndex, SlotIndex: Integer; const PatternID: string;
       StartSeconds, LengthSeconds: Double; out ErrorText: string): Boolean; overload;
+    // 配置ID/時刻を保って参照だけを更新する。属性・素材違いは変更前に拒否する。
+    procedure ReplacePlacementPattern(TrackIndex,SlotIndex,ClipIndex: Integer; const PatternID: string);
     procedure RemovePlacement(TrackIndex, ClipIndex: Integer); overload;
     procedure RemovePlacement(TrackIndex, SlotIndex, ClipIndex: Integer); overload;
     procedure MovePlacement(TrackIndex, ClipIndex: Integer; StartSeconds, LengthSeconds: Double); overload;
@@ -109,7 +114,7 @@ begin
 end;
 
 function ValidateMusicStudioPatterns(Root: TJSONObject; out ErrorText: string): Boolean;
-var
+var Pair: TJSONPair;
   Items: TJSONValue;
   Item: TJSONValue;
   Obj, Audio: TJSONObject;
@@ -230,6 +235,13 @@ begin
         Audio := TJSONObject(Obj.GetValue('reference'));
         if not (Audio.GetValue('assetId') is TJSONString) or (Trim(Audio.GetValue('assetId').Value)='') or
           not (Audio.GetValue('sharedPatternId') is TJSONString) then Exit;
+        if Obj.GetValue('expression')<>nil then begin
+          if not (Obj.GetValue('expression') is TJSONObject) then begin ErrorText := '表情の表示設定が不正です。'; Exit; end;
+          if Length(Obj.GetValue('expression').ToJSON)>262144 then begin ErrorText := '表情の表示設定が大きすぎます。'; Exit; end;
+          if not (TJSONObject(Obj.GetValue('expression')).GetValue('visibility') is TJSONObject) then begin ErrorText := '表情のvisibilityが不正です。'; Exit; end;
+          for Pair in TJSONObject(TJSONObject(Obj.GetValue('expression')).GetValue('visibility')) do
+            if not (Pair.JsonValue is TJSONBool) then begin ErrorText := '表情レイヤーは真偽値です。'; Exit; end;
+        end;
         Continue;
       end
       else Continue;
@@ -335,6 +347,7 @@ begin
     Result.ConfigJSON := Obj.GetValue('tempo').ToJSON;
     if TJSONObject(Obj.GetValue('tempo')).GetValue('filePath') is TJSONString then Result.FilePath := TJSONObject(Obj.GetValue('tempo')).GetValue('filePath').Value;
   end;
+  if Obj.GetValue('expression') is TJSONObject then Result.ConfigJSON := Obj.GetValue('expression').ToJSON;
   if Obj.GetValue('reference') is TJSONObject then begin
     Audio := TJSONObject(Obj.GetValue('reference'));
     Result.AssetID := Audio.GetValue('assetId').Value; Result.SharedPatternID := Audio.GetValue('sharedPatternId').Value;
@@ -442,6 +455,22 @@ begin
   CreateGUID(G); O := TJSONObject.Create; O.AddPair('id',GUIDToString(G)); O.AddPair('kind','performance');
   O.AddPair('name','演奏 '+IntToStr(A.Count+1)); O.AddPair('color','#EDBA70');
   O.AddPair('performance',TJSONObject.ParseJSONValue('{"lengthBeats":16,"notes":[]}')); Result := A.Count; A.AddElement(O);
+end;
+function TMusicStudioDocument.AddCustomExpression(const Pattern: TMusicStudioPattern): Integer;
+var O,R,Config: TJSONObject; G: TGUID; A: TJSONArray; Pair: TJSONPair;
+begin
+  if (Pattern.AssetID='') or (Trim(Pattern.Name)='') or (Length(Pattern.ConfigJSON)>262144) then raise Exception.Create('表情の素材・名前・サイズが不正です。');
+  Config := TJSONObject.ParseJSONValue(Pattern.ConfigJSON) as TJSONObject;
+  if Config=nil then raise Exception.Create('表情の表示設定が不正です。');
+  try
+    if not (Config.GetValue('visibility') is TJSONObject) then raise Exception.Create('表情の表示設定が不正です。');
+    for Pair in TJSONObject(Config.GetValue('visibility')) do if not (Pair.JsonValue is TJSONBool) then raise Exception.Create('表情レイヤーは真偽値です。');
+  except Config.Free; raise; end;
+  A := PatternArray; if A=nil then begin A := TJSONArray.Create; FRoot.AddPair('patterns',A); end;
+  CreateGUID(G); O := TJSONObject.Create; O.AddPair('id',GUIDToString(G)); O.AddPair('kind','emotion');
+  O.AddPair('name',Pattern.Name); O.AddPair('color',Pattern.Color);
+  R := TJSONObject.Create; R.AddPair('assetId',Pattern.AssetID); R.AddPair('sharedPatternId',''); O.AddPair('reference',R);
+  O.AddPair('expression',Config); Result := A.Count; A.AddElement(O);
 end;
 function TMusicStudioDocument.AddReference(const Pattern: TMusicStudioPattern): Integer;
 var I: Integer; P: TMusicStudioPattern; O,R: TJSONObject; A: TJSONArray; G: TGUID;
@@ -596,6 +625,7 @@ begin
         SetValue(Obj,'performanceLibrary',Audio);
       end;
     end;
+    if (Pattern.Kind='emotion') and (Pattern.SharedPatternID='') and (Pattern.ConfigJSON<>'') then SetValue(Obj,'expression',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
     if Pattern.Kind='tempo' then SetValue(Obj,'tempo',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
     if Pattern.Kind='selection' then SetValue(Obj,'selection',TJSONObject.ParseJSONValue(Pattern.ConfigJSON));
     if Pattern.Kind = 'audio' then
@@ -664,6 +694,8 @@ begin
 end;
 procedure TMusicStudioDocument.UpdatePsdTransform(Index: Integer; const Transform: TMusicStudioPsdTransform);
 begin MusicStudioSetPsdTransform(FRoot,Index,Transform); end;
+procedure TMusicStudioDocument.ReorderTrack(FromIndex,ToIndex: Integer);
+begin ApplyTimingMutation(procedure begin MusicStudioReorderTrack(FRoot,FromIndex,ToIndex); end); end;
 procedure TMusicStudioDocument.RemoveTrack(Index: Integer);
 begin ApplyTimingMutation(procedure begin MusicStudioRemoveTrack(FRoot,Index); end); end;
 function TMusicStudioDocument.AddPlacement(TrackIndex: Integer; const PatternID: string;
@@ -736,6 +768,17 @@ begin
     try SyncTimingSeconds; Result := True; ErrorText := '';
     except on E: Exception do begin FRoot.Free; FRoot := Before; Before := nil; RebuildTiming; ErrorText := E.Message; end; end;
   finally Before.Free; end;
+end;
+procedure TMusicStudioDocument.ReplacePlacementPattern(TrackIndex,SlotIndex,ClipIndex: Integer; const PatternID: string);
+var A: TJSONArray; C: TJSONObject; Track: TMusicStudioTrack; P: TMusicStudioPattern; I: Integer; Found: Boolean; Error: string;
+begin
+  Track := TrackAt(TrackIndex); Found := False;
+  for I := 0 to PatternCount-1 do if PatternAt(I).ID=PatternID then begin P := PatternAt(I); Found := True; Break; end;
+  if not Found then raise Exception.Create('参照するパターンがありません。');
+  if not MusicStudioSlotCompatible(P.Kind,Track.Slots[SlotIndex],Error) then raise Exception.Create(Error);
+  if (P.AssetID<>'') and (P.AssetID<>Track.PsdAssetID) then raise Exception.Create('別のPSDの表情は参照できません。');
+  A := TJSONObject(TJSONArray(TJSONObject(TJSONArray(FRoot.GetValue('tracks'))[TrackIndex]).GetValue('slots'))[SlotIndex]).GetValue('clips') as TJSONArray;
+  C := TJSONObject(A[ClipIndex]); C.RemovePair('patternId').Free; C.AddPair('patternId',PatternID);
 end;
 procedure TMusicStudioDocument.RemovePlacement(TrackIndex, ClipIndex: Integer);
 begin RemovePlacement(TrackIndex,0,ClipIndex); end;

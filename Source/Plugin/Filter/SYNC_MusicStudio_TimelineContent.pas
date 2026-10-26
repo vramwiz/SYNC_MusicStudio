@@ -7,13 +7,13 @@ uses System.Types, Vcl.Graphics, SYNC_MusicStudio_PatternData, SYNC_MusicStudio_
 procedure DrawMusicStudioTimelineContent(Canvas: TCanvas; const Metrics: TMusicStudioTimelineMetrics;
   const Clip: TMusicStudioPlacement; const Pattern: TMusicStudioPattern; const Bounds,Visible: TRect;
   Wave: TMusicStudioWaveCache; Visual: TMusicStudioVisualCache; Performance: TMusicStudioPerformanceCache;
-  PPI: Integer; Background,Foreground: TColor);
+  PPI: Integer; Background,Foreground: TColor; Transparent: Boolean = False);
 implementation
 uses System.Math, SYNC_MusicStudio_BeatData;
 procedure DrawMusicStudioTimelineContent(Canvas: TCanvas; const Metrics: TMusicStudioTimelineMetrics;
   const Clip: TMusicStudioPlacement; const Pattern: TMusicStudioPattern; const Bounds,Visible: TRect;
   Wave: TMusicStudioWaveCache; Visual: TMusicStudioVisualCache; Performance: TMusicStudioPerformanceCache;
-  PPI: Integer; Background,Foreground: TColor);
+  PPI: Integer; Background,Foreground: TColor; Transparent: Boolean);
 var First,Last,StartSeconds,EndSeconds,Next,Scale,Base: Double; I: Integer; R,Area,Allowed: TRect;
   Map: TMusicStudioTempoMap;
 begin
@@ -32,7 +32,7 @@ begin
     R.Right := R.Left+Max(1,Ceil(Min(1000000000.0,Clip.LengthSeconds*Scale)));
     if Pattern.Kind='singing' then R.Left := Round(EnsureRange(R.Left-Pattern.SourceStartSeconds*Scale,-500000000.0,500000000.0));
     if Pattern.Kind='audio' then Wave.Draw(Canvas,R,Area,Wave.Find(Pattern.FilePath),Scale,Pattern.Volume,PPI,Background,Foreground)
-    else if Pattern.Kind='singing' then Visual.DrawRoll(Canvas,R,Area,Visual.Find(vkMidi,Pattern.FilePath),Pattern.SourceTrack,Scale,PPI,Background,Foreground)
+    else if Pattern.Kind='singing' then Visual.DrawRoll(Canvas,R,Area,Visual.Find(vkMidi,Pattern.FilePath),Pattern.SourceTrack,Scale,PPI,Background,Foreground,Transparent,True)
     else Performance.Draw(Canvas,R,Area,Pattern.ID,Clip.StartBeat,Scale,PPI,Background,Foreground);
     StartSeconds := EndSeconds;
   end;

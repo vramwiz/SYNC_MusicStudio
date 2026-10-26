@@ -49,7 +49,7 @@ implementation
 
 uses
   System.SysUtils, System.Math, System.IOUtils, System.Generics.Collections,
-  System.Generics.Defaults, SYNC_MusicStudio_Vowels;
+  System.Generics.Defaults, SYNC_MusicStudio_Vowels, SYNC_MusicStudio_SingingFormats;
 
 type
   TThreadAccess = class(TThread);
@@ -470,12 +470,13 @@ var
   Reader: TBoundedMidiReader;
 begin
   Result := Default(TMusicStudioSingingSource);
-  if Path = '' then begin Result.Status := ssEmpty; Result.Message := '歌詞付きMIDI / KARを選択してください。'; Exit; end;
+  if Path = '' then begin Result.Status := ssEmpty; Result.Message := '歌唱データを選択してください。'; Exit; end;
   Ext := LowerCase(ExtractFileExt(Path));
-  if not ((Ext = '.mid') or (Ext = '.midi') or (Ext = '.kar')) then
-  begin Result.Status := ssUnsupported; Result.Message := '未対応形式です。今回は歌詞付きMIDI / KARに対応しています。'; Exit; end;
+  if not ((Ext = '.mid') or (Ext = '.midi') or (Ext = '.kar') or MusicStudioStructuredSong(Ext)) then
+  begin Result.Status := ssUnsupported; Result.Message := '未対応形式です。MIDI/KAR・UST・VSQX・MusicXML・MuseScoreを指定してください。'; Exit; end;
   if not TFile.Exists(Path) then begin Result.Status := ssMissing; Result.Message := '参照先の歌唱ファイルが見つかりません。'; Exit; end;
   try
+    if MusicStudioStructuredSong(Ext) then Exit(LoadMusicStudioStructuredSong(Path,Cancel));
     Stream := TFileStream.Create(Path, fmOpenRead or fmShareDenyWrite);
     try
       if (Stream.Size < 14) or (Stream.Size > 32 * 1024 * 1024) then raise Exception.Create('MIDIのサイズが不正、または32MiBを超えています。');
@@ -487,7 +488,7 @@ begin
   except
     on E: EMidiUnsupported do begin Result.Status := ssUnsupported; Result.Message := E.Message; end;
     on E: EAbort do begin Result := Default(TMusicStudioSingingSource); Result.Status := ssEmpty; Result.Message := '読み込みを取り消しました。'; end;
-    on E: Exception do begin Result := Default(TMusicStudioSingingSource); Result.Status := ssBroken; Result.Message := 'MIDIを読み込めません: ' + E.Message; end;
+    on E: Exception do begin Result := Default(TMusicStudioSingingSource); Result.Status := ssBroken; Result.Message := '歌唱データを読み込めません: ' + E.Message; end;
   end;
 end;
 

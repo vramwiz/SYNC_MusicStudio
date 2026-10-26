@@ -1,7 +1,7 @@
 ﻿unit SYNC_MusicStudio_InstrumentFrame;
 // PSDから生成した行を共通タイムラインで編集する。ファイル解析/画像描画/作品確定は親へ分離する。
 interface
-uses System.Classes, System.Types, Winapi.Windows, Winapi.Messages, Vcl.Forms, Vcl.Controls,
+uses System.Classes, System.Types, System.Generics.Collections, Winapi.Windows, Winapi.Messages, Vcl.Forms, Vcl.Controls,
   Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Menus, Vcl.Graphics,
   SYNC_MusicStudio_InstrumentRules, SYNC_MusicStudio_InstrumentData, SYNC_MusicStudio_EditHistory;
 type
@@ -27,12 +27,17 @@ type
     FHistory: TMusicStudioEditHistory;
     FGrid: TInstrumentGrid;
     FHeader: TPanel;
+    FChoicePanel: TPanel;
+    FChoices: TListBox;
+    FChoiceLabel: TLabel;
+    FChoiceRow: Integer;
+    FLastChoices: TDictionary<string,string>;
+    FUndoButton,FRedoButton: TButton;
     FLength: TEdit;
     FLengthLabel: TLabel;
     FPlay,FStop: TButton;
     FStatus: TLabel;
     FTimer: TTimer;
-    FMenu: TPopupMenu;
     FSelected,FMode,FDownX: Integer;
     FCandidate,FOriginal: TInstrumentBlock;
     FAnchor,FPosition,FOrigin,FTempo,FDraftPosition: Double;
@@ -40,6 +45,12 @@ type
     FTick: UInt64;
     FPlaying,FMoved: Boolean;
     FOnPosition: TNotifyEvent;
+    procedure ChoiceDraw(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+    procedure ChoiceClick(Sender: TObject);
+    procedure HistoryClick(Sender: TObject);
+    procedure ShowChoices(Row: Integer);
+    function ChoiceNumber(const Row,Choice: string): Integer;
+    function ChoiceColor(Index: Integer): TColor;
     function P(Value: Integer): Integer;
     function RowHeight: Integer;
     function RowIndex(const Name: string): Integer;
@@ -59,8 +70,6 @@ type
     procedure CancelDrag;
     procedure PreviewDrag(X: Integer);
     procedure Change(const Before: string);
-    procedure PopupAt(X,Y: Integer);
-    procedure Choose(Sender: TObject);
     procedure LengthExit(Sender: TObject);
     procedure LengthKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure PlayClick(Sender: TObject);
@@ -77,6 +86,9 @@ type
     function ConfigJSON: string;
     // 未確定dragは独立した試写位置で評価する。再生位置と保存用Dataは変更しない。
     function PreviewStates: TArray<TInstrumentState>;
+    // 候補番号は1始まり。記憶は部位ごと、当該編集画面の寿命だけ保持する。
+    function LastChoiceIndex(const Row: string): Integer;
+    procedure SelectChoice(RowIndex,Index: Integer);
     procedure Seek(Beat: Double);
     procedure Stop;
     procedure HandleKey(var Key: Word; Shift: TShiftState);
@@ -126,6 +138,7 @@ end;
 constructor TMusicStudioInstrumentFrame.Create(AOwner: TComponent);
 begin
   inherited; FData := TMusicStudioInstrumentData.Create; FRules := TMusicStudioInstrumentRules.Create;
+  FLastChoices := TDictionary<string,string>.Create; FChoiceRow := -1;
   FHistory := TMusicStudioEditHistory.Create; FSelected := -1; FTempo := 120; FZoom := 1;
   ApplySyncMusicStudioDarkFrame(Self); ApplyMusicStudioEditorFont(Self);
 end;
@@ -133,7 +146,7 @@ destructor TMusicStudioInstrumentFrame.Destroy;
 begin
   FOnPosition := nil; if FTimer<>nil then FTimer.Enabled := False;
   CancelDrag; if FGrid<>nil then FGrid.FOwnerFrame := nil;
-  FHistory.Free; FRules.Free; FData.Free; inherited;
+  FLastChoices.Free; FHistory.Free; FRules.Free; FData.Free; inherited;
 end;
 procedure TMusicStudioInstrumentFrame.SetParent(AParent: TWinControl);
 begin inherited; if (AParent<>nil) and (FData<>nil) and (FGrid=nil) then BuildUI; end;
@@ -146,6 +159,8 @@ begin
   FPlay.Caption := '再生'; FPlay.OnClick := PlayClick; ApplySyncMusicStudioDarkButton(FPlay);
   FStop := TMusicStudioButton.Create(Self); FStop.Parent := FHeader; FStop.SetBounds(108,8,92,28);
   FStop.Caption := '停止'; FStop.OnClick := PlayClick; ApplySyncMusicStudioDarkButton(FStop);
+  FUndoButton := TMusicStudioButton.Create(Self); FUndoButton.Parent := FHeader; FUndoButton.Caption := '元に戻す'; FUndoButton.OnClick := HistoryClick;
+  FRedoButton := TMusicStudioButton.Create(Self); FRedoButton.Parent := FHeader; FRedoButton.Caption := 'やり直す'; FRedoButton.OnClick := HistoryClick;
   L := TLabel.Create(Self); L.Parent := FHeader; L.SetBounds(216,13,80,20); L.Caption := '長さ（拍）'; FLengthLabel := L;
   FLength := TEdit.Create(Self); FLength.Parent := FHeader; FLength.SetBounds(300,8,76,28);
   FLength.Text := '16'; ApplySyncMusicStudioDarkEdit(FLength); FLength.OnExit := LengthExit;
@@ -153,11 +168,17 @@ begin
   FLength.Hint := '保存とD&D配置に使う長さ。設定内の再生は、最後に配置した区間の末尾でループします。';
   FStatus := TLabel.Create(Self); FStatus.Parent := Self; FStatus.Align := alBottom; FStatus.AutoSize := False;
   FStatus.Height := 44; FStatus.WordWrap := True;
-  FStatus.Caption := 'PSDから行と候補を生成。空白ドラッグで区間追加、クリックで候補、中央で移動、両端で長さ。Delete / Ctrl+Z・Y';
+  FStatus.Caption := '部位と候補表で番号を選択 → 空白をドラッグで配置。中央: 移動 / 両端: 伸縮 / 右クリック: 削除 / Ctrl+Z・Y';
+  FChoicePanel := TPanel.Create(Self); FChoicePanel.Parent := Self; FChoicePanel.Align := alRight;
+  FChoicePanel.Width := P(190); FChoicePanel.BevelOuter := bvNone; ApplySyncMusicStudioDarkPanel(FChoicePanel);
+  FChoiceLabel := TLabel.Create(Self); FChoiceLabel.Parent := FChoicePanel; FChoiceLabel.Align := alTop;
+  FChoiceLabel.AutoSize := False; FChoiceLabel.Height := P(28); FChoiceLabel.Caption := '候補 / 番号・色・名前';
+  FChoices := TListBox.Create(Self); FChoices.Parent := FChoicePanel; FChoices.Align := alClient;
+  FChoices.Style := lbOwnerDrawFixed; FChoices.ItemHeight := P(28); FChoices.OnDrawItem := ChoiceDraw;
+  FChoices.OnClick := ChoiceClick; FChoices.Color := $002B2B2B; FChoices.Font.Color := clWhite;
   FGrid := TInstrumentGrid.Create(Self); FGrid.FOwnerFrame := Self; FGrid.Parent := Self;
   FGrid.Align := alClient; FGrid.DoubleBuffered := True; FGrid.TabStop := True;
   FTimer := TTimer.Create(Self); FTimer.Enabled := False; FTimer.Interval := 16; FTimer.OnTimer := Tick;
-  FMenu := TPopupMenu.Create(Self);
   Resize;
 end;
 function TMusicStudioInstrumentFrame.P(Value: Integer): Integer;
@@ -224,7 +245,14 @@ begin
   FGrid.Canvas.Font.Assign(Font); LabelWidth := FGrid.Canvas.TextWidth(FLengthLabel.Caption)+P(8);
   FLengthLabel.AutoSize := False; FLengthLabel.SetBounds(P(216),P(8),LabelWidth,P(30));
   FLength.SetBounds(P(216)+LabelWidth,P(8),P(76),P(30));
-  FStatus.Height := P(44);
+  FStatus.Height := P(36);
+  FUndoButton.SetBounds(FLength.Left+FLength.Width+P(12),P(8),P(86),P(30));
+  FRedoButton.SetBounds(FUndoButton.Left+FUndoButton.Width+P(4),P(8),P(86),P(30));
+  FChoicePanel.Width := P(190); FChoices.ItemHeight := P(28);
+  if FRedoButton.Left+FRedoButton.Width>ClientWidth-P(8) then begin
+    FHeader.Height := P(82); FUndoButton.SetBounds(P(8),P(44),P(86),P(30));
+    FRedoButton.SetBounds(P(100),P(44),P(86),P(30));
+  end;
   FViewStart := ClampStart(FViewStart); CancelDrag; FGrid.Invalidate;
 end;
 procedure TMusicStudioInstrumentFrame.BindRules(Rules: TMusicStudioInstrumentRules);
@@ -233,11 +261,12 @@ begin
   NewRules := Rules.Clone; FRules.Free; FRules := NewRules; FSelected := -1; CancelDrag;
   FStatus.Caption := 'ホイール: 拡縮 / 中ボタンドラッグ: 横移動 / 空白ドラッグ: 追加 / 区間中央: 移動 / 両端: 伸縮 / Ctrl+Z・Y';
   for B in FData.Blocks do if not FRules.HasChoice(B.Row,B.Choice) then FStatus.Caption := 'PSDにない候補を含みます。区間は保持しています。PSDを修正するか候補を選び直してください。';
+  if FRules.RowCount>0 then ShowChoices(0) else ShowChoices(-1);
   FGrid.Invalidate;
 end;
 procedure TMusicStudioInstrumentFrame.LoadPattern(const ConfigJSON,AssetID: string; Rules: TMusicStudioInstrumentRules; Tempo: Double);
 begin
-  Stop; FData.Load(ConfigJSON); FData.BindAsset(AssetID); FZoom := 1; FViewStart := 0; BindRules(Rules); FHistory.Clear;
+  Stop; FLastChoices.Clear; FData.Load(ConfigJSON); FData.BindAsset(AssetID); FZoom := 1; FViewStart := 0; BindRules(Rules); FHistory.Clear;
   FLength.Text := FloatToStr(FData.LengthBeats,TFormatSettings.Invariant); FTempo := Tempo;
 end;
 function TMusicStudioInstrumentFrame.ConfigJSON: string;
@@ -302,10 +331,10 @@ var C: TCanvas; I,Y,Saved,X,NextLabelX: Integer; R: TRect; Beat,Step: Double; La
   var Q: TRect; Caption: string;
   begin
     if RowIndex(Block.Row)<0 then Exit; Q := Bounds(Block);
-    C.Brush.Color := $006B5842; if not FRules.HasChoice(Block.Row,Block.Choice) then C.Brush.Color := $00444488;
+    C.Brush.Color := ChoiceColor(ChoiceNumber(Block.Row,Block.Choice)); if not FRules.HasChoice(Block.Row,Block.Choice) then C.Brush.Color := $00444488;
     C.Pen.Color := $00998C7A; if Selected then C.Pen.Color := clWhite; C.Rectangle(Q);
     InflateRect(Q,-P(4),0); C.Font.Color := clWhite; C.Brush.Style := bsClear;
-    Caption := Block.Choice;
+    Caption := IntToStr(ChoiceNumber(Block.Row,Block.Choice))+'  '+Block.Choice;
     DrawText(C.Handle,PChar(Caption),-1,Q,DT_SINGLELINE or DT_VCENTER or DT_END_ELLIPSIS); C.Brush.Style := bsSolid;
   end;
 begin
@@ -313,7 +342,9 @@ begin
   C.Font.Color := $00E0E0E0;
   for I := 0 to FRules.RowCount-1 do begin
     Y := P(28)+I*RowHeight; C.Brush.Color := $002B2B2B; C.FillRect(Rect(0,Y,P(134),Y+RowHeight));
-    R := Rect(P(8),Y,P(128),Y+RowHeight); DrawText(C.Handle,PChar(FRules.RowAt(I).Name),-1,R,DT_VCENTER or DT_SINGLELINE or DT_END_ELLIPSIS);
+    R := Rect(P(8),Y,P(128),Y+RowHeight);
+    LabelText := FRules.RowAt(I).Name+'  ['+IntToStr(LastChoiceIndex(FRules.RowAt(I).Name))+']';
+    DrawText(C.Handle,PChar(LabelText),-1,R,DT_VCENTER or DT_SINGLELINE or DT_END_ELLIPSIS);
     C.Pen.Color := $003A3A3A; C.MoveTo(P(134),Y+RowHeight-1); C.LineTo(FGrid.Width,Y+RowHeight-1);
   end;
   Saved := SaveDC(C.Handle);
@@ -360,9 +391,18 @@ begin
   FGrid.Invalidate; if Assigned(FOnPosition) then FOnPosition(Self);
 end;
 procedure TMusicStudioInstrumentFrame.Down(Button: TMouseButton; X,Y: Integer);
-var Row: Integer; Step: Double;
+var Row,Index: Integer; Step: Double; Before: string;
 begin
-  CancelDrag; if X<P(134) then Exit;
+  CancelDrag;
+  if Button=mbRight then begin
+    HitMode(X,Y,Index);
+    if Index>=0 then begin Before := FData.JSON; FData.DeleteBlock(Index); FSelected := -1; Change(Before); end;
+    Exit;
+  end;
+  if (Y>=P(28)) and (X<P(134)) and (Button=mbLeft) then begin
+    FSelected := -1; ShowChoices((Y-P(28)) div RowHeight); Exit;
+  end;
+  if X<P(134) then Exit;
   if Button=mbMiddle then begin FMode := 5; FDownX := X; FPanStart := FViewStart; FGrid.MouseCapture := True; FGrid.Cursor := crHandPoint; Exit; end;
   if Button<>mbLeft then Exit;
   if Y<P(28) then begin
@@ -370,13 +410,15 @@ begin
     FGrid.MouseCapture := True; FGrid.Cursor := crHandPoint; Exit;
   end;
   Row := (Y-P(28)) div RowHeight; if (Row<0) or (Row>=FRules.RowCount) then Exit;
-  FMode := HitMode(X,Y,FSelected); Step := GridStep;
+  if Length(FRules.RowAt(Row).Choices)=0 then Exit;
+  ShowChoices(Row); FMode := HitMode(X,Y,FSelected); Step := GridStep;
   FDownX := X; FAnchor := Floor((BeatAt(X)+1E-9)/Step)*Step; FMoved := False;
   if FSelected>=0 then begin
     FOriginal := FData.Blocks[FSelected]; FCandidate := FOriginal;
+    FLastChoices.AddOrSetValue(FOriginal.Row,FOriginal.Choice); ShowChoices(Row);
   end else begin
     if FAnchor>=FData.LengthBeats then Exit;
-    FCandidate := Default(TInstrumentBlock); FCandidate.Row := FRules.RowAt(Row).Name; FCandidate.Choice := FRules.RowAt(Row).Choices[0];
+    FCandidate := Default(TInstrumentBlock); FCandidate.Row := FRules.RowAt(Row).Name; FCandidate.Choice := FRules.RowAt(Row).Choices[LastChoiceIndex(FCandidate.Row)-1];
     FCandidate.StartBeat := FAnchor; FCandidate.EndBeat := Min(FAnchor+Step,FData.LengthBeats);
     FCandidate.Stage := FRules.DefaultStage(FCandidate.Row,FCandidate.Choice);
     FMode := 1;
@@ -422,36 +464,72 @@ begin
   Before := FData.JSON;
   if FMoved then if FData.PutBlock(FSelected,FCandidate) then begin if Mode=1 then FSelected := FData.Blocks.Count-1; Change(Before); end
   else FStatus.Caption := '同じ行の区間は重ねられません。';
-  CancelDrag; if Popup then PopupAt(X,Y);
+  CancelDrag; if Popup then ShowChoices(RowIndex(FData.Blocks[FSelected].Row));
 end;
-procedure TMusicStudioInstrumentFrame.PopupAt(X,Y: Integer);
-var Row: TInstrumentRow; Item,StageRoot: TMenuItem; I,N: Integer; Values: TArray<Integer>; Point: TPoint;
+function TMusicStudioInstrumentFrame.ChoiceNumber(const Row,Choice: string): Integer;
+var N,I: Integer;
 begin
-  if FSelected<0 then Exit; N := RowIndex(FData.Blocks[FSelected].Row); if N<0 then Exit; Row := FRules.RowAt(N); FMenu.Items.Clear;
-  for I := 0 to High(Row.Choices) do begin Item := TMenuItem.Create(FMenu); Item.Caption := Row.Choices[I]; Item.Tag := I;
-    Item.Checked := Row.Choices[I]=FData.Blocks[FSelected].Choice; Item.OnClick := Choose; FMenu.Items.Add(Item); end;
-  if Row.Kind=irkAction then begin
-    StageRoot := TMenuItem.Create(FMenu); StageRoot.Caption := '動作段階（自動：準備 → 打撃 → 余韻）'; FMenu.Items.Add(StageRoot);
-    Values := FRules.Stages(Row.Name,FData.Blocks[FSelected].Choice);
-    for I in Values do if I<=2 then begin Item := TMenuItem.Create(FMenu); Item.Caption := FRules.StageCaption(Row.Name,FData.Blocks[FSelected].Choice,I); Item.Enabled := False; StageRoot.Add(Item); end;
-  end;
-  Point := FGrid.ClientToScreen(System.Types.Point(X,Y)); FMenu.Popup(Point.X,Point.Y);
+  Result := 0; N := RowIndex(Row); if N<0 then Exit;
+  for I := 0 to High(FRules.RowAt(N).Choices) do if FRules.RowAt(N).Choices[I]=Choice then Exit(I+1);
 end;
-procedure TMusicStudioInstrumentFrame.Choose(Sender: TObject);
+function TMusicStudioInstrumentFrame.ChoiceColor(Index: Integer): TColor;
+const Colors: array[0..6] of TColor = ($00C98B55,$0055A9E6,$0081B75C,$00B776B4,$006E75DD,$00C0B85A,$0067BAD1);
+begin if Index<1 then Exit($00444488); Result := Colors[(Index-1) mod Length(Colors)]; end;
+function TMusicStudioInstrumentFrame.LastChoiceIndex(const Row: string): Integer;
+var Choice: string;
+begin Result := 1; if FLastChoices.TryGetValue(Row,Choice) then Result := Max(1,ChoiceNumber(Row,Choice)); end;
+procedure TMusicStudioInstrumentFrame.ShowChoices(Row: Integer);
+var Choice: string;
+begin
+  FChoiceRow := Row; FChoices.Items.BeginUpdate;
+  try
+    FChoices.Clear;
+    if (Row<0) or (Row>=FRules.RowCount) then begin FChoiceRow := -1; Exit; end;
+    FChoiceLabel.Caption := FRules.RowAt(Row).Name+' / 候補';
+    for Choice in FRules.RowAt(Row).Choices do FChoices.Items.Add(Choice);
+    FChoices.ItemIndex := LastChoiceIndex(FRules.RowAt(Row).Name)-1;
+  finally FChoices.Items.EndUpdate; end;
+end;
+procedure TMusicStudioInstrumentFrame.SelectChoice(RowIndex,Index: Integer);
 var B: TInstrumentBlock; Before: string;
 begin
-  B := FData.Blocks[FSelected]; Before := FData.JSON; B.Choice := FRules.RowAt(RowIndex(B.Row)).Choices[TMenuItem(Sender).Tag];
-  B.Stage := FRules.DefaultStage(B.Row,B.Choice);
-  FStatus.Caption := B.Row+' / '+B.Choice+' / 準備 → 打撃 → 余韻（余韻なしは準備へ戻る）';
-  FData.PutBlock(FSelected,B); Change(Before);
+  if (RowIndex<0) or (RowIndex>=FRules.RowCount) then Exit;
+  if (Index<1) or (Index>Length(FRules.RowAt(RowIndex).Choices)) then Exit;
+  FLastChoices.AddOrSetValue(FRules.RowAt(RowIndex).Name,FRules.RowAt(RowIndex).Choices[Index-1]);
+  if (FSelected>=0) and (FSelected<FData.Blocks.Count) then begin
+    B := FData.Blocks[FSelected];
+    if B.Row=FRules.RowAt(RowIndex).Name then begin
+      Before := FData.JSON; B.Choice := FRules.RowAt(RowIndex).Choices[Index-1];
+      B.Stage := FRules.DefaultStage(B.Row,B.Choice);
+      if FData.PutBlock(FSelected,B) then Change(Before);
+    end;
+  end;
+  ShowChoices(RowIndex); FGrid.Invalidate;
 end;
+procedure TMusicStudioInstrumentFrame.ChoiceClick(Sender: TObject);
+begin SelectChoice(FChoiceRow,FChoices.ItemIndex+1); end;
+procedure TMusicStudioInstrumentFrame.ChoiceDraw(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+var C: TCanvas; R: TRect; Text: string;
+begin
+  C := FChoices.Canvas; C.Brush.Color := $002B2B2B;
+  if odSelected in State then C.Brush.Color := $00584D41;
+  C.FillRect(Rect); R := Rect; R.Left := R.Left+P(4); R.Right := R.Left+P(26); InflateRect(R,0,-P(3));
+  C.Brush.Color := ChoiceColor(Index+1); C.FillRect(R);
+  C.Brush.Style := bsClear; C.Font.Color := clWhite; Text := IntToStr(Index+1);
+  DrawText(C.Handle,PChar(Text),-1,R,DT_CENTER or DT_VCENTER or DT_SINGLELINE);
+  R := Rect; Inc(R.Left,P(36)); Text := FChoices.Items[Index];
+  DrawText(C.Handle,PChar(Text),-1,R,DT_VCENTER or DT_SINGLELINE or DT_END_ELLIPSIS); C.Brush.Style := bsSolid;
+end;
+procedure TMusicStudioInstrumentFrame.HistoryClick(Sender: TObject);
+var Key: Word;
+begin if Sender=FUndoButton then Key := Ord('Z') else Key := Ord('Y'); HandleKey(Key,[ssCtrl]); end;
 procedure TMusicStudioInstrumentFrame.HandleKey(var Key: Word; Shift: TShiftState);
 var Before,Text: string;
 begin
   if Key=VK_ESCAPE then begin if FMode<>0 then begin CancelDrag; Key := 0; end; Exit; end;
   Before := FData.JSON;
-  if (Key=Ord('Z')) and (ssCtrl in Shift) then begin CancelDrag; if FHistory.Undo(Before,Text) then FData.Load(Text); Key := 0; end
-  else if (Key=Ord('Y')) and (ssCtrl in Shift) then begin CancelDrag; if FHistory.Redo(Before,Text) then FData.Load(Text); Key := 0; end
+  if (Key=Ord('Z')) and (ssCtrl in Shift) and not (ssShift in Shift) then begin CancelDrag; if FHistory.Undo(Before,Text) then FData.Load(Text); Key := 0; end
+  else if ((Key=Ord('Y')) or ((Key=Ord('Z')) and (ssShift in Shift))) and (ssCtrl in Shift) then begin CancelDrag; if FHistory.Redo(Before,Text) then FData.Load(Text); Key := 0; end
   else if Key=VK_DELETE then begin CancelDrag; FData.DeleteBlock(FSelected); Change(Before); Key := 0; end
   else if Key=VK_SPACE then begin PlayClick(FPlay); Key := 0; end else Exit;
   FSelected := -1; FLength.Text := FloatToStr(FData.LengthBeats,TFormatSettings.Invariant); Seek(FPosition);

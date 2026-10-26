@@ -162,7 +162,7 @@ begin
   UI.ReloadButton.Name := 'PsdReloadButton';
   UI.CancelButton := ButtonOn(Frame,UI.Toolbar,460,84,'読込取消');
   UI.CancelButton.Name := 'PsdCancelButton';
-  UI.MouthCombo.Hint := '表示確認する母音。割当は先にレイヤーを選び、右クリックまたは「母音へ割当…」から選びます。';
+  UI.MouthCombo.Hint := '表示確認する母音。割当は先にレイヤーを選び、右クリックから選びます。';
   UI.MouthCombo.ShowHint := True;
   UI.MouthMenu := TPopupMenu.Create(Frame);
   UI.Footer := Panel(Frame,Frame,alBottom,89);
@@ -194,14 +194,15 @@ end;
 procedure SetMusicStudioPsdLayerMode(var UI: TMusicStudioPsdLayerControls; ExpressionMode: Boolean);
 begin
   UI.LayerList.CheckMode := ExpressionMode;
-  UI.MouthCombo.Visible := not ExpressionMode; UI.AssignButton.Visible := not ExpressionMode;
-  UI.ClearButton.Visible := not ExpressionMode;
+  UI.Toolbar.Visible := False;
+  UI.MouthCombo.Visible := False; UI.AssignButton.Visible := False;
+  UI.ClearButton.Visible := False; UI.ReloadButton.Visible := False; UI.CancelButton.Visible := False;
   if ExpressionMode then begin
     UI.ReloadButton.Left := 12; UI.CancelButton.Left := 104;
-    UI.HintLabel.Caption := 'チェックした表示状態を表情として保存します。PSD原本は書き換えません。';
+    UI.HintLabel.Caption := 'チェックした表示状態を表情として保存します。右クリックで再読込・読込取消。PSD原本は書き換えません。';
   end else begin
     UI.ReloadButton.Left := 368; UI.CancelButton.Left := 460;
-    UI.HintLabel.Caption := '行選択でプレビュー。右クリックで母音を割当て。左列: 通常 / あ～ん / 小あ～小お。小さい母音の未割当は通常の同母音を使用。';
+    UI.HintLabel.Caption := '行選択で差分を排他的にプレビュー。右クリックで母音の割当・解除・表示確認。左列: 通常 / あ～ん / 小あ～小お。小さい母音の未割当は通常の同母音を使用。';
   end;
 end;
 

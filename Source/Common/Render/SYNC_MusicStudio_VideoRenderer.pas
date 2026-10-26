@@ -19,7 +19,8 @@ type
     constructor Create(const LibraryRoot: string = '');
     destructor Destroy; override;
     function Render(const JSON: string; Seconds: Double; Width,Height: Integer;
-      out Pixels: TMusicStudioVideoPixels; out ErrorText: string): Boolean;
+      out Pixels: TMusicStudioVideoPixels; out ErrorText: string;
+      ViewX: Double = 0; ViewY: Double = 0; ViewScale: Double = 1): Boolean;
     property Background: TMusicStudioHostBackground read FBackground;
   end;
 
@@ -52,7 +53,7 @@ type
     procedure Execute; override;
   public
     JSON, ErrorText: string;
-    Seconds: Double;
+    Seconds,ViewX,ViewY,ViewScale: Double;
     Width,Height,Generation: Integer;
     Pixels: TMusicStudioVideoPixels;
     constructor Create(const LibraryRoot: string);
@@ -75,10 +76,14 @@ destructor TMusicStudioVideoSession.Destroy;
 begin FBackground.Free; FWorker.Free; FLock.Free; inherited; end;
 
 function TMusicStudioVideoSession.Render(const JSON: string; Seconds: Double;
-  Width,Height: Integer; out Pixels: TMusicStudioVideoPixels; out ErrorText: string): Boolean;
+  Width,Height: Integer; out Pixels: TMusicStudioVideoPixels; out ErrorText: string;
+  ViewX,ViewY,ViewScale: Double): Boolean;
 var Worker: TMusicStudioVideoWorker;
 begin
   Pixels := nil; ErrorText := ''; Result := False;
+  if IsNan(ViewX) or IsInfinite(ViewX) or IsNan(ViewY) or IsInfinite(ViewY) or
+    IsNan(ViewScale) or IsInfinite(ViewScale) or (Abs(ViewX)>30720) or (Abs(ViewY)>17280) or
+    (ViewScale<0.001) or (ViewScale>100) then Exit;
   if IsNan(Seconds) or IsInfinite(Seconds) or (Seconds<0) or
     (Width<1) or (Height<1) or (Width>8192) or (Height>8192) or
     (Int64(Width)*Height>33554432) then Exit;
@@ -89,6 +94,7 @@ begin
     end;
     Worker := TMusicStudioVideoWorker(FWorker);
     Worker.JSON := JSON; Worker.Seconds := Seconds;
+    Worker.ViewX := ViewX; Worker.ViewY := ViewY; Worker.ViewScale := ViewScale;
     Worker.Width := Width; Worker.Height := Height;
     Worker.Generation := TInterlocked.CompareExchange(SnapshotGeneration,0,0);
     Worker.Request;
@@ -142,7 +148,7 @@ begin
   if not FDocument.TryLoad(JSON,Error) then raise Exception.Create(Error);
   FDocument.AssetResolver := FStore.ResolvePath;
   for I := 0 to FDocument.TrackCount-1 do
-    if (FDocument.TrackAt(I).Kind='psd') and (Length(FTrackIndexes)<4) then begin
+    if (FDocument.TrackAt(I).Kind='psd') then begin
       N := Length(FTrackIndexes); SetLength(FTrackIndexes,N+1); FTrackIndexes[N] := I;
     end;
   // Audio patterns are deliberately never opened by the video worker.
@@ -175,7 +181,7 @@ begin
   SetLength(Pixels,NativeInt(Width)*Height);
   // A transparent scene, equal-width lanes, centered and bottom aligned.
   // No editor chrome/lyrics/background is included in the output image.
-  for I := 0 to N-1 do begin
+  for I := N-1 downto 0 do begin
     Image := FScene.ImageForTrack(FTrackIndexes[I]);
     if Image=nil then begin
       if ErrorText<>'' then ErrorText := ErrorText+sLineBreak;
@@ -183,7 +189,7 @@ begin
     end;
     Bounds := MusicStudioCharacterRect(Width,Height,N,I,Image.Width,Image.Height);
     Transform := FDocument.TrackAt(FTrackIndexes[I]).PsdTransform;
-    Bounds := MusicStudioTransformedRect(Transform,Width,Height,Bounds);
+    Bounds := MusicStudioStageRect(Transform,Image.Width,Image.Height,Width,Height,Bounds,ViewX,ViewY,ViewScale);
     W := Bounds.Width; H := Bounds.Height; L := Bounds.Left; T := Bounds.Top;
     for Y := Max(0,-T) to Min(H-1,Height-T-1) do begin
       SY := Int64(Y)*Image.Height div H;

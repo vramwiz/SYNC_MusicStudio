@@ -2,7 +2,7 @@
 
 // 編集プレビューの時計とPSD部位/MIDI表示。文書を借用し、音声出力とPSDシーンを所有。
 interface
-uses System.Classes, System.Types, Winapi.Messages, Vcl.Forms, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Graphics, Vcl.Controls,
+uses System.Classes, System.Types, System.Generics.Collections, Winapi.Messages, Vcl.Forms, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Graphics, Vcl.Controls,
   SYNC_MusicStudio_PatternData, SYNC_MusicStudio_PreviewPlayback,
   SYNC_MusicStudio_SingingData, SYNC_MusicStudio_VisualCache,
   SYNC_MusicStudio_SharedPsdLibrary, SYNC_MusicStudio_PsdSceneCache,
@@ -48,8 +48,10 @@ type
     FViewPan: TPointF;
     FViewDragging: Boolean;
     FViewDown: TPoint;
-    FFlipped: array[0..3] of Vcl.Graphics.TBitmap;
-    FFlipSerial,FFlipFlags: array[0..3] of Integer;
+    FFlipped: TArray<Vcl.Graphics.TBitmap>;
+    FHiddenTracks: TDictionary<string,Boolean>;
+    FOutputX,FOutputY,FOutputScale: Double;
+    FFlipSerial,FFlipFlags: TArray<Integer>;
     procedure EndViewDrag;
     procedure LayoutTransport(Sender: TObject);
     procedure StageWheel(Sender: TObject; Shift: TShiftState; Delta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -61,6 +63,8 @@ type
     procedure StageCaptureLost(Sender: TObject);
     procedure WMPlacementCaptureLost(var Message: TMessage); message WM_APP+108;
     function VideoRect: TRect;
+    function OutputSize: TSize;
+    function WorldToView(const Bounds: TRect): TRect;
     procedure SetSilentVisualMode(Value: Boolean);
     function PreviewImage(Index: Integer): Vcl.Graphics.TBitmap;
     procedure Tick(Sender: TObject);
@@ -105,6 +109,11 @@ type
     function IsPlaying: Boolean;
     function IsAudioEngineAllocated: Boolean;
     function PlaybackSnapshot: TMusicStudioPlaybackSnapshot;
+    procedure SetOutputView(X,Y,Scale: Double);
+    function OutputFrameRect: TRect;
+    function TrackVisible(TrackIndex: Integer): Boolean;
+    procedure SetTrackVisible(TrackIndex: Integer; Visible: Boolean);
+    procedure VisibilityCommand(TrackIndex,Mode: Integer);
     function CharacterBounds(TrackIndex: Integer; out Video,Bounds: TRect): Boolean;
     procedure ZoomAt(Delta: Integer; const Point: TPoint);
     procedure FitView;
@@ -143,6 +152,7 @@ constructor TMusicStudioPreviewFrame.Create(AOwner: TComponent);
     Result.SetBounds(X,8,W,28); Result.Caption := Caption; Result.OnClick := Event; end;
 begin
   inherited; ApplySyncMusicStudioDarkFrame(Self); ApplyMusicStudioEditorFont(Self); FEnd := 10; DoubleBuffered := True; FViewZoom := 1;
+  FHiddenTracks := TDictionary<string,Boolean>.Create; FOutputScale := 1;
   FSceneCache := TMusicStudioPsdSceneCache.Create;
   FHostBackground := Vcl.Graphics.TBitmap.Create;
   FFooter := TPanel.Create(Self); FFooter.Parent := Self; FFooter.Align := alBottom;
@@ -169,7 +179,7 @@ begin
   SeekBar.TickStyle := tsNone; SeekBar.OnChange := SeekChanged;
   Stage := TMusicStudioPsdPreviewSurface.Create(Self); Stage.Parent := Self; Stage.Align := alClient; Stage.OnPaint := PaintStage;
   Stage.TabStop := False; FFooter.DoubleBuffered := True;
-  FPlacement := TMusicStudioPsdPlacementEditor.Create(Stage); FPlacement.OnBounds := CharacterBounds;
+  FPlacement := TMusicStudioPsdPlacementEditor.Create(Stage); FPlacement.OnBounds := CharacterBounds; FPlacement.OnNativeSize := FSceneCache.NativeSizeForTrack;
   Stage.OnMouseDown := StageMouseDown; Stage.OnMouseMove := StageMouseMove; Stage.OnMouseUp := StageMouseUp;
   Stage.OnCaptureLost := StageCaptureLost;
   Stage.OnMouseWheel := StageWheel; Stage.OnDblClick := StageFit;
@@ -183,7 +193,7 @@ begin FTimer.Enabled := False; FOnReadHostBackground := nil; FOnPositionChange :
   EndViewDrag;
   FOnTempoEdit := nil;
   Stage.OnCaptureLost := nil; FreeAndNil(FPlacement);
-  ReleasePlayback; ClearAssets; FSceneCache.Free; FHostBackground.Free; FDocument := nil; inherited; end;
+  ReleasePlayback; ClearAssets; FSceneCache.Free; FHiddenTracks.Free; FHostBackground.Free; FDocument := nil; inherited; end;
 
 procedure TMusicStudioPreviewFrame.ClearHostBackground;
 begin
@@ -227,9 +237,11 @@ end;
 function TMusicStudioPreviewFrame.VideoRect: TRect;
 var W,H,M: Integer; Center: TPointF;
 begin
-  M := MulDiv(24,CurrentPPI,96); W := 16; H := 9;
-  if FBackgroundSerial<>0 then begin W := FBackgroundWidth; H := FBackgroundHeight; end;
-  Result := MusicStudioFitFrameRect(Rect(M,M,Max(M+1,Stage.Width-M),Max(M+1,Stage.Height-M)),W,H);
+  M := MulDiv(12,CurrentPPI,96);
+  // 横長の編集領域ではステージ幅を基準に表示する。上下の仮想余白はpan/zoomで確認できる。
+  W := Min(Max(1,Stage.Width-2*M),Max(1,Round(Max(1,Stage.Height-2*M)*MUSIC_STUDIO_STAGE_WIDTH/OutputSize.cy)));
+  H := Max(1,Round(W*MUSIC_STUDIO_STAGE_HEIGHT/MUSIC_STUDIO_STAGE_WIDTH));
+  Result := Rect(M,(Stage.Height-H) div 2,M+W,(Stage.Height-H) div 2+H);
   Center := PointF((Result.Left+Result.Right)/2+FViewPan.X,(Result.Top+Result.Bottom)/2+FViewPan.Y);
   W := Max(1,Round(Result.Width*FViewZoom)); H := Max(1,Round(Result.Height*FViewZoom));
   Result := Rect(Round(Center.X-W/2),Round(Center.Y-H/2),Round(Center.X-W/2)+W,Round(Center.Y-H/2)+H);
@@ -287,7 +299,7 @@ begin
     except on E: Exception do begin FEnd := 10; FContentEnd := 10; FStatus.Caption := E.Message; end; end;
     for I := 0 to Document.TrackCount-1 do begin
       T := Document.TrackAt(I);
-      if (T.Kind='psd') and (Length(FTrackIndices)<4) then begin
+      if (T.Kind='psd') then begin
         N := Length(FTrackIndices);
         SetLength(FTrackIndices,N+1); FTrackIndices[N] := I;
         SetLength(FPsdNames,N+1); FPsdNames[N] := T.Name;
@@ -295,13 +307,14 @@ begin
     end;
     for I := 0 to Document.PatternCount-1 do begin
       P := Document.PatternAt(I);
-      if (FSharedVisualCache=nil) and (P.Kind='singing') and (Length(FMidiJobs)<4) then begin
+      if (FSharedVisualCache=nil) and (P.Kind='singing') and (Length(FMidiJobs)<256) then begin
         N := Length(FMidiJobs); SetLength(FMidiJobs,N+1); SetLength(FMidiIDs,N+1);
         FMidiIDs[N] := P.ID; FMidiJobs[N] := TMusicStudioSingingJob.Create(P.FilePath,N); FMidiJobs[N].Start;
       end;
     end;
   end else begin FEnd := 10; FContentEnd := 10; end;
-  FSceneCache.Bind(Document,FSharedLibrary,FSharedVisualCache);
+  SetLength(FFlipped,Length(FTrackIndices)); SetLength(FFlipSerial,Length(FTrackIndices)); SetLength(FFlipFlags,Length(FTrackIndices));
+  FSceneCache.Bind(Document,FSharedLibrary,FSharedVisualCache,120,FHiddenTracks.Keys.ToArray);
   FSceneCache.SetPosition(0);
   if not FTempoCommitting then CancelTempoEdit;
   PlayButton.Enabled := Assigned(Document); SeekBar.Enabled := Assigned(Document); UpdatePosition; Stage.Invalidate;
@@ -529,7 +542,7 @@ begin
 end;
 procedure TMusicStudioPreviewFrame.StageMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
 begin
-  if (Button=mbLeft) and not (ssCtrl in Shift) then begin
+  if Button=mbMiddle then begin
     FPlacement.Cancel; FViewDragging := True; FViewDown := Point(X,Y); SetCapture(Stage.Handle); Stage.Cursor := crSizeAll;
   end else begin EndViewDrag; FPlacement.MouseDown(Button,X,Y); end;
 end;
@@ -537,12 +550,11 @@ procedure TMusicStudioPreviewFrame.StageMouseMove(Sender: TObject; Shift: TShift
 begin
   if FViewDragging then begin
     FViewPan := PointF(FViewPan.X+X-FViewDown.X,FViewPan.Y+Y-FViewDown.Y); FViewDown := Point(X,Y); Stage.Invalidate;
-  end else if FPlacement.Dragging or (ssCtrl in Shift) then FPlacement.MouseMove(X,Y)
-  else Stage.Cursor := crHandPoint;
+  end else FPlacement.MouseMove(X,Y);
 end;
 procedure TMusicStudioPreviewFrame.StageMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,Y: Integer);
 begin
-  if FViewDragging and (Button=mbLeft) then begin StageMouseMove(Sender,Shift,X,Y); EndViewDrag; end
+  if FViewDragging and (Button=mbMiddle) then begin StageMouseMove(Sender,Shift,X,Y); EndViewDrag; end
   else FPlacement.MouseUp(Button,X,Y);
 end;
 procedure TMusicStudioPreviewFrame.EndViewDrag;
@@ -576,16 +588,66 @@ begin
   if FViewDragging then EndViewDrag;
   if Assigned(FPlacement) and FPlacement.Dragging then FPlacement.Cancel;
 end;
+function TMusicStudioPreviewFrame.OutputSize: TSize;
+begin
+  Result := TSize.Create(1920,1080);
+  if (FBackgroundWidth>0) and (FBackgroundHeight>0) then Result := TSize.Create(FBackgroundWidth,FBackgroundHeight);
+end;
+procedure TMusicStudioPreviewFrame.SetOutputView(X,Y,Scale: Double);
+begin
+  if IsNan(X) or IsInfinite(X) or IsNan(Y) or IsInfinite(Y) or IsNan(Scale) or IsInfinite(Scale) then Exit;
+  FOutputX := EnsureRange(X,-30720.0,30720.0); FOutputY := EnsureRange(Y,-17280.0,17280.0);
+  FOutputScale := EnsureRange(Scale,0.001,100.0); if Stage<>nil then Stage.Invalidate;
+end;
+function TMusicStudioPreviewFrame.WorldToView(const Bounds: TRect): TRect;
+var V: TRect;
+begin
+  V := VideoRect;
+  Result := Rect(V.Left+Round(Bounds.Left*V.Width/MUSIC_STUDIO_STAGE_WIDTH),V.Top+Round(Bounds.Top*V.Height/MUSIC_STUDIO_STAGE_HEIGHT),
+    V.Left+Round(Bounds.Right*V.Width/MUSIC_STUDIO_STAGE_WIDTH),V.Top+Round(Bounds.Bottom*V.Height/MUSIC_STUDIO_STAGE_HEIGHT));
+end;
+function TMusicStudioPreviewFrame.OutputFrameRect: TRect;
+var S: TSize; CX,CY,W,H: Double;
+begin
+  S := OutputSize; CX := MUSIC_STUDIO_STAGE_WIDTH/2-FOutputX/FOutputScale; CY := MUSIC_STUDIO_STAGE_HEIGHT/2-FOutputY/FOutputScale;
+  W := S.cx/FOutputScale; H := S.cy/FOutputScale;
+  Result := WorldToView(Rect(Round(CX-W/2),Round(CY-H/2),Round(CX+W/2),Round(CY+H/2)));
+end;
+function TMusicStudioPreviewFrame.TrackVisible(TrackIndex: Integer): Boolean;
+begin
+  Result := (FDocument<>nil) and (TrackIndex>=0) and (TrackIndex<FDocument.TrackCount);
+  if Result then Result := not FHiddenTracks.ContainsKey(FDocument.TrackAt(TrackIndex).ID);
+end;
+procedure TMusicStudioPreviewFrame.SetTrackVisible(TrackIndex: Integer; Visible: Boolean);
+var ID: string;
+begin
+  if (FDocument=nil) or (TrackIndex<0) or (TrackIndex>=FDocument.TrackCount) then Exit;
+  ID := FDocument.TrackAt(TrackIndex).ID;
+  if Visible then FHiddenTracks.Remove(ID) else FHiddenTracks.AddOrSetValue(ID,True);
+  FSceneCache.SetTrackEnabled(TrackIndex,Visible); if not Visible then FPlacement.Cancel; Stage.Invalidate;
+end;
+procedure TMusicStudioPreviewFrame.VisibilityCommand(TrackIndex,Mode: Integer);
+var I: Integer;
+begin
+  if FDocument=nil then Exit;
+  if Mode=0 then SetTrackVisible(TrackIndex,not TrackVisible(TrackIndex))
+  else for I := 0 to FDocument.TrackCount-1 do if FDocument.TrackAt(I).Kind='psd' then SetTrackVisible(I,(Mode=2) or (I=TrackIndex));
+end;
 function TMusicStudioPreviewFrame.CharacterBounds(TrackIndex: Integer; out Video,Bounds: TRect): Boolean;
-var I: Integer; Image: Vcl.Graphics.TBitmap; Transform: TMusicStudioPsdTransform;
+var I: Integer; Image: Vcl.Graphics.TBitmap; Transform: TMusicStudioPsdTransform; Native,S: TSize; R: TRect;
 begin
   Result := False; Video := VideoRect; Bounds := TRect.Empty;
+  if not TrackVisible(TrackIndex) then Exit;
   for I := 0 to High(FTrackIndices) do if FTrackIndices[I]=TrackIndex then begin
     Image := PreviewImage(I); if Image=nil then Exit;
-    Transform := FPlacement.EffectiveTransform(TrackIndex);
-    Bounds := MusicStudioTransformedRect(Transform,Video.Width,Video.Height,
-      MusicStudioCharacterRect(Video.Width,Video.Height,Length(FTrackIndices),I,Image.Width,Image.Height));
-    OffsetRect(Bounds,Video.Left,Video.Top); Exit(True);
+    Transform := FPlacement.EffectiveTransform(TrackIndex); Native := FSceneCache.NativeSizeForTrack(TrackIndex); S := OutputSize;
+    if Transform.HasStage or not Transform.HasBounds then
+      R := MusicStudioStageRect(Transform,Native.cx,Native.cy,MUSIC_STUDIO_STAGE_WIDTH,MUSIC_STUDIO_STAGE_HEIGHT,TRect.Empty)
+    else begin
+      R := MusicStudioTransformedRect(Transform,S.cx,S.cy,MusicStudioCharacterRect(S.cx,S.cy,Length(FTrackIndices),I,Native.cx,Native.cy));
+      OffsetRect(R,(MUSIC_STUDIO_STAGE_WIDTH-S.cx) div 2,(MUSIC_STUDIO_STAGE_HEIGHT-S.cy) div 2);
+    end;
+    Bounds := WorldToView(R); Exit(True);
   end;
 end;
 function TMusicStudioPreviewFrame.DisplayImage(Index: Integer): Vcl.Graphics.TBitmap;
@@ -611,58 +673,32 @@ begin
   Result := FFlipped[Index];
 end;
 procedure TMusicStudioPreviewFrame.PaintStage(Sender: TObject);
-var Canvas: TCanvas; Video,R,ImageRect,Meter: TRect; I,N,W,P,Save,Mark: Integer; Text,Lyric: string;
-  Image: Vcl.Graphics.TBitmap;
-  procedure LabelIn(const Bounds: TRect; const Value: string; Flags: Cardinal);
-  var Area: TRect;
-  begin Area := Bounds; DrawText(Canvas.Handle,PChar(Value),Length(Value),Area,Flags); end;
-  procedure CropMark(X,Y,SX,SY: Integer);
-  begin
-    Canvas.MoveTo(X+SX*4,Y); Canvas.LineTo(X+SX*Mark,Y);
-    Canvas.MoveTo(X,Y+SY*4); Canvas.LineTo(X,Y+SY*Mark);
-  end;
+var Canvas: TCanvas; V,R,Output: TRect; I,Saved: Integer; Image: Vcl.Graphics.TBitmap; Text: string;
 begin
-  Canvas := Stage.Canvas; Canvas.Brush.Color := $00404040; Canvas.FillRect(Stage.ClientRect);
-  Video := VideoRect; W := Video.Width;
-  Canvas.Brush.Color := clBlack; Canvas.FillRect(Video);
-  if FBackgroundSerial<>0 then Canvas.StretchDraw(Video,FHostBackground);
-  Canvas.Pen.Color := $004B4845; Canvas.Brush.Style := bsClear;
-  Canvas.Rectangle(Rect(Video.Left-1,Video.Top-1,Video.Right+1,Video.Bottom+1));
-  Canvas.Brush.Style := bsClear; Canvas.Font.Assign(Font); Canvas.Font.Color := clSilver;
-  Text := '編集プレビュー'+sLineBreak+'PSD: 母音・表情'+sLineBreak+'アニメーション / 最大4人'+sLineBreak+
-    'MIDI: 歌詞・音高'+sLineBreak+'歌声生成なし';
-  if Stage.Height<128 then Text := '編集プレビュー'+sLineBreak+'PSD部位 / MIDI歌詞';
-  if FBackgroundSerial<>0 then Text := 'AviUtl2 静止背景'+sLineBreak+
-    Format('フレーム %d',[FBackgroundFrame])+sLineBreak+'PSD / 母音・表情';
-  if (Stage.Width>=500) and (Video.Left>120) then LabelIn(Rect(12,12,Video.Left-8,Stage.Height),Text,DT_WORDBREAK);
-  N := Length(FTrackIndices);
-  if N=0 then LabelIn(Video,'PSDトラック未設定',DT_CENTER or DT_VCENTER or DT_SINGLELINE)
-  else for I := 0 to N-1 do begin
-    R := Video; R.Left := Video.Left+I*W div N+6; R.Right := Video.Left+(I+1)*W div N-6; Inc(R.Top,20); Dec(R.Bottom,30);
-    Image := DisplayImage(I);
-    if Assigned(Image) then begin
-      CharacterBounds(FTrackIndices[I],Video,ImageRect);
-      Save := SaveDC(Canvas.Handle);
-      try
-        IntersectClipRect(Canvas.Handle,0,0,Stage.ClientWidth,Stage.ClientHeight);
-        Canvas.StretchDraw(ImageRect,Image);
-      finally RestoreDC(Canvas.Handle,Save); end;
-    end else begin
-      Text := FSceneCache.StatusForTrack(FTrackIndices[I]);
-      LabelIn(R,FPsdNames[I]+sLineBreak+Text,DT_CENTER or DT_WORDBREAK);
+  Canvas := Stage.Canvas; Canvas.Font.Assign(Font);
+  Canvas.Brush.Color := $00343434; Canvas.FillRect(Stage.ClientRect); V := VideoRect;
+  Saved := SaveDC(Canvas.Handle);
+  try
+    IntersectClipRect(Canvas.Handle,0,0,Stage.ClientWidth,Stage.ClientHeight);
+    Canvas.Brush.Color := $00252525; Canvas.FillRect(V); Output := OutputFrameRect;
+    if FBackgroundSerial<>0 then Canvas.StretchDraw(Output,FHostBackground);
+    Canvas.Pen.Color := $00505050;
+    Canvas.MoveTo((V.Left+V.Right) div 2,V.Top); Canvas.LineTo((V.Left+V.Right) div 2,V.Bottom);
+    Canvas.MoveTo(V.Left,(V.Top+V.Bottom) div 2); Canvas.LineTo(V.Right,(V.Top+V.Bottom) div 2);
+    for I := High(FTrackIndices) downto 0 do begin
+      if not TrackVisible(FTrackIndices[I]) then Continue;
+      Image := DisplayImage(I);
+      if (Image<>nil) and CharacterBounds(FTrackIndices[I],V,R) then Canvas.StretchDraw(R,Image)
+      else if Image=nil then begin
+        Canvas.Font.Color := $0080A5F3; Canvas.Brush.Style := bsClear;
+        Canvas.TextOut(8,24+I*Max(16,Canvas.TextHeight('字')+2),FPsdNames[I]+': '+FSceneCache.StatusForTrack(FTrackIndices[I]));
+      end;
     end;
-  end;
-  Canvas.Brush.Style := bsClear; Canvas.Pen.Color := $00D0D0D0;
-  Mark := MulDiv(16,CurrentPPI,96);
-  CropMark(Video.Left,Video.Top,-1,-1); CropMark(Video.Right,Video.Top,1,-1);
-  CropMark(Video.Left,Video.Bottom,-1,1); CropMark(Video.Right,Video.Bottom,1,1);
-  FPlacement.Paint(Canvas);
-  Lyric := LyricAtPosition;
-  Canvas.Font.Color := clWhite; R := Video; R.Top := Max(R.Top,R.Bottom-26);
-  if Lyric<>'' then LabelIn(R,'歌詞: '+Lyric,DT_CENTER or DT_SINGLELINE or DT_END_ELLIPSIS);
-  P := MulDiv(12,CurrentPPI,96);
-  Meter := Rect(Video.Right+P,Min(Stage.Height-P,4*P),Video.Right+2*P,Stage.Height-P);
-  Canvas.Brush.Style := bsSolid; Canvas.Brush.Color := $003B3B3B; Canvas.FillRect(Meter);
-  Canvas.Brush.Color := $00ADBF6F; Canvas.FillRect(MusicStudioPeakFillRect(Meter,FPeak));
+    Canvas.Brush.Style := bsClear; Canvas.Pen.Color := $00908070; Canvas.Rectangle(V);
+    Canvas.Pen.Color := $0055CFFF; Canvas.Rectangle(Output);
+    Canvas.Font.Color := $00D0D0D0;
+    Text := '仮想ステージ 7680×4320 / 中心(0,0) / 黄色枠: 出力範囲 / 左drag: 配置 / 中drag: 表示移動';
+    Canvas.TextOut(8,4,Text); FPlacement.Paint(Canvas);
+  finally RestoreDC(Canvas.Handle,Saved); Canvas.Refresh; end;
 end;
 end.

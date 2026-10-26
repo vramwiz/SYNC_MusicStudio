@@ -160,6 +160,7 @@
       <DesignClass>TFrame</DesignClass>
     </DCCReference>
     <DCCReference Include="Source\Common\Singing\SYNC_MusicStudio_Vowels.pas" />
+    <DCCReference Include="Source\Common\Singing\SYNC_MusicStudio_SingingFormats.pas" />
     <DCCReference Include="Source\Common\Singing\SYNC_MusicStudio_SingingData.pas" />
     <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_SingingFrame.pas">
       <Form>MusicStudioSingingFrame</Form>
@@ -173,6 +174,7 @@
       <Form>MusicStudioPsdTrackFrame</Form>
       <DesignClass>TFrame</DesignClass>
     </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_DarkScrollBar.pas" />
     <DCCReference Include="Source\Plugin\Filter\SYNC_MusicStudio_ArrangementView.pas" />
     <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PatternSettingsForm.pas">
       <Form>MusicStudioPatternSettings</Form>
@@ -204,7 +206,8 @@
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtLayerName.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtPsd.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_ArtPsdOrigin.pas" />
-    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayers.pas" />
+    <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_LayerScale.pas"/>
+        <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayers.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerConfig.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerFrameUI.pas" />
     <DCCReference Include="Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerJobs.pas" />

@@ -1,6 +1,7 @@
 ﻿unit SYNC_MusicStudio_PsdMouthChecks;
 // Real modal controls and shared-library persistence, with PSD-only isolated fixtures.
 interface
+procedure RunPsdMouthListChecks(const Root: string);
 procedure RunPsdMouthChecks(const Root: string; const ActualPSD: string = ''; const SeedAssetJSON: string = '');
 implementation
 uses System.SysUtils, System.Classes, System.IOUtils, System.Hash, System.JSON, System.Types, System.Math,
@@ -172,7 +173,7 @@ begin
     // Queue several generations before polling; only the final selected row may be published.
     Check(F.SelectLayer(Keys[2]) and F.SelectLayer(Keys[4]) and F.SelectLayer(Keys[1]),'rapid selection row absent');
     Check(F.ConfigJSON=Before,'row selection modified saved assignments/visibility'); CheckView; Await;
-    Overrides := BuildMusicStudioPsdOverrides(F.Document,Config,0);
+    Overrides := BuildMusicStudioPsdOverrides(F.Document,Config,-1);
     try
       F.Document.SelectLayerOverride(Overrides,Keys[1]); Check(F.Document.Render(B,Overrides),F.Document.LastError);
       Check(SamePixels(B,F.PreviewBitmap),'final selection preview shows stale generation');
@@ -290,15 +291,9 @@ begin
     end;
     F.PollResults; if F.IsLoading or F.IsRendering then Exit;
     Check(F.CanApply,F.StateText);
-    Check(F.UIControls.MouthCombo.Showing and F.UIControls.AssignButton.Showing and
-      F.UIControls.ClearButton.Showing,'mouth selector or assignment controls hidden');
-    Check(F.UIControls.MouthCombo.Items.Count=12,'mouth selector does not contain all 12 shapes');
-    Check((F.UIControls.Toolbar.Top>=F.UIControls.Header.Top+F.UIControls.Header.Height) and
-      (F.UIControls.Toolbar.Top+F.UIControls.Toolbar.Height<=F.ClientHeight),'mouth toolbar outside PSD frame');
-    Check((F.UIControls.MouthCombo.Left>=0) and
-      (F.UIControls.MouthCombo.Left+F.UIControls.MouthCombo.Width<=F.UIControls.Toolbar.ClientWidth) and
-      (F.UIControls.AssignButton.Top+F.UIControls.AssignButton.Height<=F.UIControls.Toolbar.ClientHeight) and
-      (F.UIControls.ClearButton.Left+F.UIControls.ClearButton.Width<=F.UIControls.Toolbar.ClientWidth),'mouth controls clipped');
+    Check(not F.UIControls.Toolbar.Showing and not F.UIControls.AssignButton.Showing and
+      not F.UIControls.ClearButton.Showing,'duplicate middle controls visible');
+    Check(F.UIControls.MouthMenu.Items[15].Count=12,'preview menu does not contain all 12 shapes');
     if Step<0 then begin
       // Assert before touching the combo or invoking OnChange: FillLayers must restore the saved row.
       Check(F.UIControls.MouthCombo.ItemIndex=0,'loaded modal did not select normal mouth');
@@ -508,5 +503,73 @@ begin
   if ActualPSD<>'' then Flow(TPath.Combine(Dir,'actual'),ActualPSD,SeedAssetJSON,True)
   else begin Source := TPath.Combine(Dir,'nested-mouth.psd'); WriteNestedPSD(Source);
     Flow(TPath.Combine(Dir,'synthetic'),Source,'',False); end;
+end;
+procedure RunPsdMouthListChecks(const Root: string);
+var D: TForm; F: TMusicStudioPsdLayersFrame; Art: TArtDocument; G,L: TArtLayer;
+  Path,AKey,FKey,GKey,ExtraKey,Before: string; Config: TJSONObject; Deadline: UInt64; Key: Word;
+  procedure Pixel(Parent: TArtLayer; const Name: string; X: Integer; Visible: Boolean; Red: Byte);
+  begin
+    L := Art.AddLayer(alkImage,Name,TArtBounds.Create(X,0,X+1,1),Parent); L.Visible := Visible;
+    L.Pixels := TBytes.Create(Red,40,50,255);
+  end;
+  procedure Await;
+  begin
+    Deadline := GetTickCount64+10000;
+    repeat F.PollResults; Application.ProcessMessages; Sleep(5);
+      Check(GetTickCount64<Deadline,'list preview timeout');
+    until not F.IsLoading and not F.IsRendering;
+    Check(F.CanApply,F.StateText);
+  end;
+  procedure Selected(const K: string; Red: Byte);
+  var Row: Integer; P: PByte;
+  begin
+    Row := F.Document.LayerIndex(K); Check(Row>=0,'missing row'); F.UIControls.LayerList.ItemIndex := Row;
+    F.UIControls.LayerList.OnClick(F.UIControls.LayerList); Await;
+    P := F.PreviewBitmap.ScanLine[0]; Check(P[2]=Red,'exclusive preview wrong selected pixel');
+    Check(P[7]=255,'unrelated decoration hidden'); Check(P[11]=0,'confirmation mouth leaked into row audition');
+    Check(F.ConfigJSON=Before,'row audition changed saved settings');
+  end;
+begin
+  ForceDirectories(Root); Path := TPath.Combine(Root,'list-expression.psd'); Art := TArtDocument.Create;
+  try
+    Art.Width := 3; Art.Height := 1;
+    G := Art.AddLayer(alkGroup,'*通常',TArtBounds.Create(0,0,0,0)); G.BlendKey := 'norm';
+    Pixel(G,'*A 普通',0,True,70);
+    G := Art.AddLayer(alkGroup,'!*別表情',TArtBounds.Create(0,0,0,0)); G.BlendKey := 'norm'; G.Visible := False;
+    Pixel(G,'*F 不満',0,False,150); Pixel(G,'!*G 平眉毛',0,True,230);
+    Pixel(nil,'装飾',1,True,40); Pixel(nil,'確認用の口',2,False,200);
+    WriteNewPsd(Art,Path,pcRaw);
+  finally Art.Free; end;
+  D := TForm.CreateNew(nil); F := TMusicStudioPsdLayersFrame.Create(D); Config := nil;
+  try
+    D.Caption := 'PSD割当設定'; D.ClientWidth := 920; D.ClientHeight := 590; F.Parent := D; F.Align := alClient; D.Show;
+    F.LoadPSD(Path,'{}',False); Await;
+    AKey := FindName(F.Document,'*A 普通'); FKey := FindName(F.Document,'*F 不満'); GKey := FindName(F.Document,'!*G 平眉毛');
+    ExtraKey := FindName(F.Document,'確認用の口'); Check(F.SelectLayer(ExtraKey),'select mouth'); F.AssignSelectedMouth(0); Await;
+    Before := F.ConfigJSON;
+    Check(not F.UIControls.Toolbar.Visible,'middle toolbar visible');
+    Check(not F.UIControls.AssignButton.Showing and not F.UIControls.ClearButton.Showing and
+      not F.UIControls.ReloadButton.Showing and not F.UIControls.CancelButton.Showing,'middle buttons visible');
+    Check(F.UIControls.LayerList.Top<F.UIControls.Header.Height+4,'toolbar left vertical gap');
+    Selected(AKey,70); Selected(FKey,150); Selected(GKey,230);
+    // Keyboard selection uses the same audition, preserving the saved mouth mapping.
+    F.UIControls.LayerList.ItemIndex := F.Document.LayerIndex(AKey); Key := VK_UP;
+    F.UIControls.LayerList.OnKeyUp(F.UIControls.LayerList,Key,[]); Await;
+    Check(PByte(F.PreviewBitmap.ScanLine[0])[2]=70,'keyboard selection preview');
+    F.UIControls.MouthMenu.OnPopup(F.UIControls.MouthMenu);
+    Check(F.UIControls.MouthMenu.Items[1].Enabled,'right menu assignment disabled');
+    F.UIControls.MouthMenu.Items[1].Click; Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
+    Check(MusicStudioMouthLayer(Config,1)=AKey,'right menu assignment'); FreeAndNil(Config);
+    F.UIControls.MouthMenu.OnPopup(F.UIControls.MouthMenu);
+    F.UIControls.MouthMenu.Items[13].Click; Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
+    Check(MusicStudioMouthLayer(Config,1)='','right menu clearing'); FreeAndNil(Config); Await;
+    Check(F.UIControls.MouthMenu.Items[15].Count=12,'preview submenu');
+    F.UIControls.MouthMenu.Items[15].Items[0].Click; Await;
+    Check(PByte(F.PreviewBitmap.ScanLine[0])[11]=255,'mouth preview menu not applied');
+    Selected(FKey,150); F.UIControls.MouthMenu.Items[16].Click; Await;
+    Check(F.Document.HasLayer(FKey),'reload menu'); Selected(FKey,150);
+    SaveClient(D,TPath.Combine(Root,'mouth-list.png'));
+    Writeln('PSD_MOUTH_LIST_CONTEXT_ONLY_EXCLUSIVE_ANCESTORS_MODIFIERS_SELECTION_KEYBOARD_ASSIGN_CLEAR_PREVIEW_RELOAD_CONFIG_UNCHANGED_OK');
+  finally Config.Free; D.Free; end;
 end;
 end.

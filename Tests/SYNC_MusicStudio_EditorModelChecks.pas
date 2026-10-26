@@ -84,7 +84,7 @@ begin
   Check(LoadMusicStudioSinging(TPath.Combine(Root,'no-lyrics.mid')).Status = ssNoLyrics,'No lyrics status');
   Check(LoadMusicStudioSinging('').Status = ssEmpty,'Empty status');
   Check(LoadMusicStudioSinging(TPath.Combine(Root,'missing.mid')).Status = ssMissing,'Missing status');
-  Check(LoadMusicStudioSinging(TPath.Combine(Root,'demo.ust')).Status = ssUnsupported,'Unsupported extension');
+  Check(LoadMusicStudioSinging(TPath.Combine(Root,'demo.unsupported')).Status = ssUnsupported,'Unsupported extension');
   Bytes := TFile.ReadAllBytes(Path); Bytes[9] := 2; TFile.WriteAllBytes(TPath.Combine(Root,'format2.mid'),Bytes);
   Check(LoadMusicStudioSinging(TPath.Combine(Root,'format2.mid')).Status = ssUnsupported,'SMF2 status');
   Bytes := TFile.ReadAllBytes(Path); Bytes[12] := $E7; TFile.WriteAllBytes(TPath.Combine(Root,'smpte.mid'),Bytes);

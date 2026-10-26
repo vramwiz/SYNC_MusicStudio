@@ -62,6 +62,7 @@ type
     procedure DrawLayer(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
     procedure MouthMenuPopup(Sender: TObject);
     procedure MouthMenuClick(Sender: TObject);
+    procedure PreviewMouthClick(Sender: TObject);
     procedure ClearLayerAssignments(Sender: TObject);
     function SelectedMouthNames: string;
     procedure PopupMouthAt(const Position: TPoint);
@@ -147,7 +148,7 @@ begin
 end;
 
 procedure TMusicStudioPsdLayersFrame.SetParent(AParent: TWinControl);
-var C: TComponent; I: Integer; Item: TMenuItem;
+var C: TComponent; I: Integer; Item,Sub: TMenuItem;
 begin
   inherited; if AParent=nil then Exit;
   // Defer all native controls until the entire frame has a parent window.
@@ -175,6 +176,14 @@ begin
     Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '-'; FUI.MouthMenu.Items.Add(Item);
     Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '選択レイヤーの割当をすべて解除';
     Item.OnClick := ClearLayerAssignments; FUI.MouthMenu.Items.Add(Item);
+    Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '-'; FUI.MouthMenu.Items.Add(Item);
+    Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '母音の表示確認'; FUI.MouthMenu.Items.Add(Item);
+    for I := 0 to 11 do begin
+      Sub := TMenuItem.Create(FUI.MouthMenu); Sub.Caption := MUSIC_STUDIO_MOUTH_CAPTIONS[I];
+      Sub.Tag := I; Sub.OnClick := PreviewMouthClick; Item.Add(Sub);
+    end;
+    Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '再読込'; Item.OnClick := ReloadClick; FUI.MouthMenu.Items.Add(Item);
+    Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '読込取消'; Item.OnClick := CancelClick; FUI.MouthMenu.Items.Add(Item);
     FUI.StateLabel.Caption := 'PSDが未選択です。';
   end;
   // Combo items require a parent window. Create them only after the frame is attached.
@@ -224,7 +233,7 @@ begin
   end;
   FUI.PathLabel.Visible := not FCompactLayout;
   FUI.Header.Visible := not FCompactLayout or NeedsCompactStatus; FUI.MappingLabel.Visible := not FCompactLayout;
-  FUI.Toolbar.Visible := not FCompactLayout;
+  FUI.Toolbar.Visible := False;
   if FCompactLayout then FUI.Footer.Height := MulDiv(64,PPI,96) else FUI.Footer.Height := MulDiv(89,PPI,96);
   FUI.SelectionLabel.SetBounds(Margin,MulDiv(3,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight);
   FUI.MappingLabel.SetBounds(Margin,MulDiv(25,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight);
@@ -371,7 +380,9 @@ end;
 function TMusicStudioPsdLayersFrame.PreviewOverrides: TJSONObject;
 var Mouth: Integer;
 begin
-  Mouth := FUI.MouthCombo.ItemIndex; if FExpressionMode then Mouth := -1;
+  Mouth := FUI.MouthCombo.ItemIndex;
+  // 行の試写は確認用母音より優先し、別の口枝を強制表示しない。
+  if FExpressionMode or (FPreviewLayerKey<>'') then Mouth := -1;
   Result := BuildMusicStudioPsdOverrides(FDocument,FConfig,Mouth);
   // Row selection is a temporary audition, separate from saved visibility and mouth assignments.
   if not FExpressionMode and (FPreviewLayerKey<>'') then FDocument.SelectLayerOverride(Result,FPreviewLayerKey);
@@ -458,6 +469,10 @@ begin
     FUI.SelectionLabel.Hint := FDocument.Layers[Selected].Path+'  ['+IntToStr(FDocument.Layers[Selected].SourceIndex+1)+']';
   end else begin FUI.SelectionLabel.Caption := 'レイヤーを選択してください'; FUI.SelectionLabel.Hint := ''; end;
   if FExpressionMode then begin FUI.MappingLabel.Caption := '表情: チェックで表示状態を設定'; Exit; end;
+  if (FPreviewLayerKey<>'') and (Selected>=0) then begin
+    FUI.MappingLabel.Caption := '試写: '+FDocument.Layers[Selected].Name+'（排他表示）';
+    FUI.MappingLabel.Hint := FDocument.Layers[Selected].Path; Exit;
+  end;
   Key := MusicStudioMouthLayer(FConfig,FUI.MouthCombo.ItemIndex);
   if Key='' then FUI.MappingLabel.Caption := '母音の割当: 未設定'
   else if FDocument=nil then FUI.MappingLabel.Caption := '母音の割当: PSD読込後に確認'
@@ -551,7 +566,7 @@ begin
     FUI.LayerList.Hint := FDocument.Layers[I].Path+' ['+IntToStr(FDocument.Layers[I].SourceIndex+1)+']';
   UpdateMapping;
   if FUpdating or FExpressionMode or (FDocument=nil) or ((FPreviewLayerKey=SelectedLayerKey) and (FRenderError='')) then Exit;
-  FPreviewLayerKey := SelectedLayerKey;
+  FPreviewLayerKey := SelectedLayerKey; UpdateMapping;
   FUpdating := True; try UpdateChecks; finally FUpdating := False; end;
   QueueRender; StartPendingJobs;
 end;
@@ -581,9 +596,15 @@ begin
     FUI.MouthMenu.Items[I].Checked := (Key<>'') and (MusicStudioMouthLayer(FConfig,I)=Key);
   end;
   FUI.MouthMenu.Items[13].Enabled := not FExpressionMode and (SelectedMouthNames<>'');
+  FUI.MouthMenu.Items[15].Enabled := not FExpressionMode and (FDocument<>nil);
+  for I := 0 to 11 do FUI.MouthMenu.Items[15].Items[I].Checked := (FPreviewLayerKey='') and (FUI.MouthCombo.ItemIndex=I);
+  FUI.MouthMenu.Items[16].Enabled := FPath<>'';
+  FUI.MouthMenu.Items[17].Enabled := IsLoading or IsRendering;
 end;
 procedure TMusicStudioPsdLayersFrame.MouthMenuClick(Sender: TObject);
 begin if not FExpressionMode then AssignSelectedMouth(TMenuItem(Sender).Tag); end;
+procedure TMusicStudioPsdLayersFrame.PreviewMouthClick(Sender: TObject);
+begin SelectMouth(TMenuItem(Sender).Tag); end;
 procedure TMusicStudioPsdLayersFrame.ClearLayerAssignments(Sender: TObject);
 var I: Integer; Key: string;
 begin
@@ -593,26 +614,25 @@ begin
 end;
 procedure TMusicStudioPsdLayersFrame.PopupMouthAt(const Position: TPoint);
 begin
-  if FExpressionMode or (SelectedLayerKey='') then Exit;
   FUI.MouthMenu.Popup(Position.X,Position.Y);
 end;
 procedure TMusicStudioPsdLayersFrame.LayerContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
 var I: Integer; R: TRect; P: TPoint;
 begin
-  if FExpressionMode then Exit; Handled := True;
+  Handled := True;
   if MousePos.X>=0 then begin
-    I := FUI.LayerList.ItemAtPos(MousePos,True); if I<0 then Exit;
+    I := FUI.LayerList.ItemAtPos(MousePos,True);
     FUI.LayerList.ItemIndex := I; P := FUI.LayerList.ClientToScreen(MousePos);
   end else begin
-    I := FUI.LayerList.ItemIndex; if I<0 then Exit;
-    R := FUI.LayerList.ItemRect(I); P := FUI.LayerList.ClientToScreen(Point(R.Left+24,R.Bottom));
+    I := FUI.LayerList.ItemIndex;
+    if I<0 then R := Rect(0,0,24,24) else R := FUI.LayerList.ItemRect(I); P := FUI.LayerList.ClientToScreen(Point(R.Left+24,R.Bottom));
   end;
   FUI.LayerList.SetFocus; LayerClicked(nil); PopupMouthAt(P);
 end;
 procedure TMusicStudioPsdLayersFrame.LayerKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var Handled: Boolean;
 begin
-  if not FExpressionMode and ((Key=VK_APPS) or (Key=VK_RETURN) or ((Key=VK_F10) and (ssShift in Shift))) then begin
+  if ((Key=VK_APPS) or (Key=VK_RETURN) or ((Key=VK_F10) and (ssShift in Shift))) then begin
     Key := 0; Handled := False; LayerContextPopup(Sender,Point(-1,-1),Handled);
   end;
 end;

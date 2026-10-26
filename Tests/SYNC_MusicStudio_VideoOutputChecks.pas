@@ -26,7 +26,7 @@ type
     UserData: Pointer;
     RemainingFunctions: array[0..4] of Pointer;
   end;
-  TItems = array[0..2] of Pointer;
+  TItems = array[0..5] of Pointer;
   PItems = ^TItems;
   TModalBackgroundProbe = class
     Timer: TTimer;

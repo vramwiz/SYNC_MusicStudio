@@ -6,12 +6,14 @@ interface
 
 uses System.Classes, System.JSON, System.Types, Winapi.Windows,
   Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Graphics,
-  SYNC_MusicStudio_BeatData;
+  SYNC_MusicStudio_BeatData, SYNC_MusicStudio_EditHistory;
 
 type
   TMusicStudioPerformanceFrame = class(TFrame)
   private
     FData: TMusicStudioPerformanceData;
+    FHistory: TMusicStudioEditHistory;
+    FLastJSON: string;
     FLengthEdit, FVelocityEdit: TEdit;
     FDurationCombo: TComboBox;
     FStateLabel, FZoomLabel: TLabel;
@@ -62,6 +64,7 @@ type
     procedure LoadPerformance(ConfigJSON: TJSONObject); overload;
     function ConfigJSON: string;
     function AddNote(StartBeat, LengthBeats: Double; Pitch, Velocity: Integer): Integer;
+    procedure HandleKey(var Key: Word; Shift: TShiftState);
     procedure SelectNote(Index: Integer);
     procedure MoveSelectedNote(StartBeat: Double; Pitch: Integer);
     procedure DeleteSelectedNote;
@@ -90,6 +93,7 @@ begin Result := Pitch mod 12 in [1,3,6,8,10]; end;
 constructor TMusicStudioPerformanceFrame.Create(AOwner: TComponent);
 begin
   inherited;
+  FHistory := TMusicStudioEditHistory.Create;
   FData := TMusicStudioPerformanceData.Create; FBitmap := TBitmap.Create;
   FSelected := -1; FTopPitch := 72; FPixelsPerBeat := 80; FPreviewTempoBPM := 120;
   FNoteColor := $008BDD9D; TabStop := True;
@@ -97,7 +101,7 @@ begin
 end;
 
 destructor TMusicStudioPerformanceFrame.Destroy;
-begin FDragging := False; FreeAndNil(FBitmap); FreeAndNil(FData); inherited; end;
+begin FHistory.Free; FDragging := False; FreeAndNil(FBitmap); FreeAndNil(FData); inherited; end;
 
 procedure TMusicStudioPerformanceFrame.SetParent(AParent: TWinControl);
 var Component: TComponent;
@@ -247,7 +251,10 @@ procedure TMusicStudioPerformanceFrame.RollPaint(Sender: TObject);
 begin FRoll.Canvas.Draw(0,0,FBitmap); end;
 
 procedure TMusicStudioPerformanceFrame.Changed;
-begin RefreshScrollbars; RebuildRoll; if Assigned(FOnChange) then FOnChange(Self); end;
+begin
+  if not FDragging then begin FHistory.RecordChange(FLastJSON,FData.ConfigJSON); FLastJSON := FData.ConfigJSON; end;
+  RefreshScrollbars; RebuildRoll; if Assigned(FOnChange) then FOnChange(Self);
+end;
 
 procedure TMusicStudioPerformanceFrame.LengthChanged(Sender: TObject);
 var Value: Double;
@@ -266,7 +273,7 @@ end;
 
 procedure TMusicStudioPerformanceFrame.LoadPerformance(const ConfigJSON: string);
 begin
-  FData.LoadJSON(ConfigJSON); FSelected := -1; FDragging := False; FStartBeat := 0;
+  FData.LoadJSON(ConfigJSON); FLastJSON := FData.ConfigJSON; FHistory.Clear; FSelected := -1; FDragging := False; FStartBeat := 0;
   if FData.HighestPitch >= 0 then FTopPitch := Min(127,Max(12,FData.HighestPitch+2)) else FTopPitch := 72;
   FInputError := '';
   if FStateLabel <> nil then FStateLabel.Font.Color := $00E3E3E3;
@@ -366,7 +373,7 @@ end;
 
 procedure TMusicStudioPerformanceFrame.RollMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X,Y: Integer);
-begin FDragging := False; end;
+begin if Button=mbLeft then begin FDragging := False; Changed; end; end;
 
 procedure TMusicStudioPerformanceFrame.SetPixelsPerBeat(Value: Double);
 begin
@@ -415,8 +422,25 @@ begin
   end;
 end;
 
+procedure TMusicStudioPerformanceFrame.HandleKey(var Key: Word; Shift: TShiftState);
+var Text: string; Applied: Boolean;
+begin
+  if (ssCtrl in Shift) and ((Key=Ord('Z')) or (Key=Ord('Y'))) then begin
+    FDragging := False; Changed;
+    if (Key=Ord('Y')) or (ssShift in Shift) then Applied := FHistory.Redo(FData.ConfigJSON,Text)
+    else Applied := FHistory.Undo(FData.ConfigJSON,Text);
+    Key := 0;
+    if Applied then begin
+      FData.LoadJSON(Text); FLastJSON := FData.ConfigJSON; FSelected := -1; FInputError := '';
+      FUpdating := True;
+      try FLengthEdit.Text := FloatToStr(FData.LengthBeats,TFormatSettings.Invariant); finally FUpdating := False; end;
+      RefreshScrollbars; RebuildRoll; if Assigned(FOnChange) then FOnChange(Self);
+    end;
+  end;
+end;
 procedure TMusicStudioPerformanceFrame.KeyDown(var Key: Word; Shift: TShiftState);
 begin
+  HandleKey(Key,Shift); if Key=0 then Exit;
   if Key = VK_DELETE then begin DeleteSelectedNote; Key := 0; Exit; end;
   inherited;
 end;

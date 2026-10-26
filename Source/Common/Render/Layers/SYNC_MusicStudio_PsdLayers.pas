@@ -45,7 +45,9 @@ type
     // Honors PSDTool '*' exclusivity at the selected layer and every opened ancestor.
     procedure SelectLayerOverride(Overrides: TJSONObject; const Key: string);
     // Caller owns Target and Overrides. BGRA is premultiplied for VCL alpha drawing.
-    function Render(Target: TBitmap; Overrides: TJSONObject = nil; MaximumDimension: Integer = 0): Boolean;
+    // 母音自身の初期表示を除き、現在の表情で親の枝が表示されているかを確認する。
+    function LayerBranchVisible(const Key: string; Overrides: TJSONObject): Boolean;
+    function Render(Target: TBitmap; Overrides: TJSONObject = nil; MaximumDimension: Integer = 0; const ScaleKey: string = ''; PartScale: Double = 1): Boolean;
     property Loaded: Boolean read GetLoaded;
     property FilePath: string read FFilePath;
     property LastError: string read FLastError;
@@ -63,7 +65,7 @@ procedure MusicStudioSetJsonBoolean(Obj: TJSONObject; const Key: string; Value: 
 
 implementation
 
-uses System.Math, SYNC_MusicStudio_ArtPsd;
+uses SYNC_MusicStudio_LayerScale, System.Math, SYNC_MusicStudio_ArtPsd, SYNC_MusicStudio_ArtLayerName;
 
 const MAX_RENDER_CACHE_BYTES = Int64(64)*1024*1024;
   MAX_RENDER_CACHE_ITEMS = 8;
@@ -206,9 +208,9 @@ begin
   Current := Key;
   while Current<>'' do begin
     if not FByKey.TryGetValue(Current,Layer) or not FParents.TryGetValue(Current,Parent) then Break;
-    if (Layer.Name<>'') and (Layer.Name[1]='*') then
+    if Pos('*',ParseLayerName(Layer.Name).Prefix)>0 then
       for Info in FLayers do
-        if (Info.Key<>Current) and (Info.Name<>'') and (Info.Name[1]='*') and
+        if (Info.Key<>Current) and (Pos('*',ParseLayerName(Info.Name).Prefix)>0) and
            FParents.TryGetValue(Info.Key,SiblingParent) and (SiblingParent=Parent) then
           MusicStudioSetJsonBoolean(Overrides,Info.Key,False);
     MusicStudioSetJsonBoolean(Overrides,Current,True);
@@ -216,7 +218,19 @@ begin
   end;
 end;
 
-function TMusicStudioLayerDocument.Render(Target: TBitmap; Overrides: TJSONObject; MaximumDimension: Integer): Boolean;
+function TMusicStudioLayerDocument.LayerBranchVisible(const Key: string; Overrides: TJSONObject): Boolean;
+var Current,Parent: string; L: TArtLayer; Value: TJSONValue;
+begin
+  Result := HasLayer(Key); if not Result then Exit; Current := Key;
+  while FParents.TryGetValue(Current,Parent) and (Parent<>'') do begin
+    if not FByKey.TryGetValue(Parent,L) then Exit(False);
+    Value := nil; if Overrides<>nil then Value := Overrides.GetValue(Parent);
+    if Value is TJSONBool then begin if not TJSONBool(Value).AsBoolean then Exit(False); end
+    else if not L.Visible then Exit(False);
+    Current := Parent;
+  end;
+end;
+function TMusicStudioLayerDocument.Render(Target: TBitmap; Overrides: TJSONObject; MaximumDimension: Integer; const ScaleKey: string; PartScale: Double): Boolean;
 var Key,VisibilityKey: string; Cache: TBitmap; Snapshot: TMusicStudioLayerDocument;
     Info: TMusicStudioLayerInfo; Value: TJSONValue; Layer: TArtLayer;
     Pixels: TBytes; Row: PByte; X,Y,P,A,W,H: Integer; Factor: Double;
@@ -236,12 +250,13 @@ begin
       if Value=nil then begin if Info.Visible then VisibilityKey := VisibilityKey+'1' else VisibilityKey := VisibilityKey+'0'; end
       else if TJSONBool(Value).AsBoolean then VisibilityKey := VisibilityKey+'1' else VisibilityKey := VisibilityKey+'0';
     end;
-    Key := IntToStr(W)+'x'+IntToStr(H)+':'+VisibilityKey;
+    Key := IntToStr(W)+'x'+IntToStr(H)+':'+VisibilityKey+'|'+ScaleKey+'|'+FloatToStr(PartScale,TFormatSettings.Invariant);
     if FImages.TryGetValue(Key,Cache) then begin Target.Assign(Cache); Exit(True); end;
     Snapshot := Clone;
     for X := 0 to High(FLayers) do begin
       Layer := Snapshot.FByKey[FLayers[X].Key]; Layer.Visible := VisibilityKey[X+1]='1';
     end;
+    if (ScaleKey<>'') and Snapshot.FByKey.TryGetValue(ScaleKey,Layer) then ScaleMusicStudioArtLayer(Layer,PartScale);
     Inc(FRenderCount); Pixels := RenderPsdLayers(Snapshot.FDocument,W,H);
     Cache := TBitmap.Create; Cache.PixelFormat := pf32bit;
     Cache.SetSize(W,H); Cache.AlphaFormat := afPremultiplied;

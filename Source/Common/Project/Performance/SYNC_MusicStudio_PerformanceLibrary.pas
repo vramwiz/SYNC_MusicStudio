@@ -3,7 +3,7 @@
 // 属性別演奏パターンの共通正本。読取では作成せず、明示保存だけを排他/版照合/原子的置換する。
 // 作品へは参照ID/版と配置時snapshotを渡すため、後日の共通編集が既存曲を無断変更しない。
 interface
-uses SYNC_MusicStudio_PatternData;
+uses System.Generics.Collections, SYNC_MusicStudio_PatternData;
 type
   TMusicStudioPerformanceLibrary = class
   private
@@ -18,13 +18,30 @@ type
     function TryRead(const Attribute,ID: string; out Pattern: TMusicStudioPattern; out ErrorText: string): Boolean;
     // Revision空は新規のみ。競合/不正/PSD固有stepはFalseで保存しない。
     function TrySave(var Pattern: TMusicStudioPattern; out ErrorText: string): Boolean;
+    // Undoで新規作成を戻すための版照合付き削除。同じ正本の保存と排他する。
+    function TryRemove(const Pattern: TMusicStudioPattern; out ErrorText: string): Boolean;
     property Root: string read FRoot;
     property Warning: string read FWarning;
   end;
+type
+  TMusicStudioPerformanceChange = record BeforePattern,AfterPattern: TMusicStudioPattern; end;
+  // 編集画面を閉じた単位の正本Undo。自分が最後に公開した版だけを更新できる。
+  TMusicStudioPerformanceHistory = class
+  private
+    FStore: TMusicStudioPerformanceLibrary;
+    FSteps: TList<TMusicStudioPerformanceChange>;
+    FRevisions: TDictionary<string,string>;
+  public
+    constructor Create(const PSDRoot: string);
+    destructor Destroy; override;
+    function RecordSaved(const BeforePattern,AfterPattern: TMusicStudioPattern): Integer;
+    function Apply(Index: Integer; Undo: Boolean; out ErrorText: string): Boolean;
+  end;
+function SameMusicStudioPerformance(const A,B: TMusicStudioPattern): Boolean;
 // 意味名の共通区間だけPSD依存を除去する。旧物理キーstepを無理に汎用化しない。
 function MusicStudioPortablePerformance(const Config: string): string;
 implementation
-uses System.SysUtils, System.JSON, System.IOUtils, System.Generics.Collections, System.Classes,
+uses System.SysUtils, System.JSON, System.IOUtils, System.Classes,
   Winapi.Windows, SYNC_MusicStudio_PerformanceKinds, SYNC_MusicStudio_LayerStepData;
 function NewID: string;
 var G: TGUID;
@@ -150,5 +167,62 @@ begin
   except on E: Exception do ErrorText := E.Message; end;
   if (Temp<>'') and TFile.Exists(Temp) then TFile.Delete(Temp);
   O.Free; if Lock<>INVALID_HANDLE_VALUE then CloseHandle(Lock);
+end;
+function TMusicStudioPerformanceLibrary.TryRemove(const Pattern: TMusicStudioPattern; out ErrorText: string): Boolean;
+var Lock: THandle; Existing: TMusicStudioPattern; Path: string;
+begin
+  Result := False; ErrorText := ''; Lock := INVALID_HANDLE_VALUE;
+  try
+    Path := FileName(Pattern.PerformanceAttribute,Pattern.SharedPatternID);
+    Lock := CreateFile(PChar(TPath.Combine(FRoot,'.write.lock')),GENERIC_READ or GENERIC_WRITE,0,nil,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,0);
+    if Lock=INVALID_HANDLE_VALUE then raise Exception.Create('演奏ライブラリは別の保存処理で使用中です。');
+    if not TryRead(Pattern.PerformanceAttribute,Pattern.SharedPatternID,Existing,ErrorText) then raise Exception.Create(ErrorText);
+    if Existing.LibraryRevision<>Pattern.LibraryRevision then raise Exception.Create('演奏パターンが外部で更新されたため、削除を取り消しました。');
+    if not DeleteFile(PChar(Path)) then RaiseLastOSError;
+    Result := True;
+  except on E: Exception do ErrorText := E.Message; end;
+  if Lock<>INVALID_HANDLE_VALUE then CloseHandle(Lock);
+end;
+function SameMusicStudioPerformance(const A,B: TMusicStudioPattern): Boolean;
+begin
+  Result := (A.Name=B.Name) and (A.Color=B.Color) and
+    (MusicStudioPortablePerformance(A.ConfigJSON)=MusicStudioPortablePerformance(B.ConfigJSON));
+end;
+constructor TMusicStudioPerformanceHistory.Create(const PSDRoot: string);
+begin
+  inherited Create; FStore := TMusicStudioPerformanceLibrary.Create(PSDRoot);
+  FSteps := TList<TMusicStudioPerformanceChange>.Create; FRevisions := TDictionary<string,string>.Create;
+end;
+destructor TMusicStudioPerformanceHistory.Destroy;
+begin FRevisions.Free; FSteps.Free; FStore.Free; inherited; end;
+function TMusicStudioPerformanceHistory.RecordSaved(const BeforePattern,AfterPattern: TMusicStudioPattern): Integer;
+var Step: TMusicStudioPerformanceChange;
+begin
+  Step.BeforePattern := BeforePattern; Step.AfterPattern := AfterPattern;
+  Result := FSteps.Count; FSteps.Add(Step);
+  FRevisions.AddOrSetValue(AfterPattern.PerformanceAttribute+'/'+AfterPattern.SharedPatternID,AfterPattern.LibraryRevision);
+end;
+function TMusicStudioPerformanceHistory.Apply(Index: Integer; Undo: Boolean; out ErrorText: string): Boolean;
+var Step: TMusicStudioPerformanceChange; Expected,Desired,Current: TMusicStudioPattern; Revision: string;
+begin
+  Result := False; ErrorText := '';
+  if (Index<0) or (Index>=FSteps.Count) then Exit;
+  Step := FSteps[Index];
+  if Undo then begin Expected := Step.AfterPattern; Desired := Step.BeforePattern; end
+  else begin Expected := Step.BeforePattern; Desired := Step.AfterPattern; end;
+  if not FRevisions.TryGetValue(Step.AfterPattern.PerformanceAttribute+'/'+Step.AfterPattern.SharedPatternID,Revision) then Exit;
+  if Expected.LibraryRevision<>'' then begin
+    if not FStore.TryRead(Step.AfterPattern.PerformanceAttribute,Step.AfterPattern.SharedPatternID,Current,ErrorText) then Exit;
+    if (Current.LibraryRevision<>Revision) or not SameMusicStudioPerformance(Current,Expected) then begin
+      ErrorText := '共通演奏が外部で更新されています。Undo/Redoは適用していません。'; Exit;
+    end;
+  end;
+  if Desired.LibraryRevision='' then begin
+    Result := FStore.TryRemove(Current,ErrorText); if Result then Revision := '';
+  end else begin
+    Desired.LibraryRevision := Revision;
+    Result := FStore.TrySave(Desired,ErrorText); if Result then Revision := Desired.LibraryRevision;
+  end;
+  if Result then FRevisions.AddOrSetValue(Step.AfterPattern.PerformanceAttribute+'/'+Step.AfterPattern.SharedPatternID,Revision);
 end;
 end.

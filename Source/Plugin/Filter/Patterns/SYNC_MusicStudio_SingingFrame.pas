@@ -6,12 +6,15 @@ interface
 uses
   System.Classes, System.Generics.Collections, Vcl.Forms, Vcl.Controls,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Dialogs,
-  SYNC_MusicStudio_SingingData;
+  SYNC_MusicStudio_SingingData, SYNC_MusicStudio_SingingFormats, SYNC_MusicStudio_EditHistory;
 
 type
   TMusicStudioSingingFrame = class(TFrame)
   private
     FPath: string;
+    FHistory: TMusicStudioEditHistory;
+    FRequestedTrack: Integer;
+    FRestoring: Boolean;
     FGeneration, FSelectedTrack: Integer;
     FJobs: TObjectList<TMusicStudioSingingJob>;
     FSource: TMusicStudioSingingSource;
@@ -19,6 +22,7 @@ type
     FStateLabel, FHintLabel: TLabel;
     FOpenDialog: TOpenDialog;
     FOnSourceChange: TNotifyEvent;
+    function HistoryState: string;
     procedure BuildUI;
     procedure BrowseClick(Sender: TObject);
     procedure ClearClick(Sender: TObject);
@@ -35,6 +39,7 @@ type
     destructor Destroy; override;
     procedure LoadSinging(const Path: string; TrackIndex: Integer);
     procedure SelectFile(const Path: string);
+    procedure HandleKey(var Key: Word; Shift: TShiftState);
     procedure PollResults;
     function IsLoading: Boolean;
     function SelectedDuration: Double;
@@ -48,20 +53,21 @@ type
 
 implementation
 
-uses System.SysUtils, System.IOUtils, Vcl.Graphics, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_Controls;
+uses System.SysUtils, System.IOUtils, System.JSON, Winapi.Windows, Vcl.Graphics, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_Controls;
 
 {$R *.dfm}
 
 constructor TMusicStudioSingingFrame.Create(AOwner: TComponent);
 begin
   inherited;
+  FHistory := TMusicStudioEditHistory.Create; FRequestedTrack := -1;
   FSelectedTrack := -1;
   FJobs := TObjectList<TMusicStudioSingingJob>.Create(True);
   ApplySyncMusicStudioDarkFrame(Self);
   ApplyMusicStudioEditorFont(Self);
   BuildUI;
   FSource.Status := ssEmpty;
-  FSource.Message := '歌詞付きMIDI / KARを選択してください。';
+  FSource.Message := '歌唱データを選択してください。';
   FStateLabel.Caption := FSource.Message;
 end;
 
@@ -70,7 +76,7 @@ var Job: TMusicStudioSingingJob;
 begin
   if Assigned(FPoll) then FPoll.Enabled := False;
   if Assigned(FJobs) then for Job in FJobs do Job.Terminate;
-  FJobs.Free;
+  FHistory.Free; FJobs.Free;
   inherited;
 end;
 
@@ -88,7 +94,7 @@ var L: TLabel; B: TButton; C: TListColumn; Header: TPanel; I,X: Integer;
   Titles: array[0..4] of string; Widths: array[0..4] of Integer;
 begin
   L := TLabel.Create(Self); L.Parent := Self;
-  L.SetBounds(16, 8, 600, 20); L.Caption := '歌詞付きMIDI / KAR  ・  ファイル参照';
+  L.SetBounds(16, 8, 600, 20); L.Caption := '歌唱データ  ・  ファイル参照';
   PathEdit := TEdit.Create(Self); PathEdit.Parent := Self;
   PathEdit.SetBounds(16, 34, Width - 236, 26);
   PathEdit.Anchors := [akLeft, akTop, akRight]; PathEdit.ReadOnly := True;
@@ -133,36 +139,60 @@ begin
   FHintLabel.SetBounds(16, Height - 34, Width - 32, 30);
   FHintLabel.Anchors := [akLeft, akRight, akBottom]; FHintLabel.AutoSize := False;
   FHintLabel.WordWrap := True;
-  FHintLabel.Caption := 'かなの母音を表示。? は読み不明。音符編集・歌声合成・口パク描画は未実装です。';
+  FHintLabel.Caption := 'かなの母音を表示。? は読み不明。歌声の合成は行いません。';
   FOpenDialog := TOpenDialog.Create(Self);
-  FOpenDialog.Filter := '歌詞MIDI / KAR (*.mid;*.midi;*.kar)|*.mid;*.midi;*.kar|すべてのファイル|*.*';
+  FOpenDialog.Filter := MUSIC_STUDIO_SONG_FILTER;
   FOpenDialog.Options := [ofFileMustExist, ofPathMustExist, ofEnableSizing];
   FPoll := TTimer.Create(Self); FPoll.Interval := 80; FPoll.Enabled := False;
   FPoll.OnTimer := PollTimer;
 end;
 
+function TMusicStudioSingingFrame.HistoryState: string;
+var O: TJSONObject;
+begin
+  O := TJSONObject.Create;
+  try O.AddPair('path',FPath); O.AddPair('track',TJSONNumber.Create(FRequestedTrack)); Result := O.ToJSON;
+  finally O.Free; end;
+end;
+procedure TMusicStudioSingingFrame.HandleKey(var Key: Word; Shift: TShiftState);
+var Text: string; O: TJSONObject; Applied: Boolean;
+begin
+  if not (ssCtrl in Shift) or ((Key<>Ord('Z')) and (Key<>Ord('Y'))) then Exit;
+  if (Key=Ord('Y')) or (ssShift in Shift) then Applied := FHistory.Redo(HistoryState,Text)
+  else Applied := FHistory.Undo(HistoryState,Text);
+  Key := 0; if not Applied then Exit;
+  O := TJSONObject.ParseJSONValue(Text) as TJSONObject; FRestoring := True;
+  try
+    SelectFile(O.GetValue<string>('path')); FRequestedTrack := O.GetValue<Integer>('track'); FSelectedTrack := FRequestedTrack;
+  finally FRestoring := False; O.Free; end;
+  if Assigned(FOnSourceChange) then FOnSourceChange(Self);
+end;
 procedure TMusicStudioSingingFrame.LoadSinging(const Path: string; TrackIndex: Integer);
 begin
-  SelectFile(Path);
-  FSelectedTrack := TrackIndex;
+  FRestoring := True;
+  try SelectFile(Path); FRequestedTrack := TrackIndex; FSelectedTrack := TrackIndex;
+  finally FRestoring := False; end;
+  FHistory.Clear;
 end;
 
 procedure TMusicStudioSingingFrame.SelectFile(const Path: string);
-var Job: TMusicStudioSingingJob;
+var Job: TMusicStudioSingingJob; Before: string;
 begin
+  Before := HistoryState; FRequestedTrack := -1;
   Inc(FGeneration);
   for Job in FJobs do Job.Terminate;
   FPath := Path; PathEdit.Text := Path; PathEdit.Hint := Path; PathEdit.ShowHint := True;
   FSelectedTrack := -1; FSource := Default(TMusicStudioSingingSource);
   FSource.Status := ssEmpty;
-  if Path = '' then FSource.Message := '歌詞付きMIDI / KARを選択してください。'
+  if Path = '' then FSource.Message := '歌唱データを選択してください。'
   else begin
-    FSource.Message := 'MIDIの音符・歌詞・テンポを読み込み中…';
+    FSource.Message := '歌唱データの音符・歌詞・テンポを読み込み中…';
     Job := TMusicStudioSingingJob.Create(Path, FGeneration); FJobs.Add(Job); Job.Start;
   end;
   TrackCombo.Clear; TrackCombo.Enabled := False; NotesList.Items.Clear;
   FStateLabel.Caption := FSource.Message; FStateLabel.Font.Color := $00BFBFBF;
   FPoll.Enabled := FJobs.Count > 0;
+  if not FRestoring then FHistory.RecordChange(Before,HistoryState);
 end;
 
 procedure TMusicStudioSingingFrame.BrowseClick(Sender: TObject);
@@ -217,8 +247,9 @@ begin
 end;
 
 procedure TMusicStudioSingingFrame.TrackChanged(Sender: TObject);
-var Note: TMusicStudioSingingNote; Item: TListItem; Count: Integer; Track: TMusicStudioSingingTrack;
+var Note: TMusicStudioSingingNote; Item: TListItem; Count: Integer; Track: TMusicStudioSingingTrack; Before: string;
 begin
+  Before := HistoryState;
   if TrackCombo.ItemIndex >= 0 then FSelectedTrack := FSource.Tracks[TrackCombo.ItemIndex].Index;
   if TrackCombo.ItemIndex >= 0 then begin
     Track := FSource.Tracks[TrackCombo.ItemIndex];
@@ -236,9 +267,12 @@ begin
       Item.SubItems.Add(Format('%.3f', [Note.EndSeconds - Note.StartSeconds]));
       Item.SubItems.Add(IntToStr(Note.Key)); Item.SubItems.Add(Note.Lyric); Item.SubItems.Add(Note.Vowels);
     end;
-    FHintLabel.Caption := 'かなの母音を表示。? は読み不明。音符編集・歌声合成・口パク描画は未実装です。';
+    FHintLabel.Caption := 'かなの母音を表示。? は読み不明。歌声の合成は行いません。';
     if Count > 2000 then FHintLabel.Caption := '音符一覧は先頭2000件を表示。' + FHintLabel.Caption;
   finally NotesList.Items.EndUpdate; end;
+  if (Sender<>nil) and not FRestoring then begin
+    FRequestedTrack := FSelectedTrack; FHistory.RecordChange(Before,HistoryState);
+  end;
 end;
 
 function TMusicStudioSingingFrame.IsLoading: Boolean;

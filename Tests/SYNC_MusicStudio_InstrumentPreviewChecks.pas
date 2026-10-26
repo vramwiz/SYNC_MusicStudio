@@ -434,13 +434,6 @@ begin
   finally Dialog.Free; Data.Free; D.Free; end;
 end;
 type
-  TChoiceGestureDriver = class
-    Frame: TMusicStudioInstrumentFrame;
-    Timer: Vcl.ExtCtrls.TTimer;
-    StageZero,Done: Boolean;
-    Failed: string;
-    procedure Tick(Sender: TObject);
-  end;
   TCloseGestureDriver = class
     Dialog: TMusicStudioPatternSettings;
     Timer: Vcl.ExtCtrls.TTimer;
@@ -448,19 +441,6 @@ type
     Failed: string;
     procedure Tick(Sender: TObject);
   end;
-procedure TChoiceGestureDriver.Tick(Sender: TObject);
-var I: Integer; Menu: TPopupMenu;
-begin
-  Timer.Enabled := False;
-  try
-    Menu := nil;
-    for I := 0 to Frame.ComponentCount-1 do if Frame.Components[I] is TPopupMenu then Menu := TPopupMenu(Frame.Components[I]);
-    Check((Menu<>nil) and (Menu.Items.Count>=2),'choice popup not built');
-    if StageZero then Check(not Menu.Items[Menu.Items.Count-1].Items[0].Enabled,'automatic phase is manually selectable') else Menu.Items[0].Click;
-    Done := True;
-  except on E: Exception do Failed := E.Message; end;
-  EndMenu;
-end;
 procedure TCloseGestureDriver.Tick(Sender: TObject);
 begin
   try
@@ -483,7 +463,7 @@ var Dialog: TMusicStudioPatternSettings; F: TMusicStudioInstrumentFrame; D: TMus
   Data: TMusicStudioInstrumentData; Block: TInstrumentBlock; P: TMusicStudioPattern;
   Driver: TCloseGestureDriver; Path,Before,Hash,RealHash: string; Deadline: UInt64;
   Anchor,InitialStep,Step,StartBeat,EndBeat,PreviewZoom: Double; Point,View: TPoint; OriginalImage,AfterImage: TPointF;
-  OldPan: TPointF; Count,I,FootRow: Integer; Key: Word; B: TBitmap; PNG: TPngImage; ChoiceDriver: TChoiceGestureDriver;
+  OldPan: TPointF; Count,I,FootRow: Integer; Key: Word; B: TBitmap; PNG: TPngImage;
   procedure Ready;
   begin
     Deadline := GetTickCount64+10000;
@@ -522,19 +502,13 @@ begin
     P.Kind := 'performance'; P.Name := '操作確認'; P.Color := '#EDBA70'; P.ConfigJSON := Data.JSON;
     Dialog.SilentVisualMode := True; Dialog.LoadPerformanceSteps(P,ID,Path,'{}',120); Dialog.Show; Ready;
     Check(Dialog.CommitOnClose,'performance close mode absent');
-    ChoiceDriver := TChoiceGestureDriver.Create;
-    try
-      ChoiceDriver.Frame := F; ChoiceDriver.Timer := Vcl.ExtCtrls.TTimer.Create(nil); ChoiceDriver.Timer.Interval := 40;
-      ChoiceDriver.Timer.OnTimer := ChoiceDriver.Tick;
-      for I := 0 to 2 do begin
-        ChoiceDriver.StageZero := I=1; ChoiceDriver.Done := False; ChoiceDriver.Timer.Enabled := True;
-        Mouse(WM_LBUTTONDOWN,F.BeatToX(1.5),28+F.TimelineRowHeight div 2,MK_LBUTTON);
-        Mouse(WM_LBUTTONUP,F.BeatToX(1.5),28+F.TimelineRowHeight div 2);
-        Check(ChoiceDriver.Done and (ChoiceDriver.Failed=''),'choice popup driver '+ChoiceDriver.Failed);
-        Check(F.Data.Blocks[0].Stage=1,'automatic phases changed legacy stored stage');
-      end;
-      Writeln('CHOICE_POPUP_AUTOMATIC_PHASES_NO_MANUAL_STAGE_RESET_OK');
-    finally ChoiceDriver.Timer.Free; ChoiceDriver.Free; end;
+    for I := 0 to 2 do begin
+      Mouse(WM_LBUTTONDOWN,F.BeatToX(1.5),28+F.TimelineRowHeight div 2,MK_LBUTTON);
+      Mouse(WM_LBUTTONUP,F.BeatToX(1.5),28+F.TimelineRowHeight div 2);
+      F.SelectChoice(0,1);
+      Check(F.Data.Blocks[0].Stage=1,'table choice default stage');
+    end;
+    Writeln('CHOICE_TABLE_AUTOMATIC_PHASES_OK');
     for I := 0 to Dialog.ComponentCount-1 do if Dialog.Components[I] is TButton then
       if (TButton(Dialog.Components[I]).Caption='OK') or (TButton(Dialog.Components[I]).Caption='キャンセル') then
         Check(not IsWindowVisible(TButton(Dialog.Components[I]).Handle),'OK/cancel still visible');
@@ -598,17 +572,12 @@ begin
         P.ConfigJSON := Data.JSON; Dialog.LoadPerformanceSteps(P,ID,RealPSD,'{}',120); Ready; F.Seek(1.5);
         FootRow := -1; for I := 0 to F.Rules.RowCount-1 do if F.Rules.RowAt(I).Name='左足' then FootRow := I;
         Check(FootRow>=0,'real left foot row absent'); Block := F.Data.Blocks[0];
-        ChoiceDriver := TChoiceGestureDriver.Create;
-        try
-          ChoiceDriver.Frame := F; ChoiceDriver.Timer := Vcl.ExtCtrls.TTimer.Create(nil); ChoiceDriver.Timer.Interval := 40;
-          ChoiceDriver.Timer.OnTimer := ChoiceDriver.Tick; ChoiceDriver.Timer.Enabled := True;
-          Mouse(WM_LBUTTONDOWN,F.BeatToX(1.5),28+FootRow*F.TimelineRowHeight+F.TimelineRowHeight div 2,MK_LBUTTON);
-          Mouse(WM_LBUTTONUP,F.BeatToX(1.5),28+FootRow*F.TimelineRowHeight+F.TimelineRowHeight div 2);
-          Check(ChoiceDriver.Done and (ChoiceDriver.Failed=''),'real foot menu '+ChoiceDriver.Failed);
-          Check((F.Data.Blocks[1].Row='左足') and (F.Data.Blocks[1].Stage=1),'left foot candidate selected wrong row/stage');
-          Check((F.Data.Blocks[0].Row=Block.Row) and (F.Data.Blocks[0].Choice=Block.Choice) and (F.Data.Blocks[0].Stage=Block.Stage),'foot menu changed hand block');
-          Ready; Writeln('REAL_LEFT_FOOT_MENU_DEFAULT1_OTHER_HAND_BLOCK_PRESERVED_OK');
-        finally ChoiceDriver.Timer.Free; ChoiceDriver.Free; end;
+        Mouse(WM_LBUTTONDOWN,F.BeatToX(1.5),28+FootRow*F.TimelineRowHeight+F.TimelineRowHeight div 2,MK_LBUTTON);
+        Mouse(WM_LBUTTONUP,F.BeatToX(1.5),28+FootRow*F.TimelineRowHeight+F.TimelineRowHeight div 2);
+        F.SelectChoice(FootRow,1);
+        Check((F.Data.Blocks[1].Row='左足') and (F.Data.Blocks[1].Stage=1),'left foot table selected wrong row/stage');
+        Check((F.Data.Blocks[0].Row=Block.Row) and (F.Data.Blocks[0].Choice=Block.Choice) and (F.Data.Blocks[0].Stage=Block.Stage),'foot table changed hand block');
+        Ready; Writeln('REAL_LEFT_FOOT_TABLE_DEFAULT1_OTHER_HAND_BLOCK_PRESERVED_OK');
       end;
       Check(RealHash=THashSHA2.GetHashStringFromFile(RealPSD),'real PSD changed');
     end;

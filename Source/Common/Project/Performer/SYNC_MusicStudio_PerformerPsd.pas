@@ -13,14 +13,14 @@ type
 function MusicStudioPerformerProfile(Document: TMusicStudioLayerDocument; const ConfigJSON: string): TMusicStudioPerformerProfile;
 implementation
 uses System.JSON, System.SysUtils, SYNC_MusicStudio_ArtLayerName, SYNC_MusicStudio_PerformanceKinds,
-  SYNC_MusicStudio_InstrumentRules;
+  SYNC_MusicStudio_InstrumentRules, SYNC_MusicStudio_PsdLayerConfig;
 function MusicStudioPerformerProfile(Document: TMusicStudioLayerDocument; const ConfigJSON: string): TMusicStudioPerformerProfile;
 var Layer: TMusicStudioLayerInfo; Row: TInstrumentRow; I,J,Markers: Integer; Name,Detected: string;
-  Singing,Action,Emotion,Pose,Face,Symbol: Boolean; Config,Mouth: TJSONValue; Pair: TJSONPair;
+  Singing,Action,Emotion,Pose,Face,Symbol: Boolean; Config: TJSONValue;
 begin
   Result := Default(TMusicStudioPerformerProfile);
   if (Document=nil) or not Document.Loaded then Exit;
-  Singing := False; Action := Document.DrumRules.HasDrumStructure; Emotion := False; Pose := False;
+  Action := Document.DrumRules.HasDrumStructure; Emotion := False; Pose := False;
   Face := False; Symbol := False; Result.SelectionsJSON := Document.InstrumentRules.DiagnosticJSON;
   Markers := 0; Detected := '';
   for Layer in Document.Layers do begin
@@ -31,20 +31,15 @@ begin
         if (Detected<>'') and (Detected<>PERFORMANCE_KEYS[I]) then Inc(Markers);
         Detected := PERFORMANCE_KEYS[I];
       end;
-    if (Name='口') or (Name='母音') then Singing := True;
     if Name='表情' then Emotion := True;
     if Name='ポーズ' then Pose := True;
     if Name='顔色' then Face := True;
     if Name='記号' then Symbol := True;
   end;
-  // 手動の母音割当も歌唱能力として扱う。未割当の空文字は能力とみなさない。
   Config := TJSONObject.ParseJSONValue(ConfigJSON);
   try
-    if Config is TJSONObject then begin
-      Mouth := TJSONObject(Config).GetValue('mouthLayers');
-      if Mouth is TJSONObject then for Pair in TJSONObject(Mouth) do
-        if (Pair.JsonValue is TJSONString) and Document.HasLayer(Pair.JsonValue.Value) then Singing := True;
-    end;
+    if Config is TJSONObject then Singing := MusicStudioCanSing(Document,TJSONObject(Config))
+    else Singing := MusicStudioCanSing(Document,nil);
   finally Config.Free; end;
   for J := 0 to Document.InstrumentRules.RowCount-1 do begin
     Row := Document.InstrumentRules.RowAt(J);
