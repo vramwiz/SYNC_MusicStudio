@@ -111,8 +111,8 @@ begin
       for I := 1 to 100 do Check(D.Render(Image,Overrides),'cached rendering');
       Check((D.RenderCount=Count) and (D.LoadCount=1),'paint regenerated/decoded source');
     finally Overrides.Free; end;
-    Overrides := BuildMusicStudioPsdOverrides(D,Config,8);
-    try Check(D.Render(Image,Overrides),D.LastError); PixelCheck(Image,5,9,0,0,255,255,'small i fallback');
+    Overrides := BuildMusicStudioPsdOverrides(D,Config,2);
+    try Check(D.Render(Image,Overrides),D.LastError); PixelCheck(Image,5,9,0,0,255,255,'normal i');
     finally Overrides.Free; end;
     Check(Config.GetValue('future')<>nil,'unknown configuration lost');
     Check(MusicStudioMouthLayer(Config,5)='missing-layer','missing layer assignment lost');

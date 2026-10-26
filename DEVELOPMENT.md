@@ -135,11 +135,11 @@ PSD表示回帰は正規のtsly追加タグで既定値1/画像上の特殊値0/
 実Documentsのキーボードとドラム修正版は読取/合成だけ行い、SHA256前後一致とPNGをTempへ出力する。
 このホストは音声fixture/decode/Play/waveOutを呼ばない。NoAudioコンパイル失敗時は古いEXEを実行しない。
 母音の個別GUI検証は同ホストの `<Temp出力先> --psd-mouth <読取PSDの絶対パス> [読取asset.jsonのコピー]`。
-同名の目/口は完全な階層キーで区別し、12枠のコンボ/レイヤー行/割当ボタン/OK/保存/別Storeの再オープンを通す。
+同名の目/口は完全な階層キーで区別し、7枠のコンボ/レイヤー行/割当ボタン/OK/保存/別Storeの再オープンを通す。
 初回・再読込・再オープンはコンボのOnChangeを呼ぶ前に割当行を検証し、そのまま割当/OK保存しても各キーが保持されることを確認する。
-合成PSDでは非'*'の体・髪・装飾を別画素に置き、12枠切替後の実プレビューを独立した固定RGBA値でも検証する。
-同じテストは統合画面のPSDスロット選択→左共有一覧のダブルクリックからも開き、96/144DPIで12項目の可視性・枠内配置・割当/保存を確認する。
-割当はコンボを変更せずレイヤー先選択で行う。実際のネイティブポップアップが開いた状態で、右クリック位置の行・12項目の割当チェック・コールバックを検証する。
+合成PSDでは非'*'の体・髪・装飾を別画素に置き、7枠切替後の実プレビューを独立した固定RGBA値でも検証する。
+同じテストは統合画面のPSDスロット選択→左共有一覧のダブルクリックからも開き、96/144DPIで7項目の可視性・枠内配置・割当/保存を確認する。
+割当はコンボを変更せずレイヤー先選択で行う。実際のネイティブポップアップが開いた状態で、右クリック位置の行・7項目の割当チェック・コールバックを検証する。
 メニューキー/Shift+F10/Enterの呼出と矢印キーの行選択、キャンセル不変、選択レイヤーの複数母音解除も確認する。
 統合ポップアップは最小幅と狭い一覧で検証。合成PSDには長い実名と別階層の同名を含め、完全な階層のツールチップと独立画素assertを通す。
 この入口での音声エンジン未確保/音声decode数0と作品JSON不変も検証する。直接ポップアップを開くテストだけで入口検証を代替しない。
@@ -252,7 +252,7 @@ auf2指定時は実DLLのSDK映像callbackへX/Y/拡大率を渡し、pixelで�
 音声一覧の選択/参照登録だけの専用確認はNoAudioTestsの `<Temp証拠先> --audio-library <既存WAV絶対パス>`。既存WAVは参照/存在/hash確認のみ、音声fixture生成・decode・再生を行わない。SilentVisualModeでトラック/枠の一覧切替、HDROP、modalのファイル参照、配置、Undo、不正drop拒否、音声エンジン未生成を確認する。MP3のdecodeや実ファイル選択dialogの自動操作は含まない。
 
 
-PSD設定のリスト操作だけの専用確認はNoAudioTestsの `<Temp証拠先> --mouth-list`。小型の合成PSDで中段toolbar非表示、通常/*差分/!*親子の排他、装飾保持、確認母音の別枝を重ねないこと、選択でJSON不変、キーボード、menu割当/解除/12母音確認/再読込を確認する。音声/DPI変更なし。旧--psd-mouth全体はDPI試験を含むため実行しない。
+PSD設定のリスト操作だけの専用確認はNoAudioTestsの `<Temp証拠先> --mouth-list`。小型の合成PSDで中段toolbar非表示、通常/*差分/!*親子の排他、装飾保持、確認母音の別枝を重ねないこと、選択でJSON不変、キーボード、menu割当/解除/7母音確認/再読込を確認する。音声/DPI変更なし。旧--psd-mouth全体はDPI試験を含むため実行しない。
 
 
 歌唱タイムライン表示の専用確認はNoAudioTestsの `<Temp証拠先> --lyric-timeline`。合成MIDIの読込とひらがな/カタカナ/空歌詞、音高変更によるpixel不変、同じ帯高、左寄せ、tile/可視端clip、透過summary、bitmap再利用/MIDI読込1回を確認する。音声処理/DPI変更は実行しない。
@@ -265,3 +265,25 @@ PSD設定のリスト操作だけの専用確認はNoAudioTestsの `<Temp証拠�
 
 
 ダークscrollbarとdragの実cursorはNoAudioTestsの `<Temp証拠先> --dark-scroll`。水平/垂直thumb、矢印/page/keyboard、range clamp、capture取消、背景消去抑制、同値再設定の描画回数、timelineの連続30回再描画でbarを再描画しないこと、Win32 cursorをarrowへ戻してからWM_SETCURSORで復元することを確認する。--slot-ui/--compact-editorで横scrollと既存layout操作を回帰確認する。音声/DPI処理なし。
+
+口のサイズ変化はNoAudioTestsの `<Temp証拠先> --mouth-size`。合成PSD/MIDIと隔離共有rootで初期オフの等倍、オンの開始/25/50/75/終了直前、連続同母音の再始動、逆seek、非表示の合成停止、表情の別口枝とUndoを確認する。`--mouth-list` は設定の保存/再読込/オフ切替、表情モードで非表示、7項目、旧smallAの未知データ保持と不正型拒否も確認する。音声/DPI試験なし。
+
+## 同期アニメーションの専用確認（2026-10-26）
+
+NoAudioTestsの `<Temp証拠先> --animation-slots`。合成PSD/MIDIと隔離共有rootで3種類の名前/追加条件、20高、一覧/＋非表示と復帰、開始の縮み/途中の伸び、絶対拍/変化テンポ、歌唱offset/同母音/逆seek/休符、演奏ノート/共通手足区間/表情行非トリガー、同期元削除後の保持、保存再読込、同時刻再描画抑制、編集/VideoSessionの画素一致を確認する。
+
+WM通知で空白の往復drag/確定前JSON不変/Esc/capture解除/作成UndoRedo、左clickのメニューdispatch、種類のchecked/種類変更UndoRedo/配置IDと範囲保持/孤立設定整理/不正値の原子性、移動/右端操作でpopupを呼ばないこと、削除を確認する。新AnimationSync/AnimationSlotDataはproduct dpr/dprojと関連する独立hostへ登録する。
+
+このケースはフォームを表示しない。slot追加メニューはOnPopupで内容だけを構築し、種類メニューdispatchはprobeでPrepareへ差し替える。native Popup/ShowModal/音声/DPI処理を呼ばない。実行runnerはテスト所有processを保持し、timeout/例外時もfinallyで終了・WaitForExitを確認する。全NoAudio/旧stageのpopup経路を入口にしない。
+
+## Debug性能ログと無音計測（2026-10-26）
+
+Debug版は `%TEMP%/SYNC_MusicStudio-profile-<PID>.jsonl` へ1秒単位の集計を書き、IDEのOutputDebugStringにも同じ内容を出す。stage/count/totalMs/meanMs/maxMs/detailを記録する。`SYNC_MUSICSTUDIO_PROFILE=0` で無効、値を絶対ファイルパスにすると保存先を変更できる（起動前のprocess環境）。Release版は環境変数に関係なく無効。raw JSONや素材内容はログへ書かない。
+
+専用性能入口はDEBUGを定義してコンパイルしたNoAudioTestsの `<証拠root> --animation-cost <読取PSD> <映像だけの作品JSON> <隔離PSDAssets root>`。元aup2から作ったTempコピーはaudio track/patternを除き、既存IDのmetadata/PSDコピーを隔離rootへ置く。実PSD/共有metadata/aup2のhashを前後確認し、実共有への登録/保存を行わない。7種×12位相、512px合成、Scene exactと2秒live、MIDI読込回数/合成回数/公開数を計測する。exact所要時間はSleep/Poll待ちも含むため、純粋なworker時間と区別する。
+
+AnimationProfile-20261026のMotionEquivalenceは最適化前unitを証拠root内の読取参照として保持し、7種×12位相×3サイズ×3alpha形式×3変形設定=2268ケースの全画素一致を確認する。実PSD84ケースのhashも比較する。Popup/音声/DPI試験は実行しない。
+
+## 終了時の構成整理（2026-10-26）
+
+SourceとTestsは機能別folderへ分離した。統合UIはFilter/Settings、時間軸はTimeline、試写はPreview、一覧/キャッシュはLibrary、属性UIはPatternsの各属性folderへ置く。Common/ProjectはArrangement/Timing/Performance/Library/Performerを使う。入口dprとTests/Win64の基準位置は変更しない。継承SYNC_Lyricsは現行hostと区別して保持する。

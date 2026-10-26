@@ -8,7 +8,7 @@ uses Winapi.Windows, System.Types, System.Classes, System.JSON, System.Generics.
   Vcl.Graphics, SYNC_MusicStudio_PatternData, SYNC_MusicStudio_SharedPsdLibrary,
   SYNC_MusicStudio_VisualCache, SYNC_MusicStudio_MotionData,
   SYNC_MusicStudio_PsdLayers, SYNC_MusicStudio_PsdLayerJobs, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_LayerStepData,
-  SYNC_MusicStudio_InstrumentData, SYNC_MusicStudio_InstrumentRules;
+  SYNC_MusicStudio_InstrumentData, SYNC_MusicStudio_InstrumentRules, SYNC_MusicStudio_AnimationSync;
 
 type
   TMusicStudioSceneBeatResolver = function(Seconds: Double): Double of object;
@@ -24,12 +24,15 @@ type
     FMaximumDimension: Integer;
     FScaleKey: string;
     FPartScale: Double;
+    FQueuedTick,FFinishedTick: Int64;
   protected
     procedure Execute; override;
   public
     BindGeneration, SourceGeneration, RequestGeneration, TrackIndex: Integer;
     SourceKey, BaseKey, ImageKey, ErrorText: string;
     Composed: Boolean;
+    PlaybackEpoch: Integer;
+    PositionSeconds: Double;
     constructor Create(Document: TMusicStudioLayerDocument; Overrides: TJSONObject;
       CachedBase: TBitmap; const Transforms: TMusicStudioSceneTransforms;
       MaximumDimension: Integer = 512; const ScaleKey: string = ''; PartScale: Double = 1);
@@ -54,9 +57,10 @@ type
 
   TMusicStudioScenePlacement = class
   public
-    ID, Kind, MidiPath, ErrorText: string;
+    ID, Kind, SlotKind, SyncSource, MidiPath, ErrorText: string;
     StartSeconds, LengthSeconds, StartBeat,SourceStartSeconds: Double;
     MidiTrack: Integer;
+    AnimationCues: TArray<TMusicStudioAnimationCue>;
     Visibility: TJSONObject;
     Steps: TMusicStudioLayerStepData;
     Instrument: TMusicStudioInstrumentData;
@@ -70,7 +74,8 @@ type
 
   TMusicStudioSceneTrack = class
   public
-    TrackIndex, RequestGeneration: Integer;
+    TrackIndex, RequestGeneration, PublishedGeneration: Integer;
+    ImageSeconds: Double;
     Enabled: Boolean;
     MouthKey: string;
     MouthScale: Double;
@@ -100,13 +105,17 @@ type
       FCompositionCount, FNextTrack: Integer;
     FLastFileCheck: UInt64;
     FFrozenSources: Boolean;
+    FRealtimePlayback: Boolean;
+    FPlaybackEpoch: Integer;
     FMaximumImageDimension: Integer;
+    procedure SetRealtimePlayback(Value: Boolean);
     function TrackFor(Index: Integer): TMusicStudioSceneTrack;
     function SourceFor(const Key: string): TMusicStudioSceneSource;
     procedure StartJobs;
     procedure RefreshTrack(Track: TMusicStudioSceneTrack);
     procedure ResetSource(Source: TMusicStudioSceneSource; const Stamp: string);
     function MouthAt(Placement: TMusicStudioScenePlacement; out Scale: Double): Integer;
+    function AnimationPhase(Track: TMusicStudioSceneTrack; const SourceKind: string; out Phase: Double): Boolean;
     function SourceEnabled(Source: TMusicStudioSceneSource): Boolean;
     function StartBeat(Seconds: Double): Double;
   public
@@ -123,6 +132,8 @@ type
     procedure SetTrackEnabled(TrackIndex: Integer; Enabled: Boolean);
     function NativeSizeForTrack(TrackIndex: Integer): System.Types.TSize;
     function ImageForTrack(TrackIndex: Integer): TBitmap;
+    // 公開済み画像が要求された秒を返す診断。画像なし/非表示は-1。現在の再生時計とは独立する。
+    function PublishedSecondsForTrack(TrackIndex: Integer): Double;
     function StatusForTrack(TrackIndex: Integer): string;
     function ActiveLoadJobs: Integer;
     function ActiveRenderJobs: Integer;
@@ -133,6 +144,8 @@ type
     property RenderCount: Integer read FRenderCount;
     property CompositionCount: Integer read FCompositionCount;
     // 映像ホスト専用。Bind後の外部ファイル監視を停止し、再Bindで明示的に更新する。
+    // Live preview may publish completed in-flight frames; exact seek/export stays strict by default.
+    property RealtimePlayback: Boolean read FRealtimePlayback write SetRealtimePlayback;
     property FrozenSources: Boolean read FFrozenSources write FFrozenSources;
     // 0ならPSD本来の解像度。編集プレビューの既定値512は維持する。
     property MaximumImageDimension: Integer read FMaximumImageDimension write FMaximumImageDimension;
@@ -141,18 +154,23 @@ type
 implementation
 
 uses System.SysUtils, System.Math, SYNC_MusicStudio_ArrangementData,
-  SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_InstrumentPlayback;
+  SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_InstrumentPlayback, SYNC_MusicStudio_PerformanceTrace;
 
 constructor TMusicStudioSceneRenderJob.Create(Document: TMusicStudioLayerDocument;
   Overrides: TJSONObject; CachedBase: TBitmap; const Transforms: TMusicStudioSceneTransforms;
   MaximumDimension: Integer; const ScaleKey: string; PartScale: Double);
+var PerfTick: Int64;
 begin
+  PerfTick := MusicStudioPerfStamp;
   FScaleKey := ScaleKey; FPartScale := PartScale;
   inherited Create(True); FreeOnTerminate := False;
   FTransforms := Copy(Transforms);
   FMaximumDimension := MaximumDimension;
   if CachedBase<>nil then begin FBase := TBitmap.Create; FBase.Assign(CachedBase); end
   else begin FDocument := Document.Clone; FOverrides := TJSONObject(Overrides.Clone); end;
+  if CachedBase=nil then MusicStudioPerfAdd('scene.prepare.cold',MusicStudioPerfElapsed(PerfTick),'maxDimension='+IntToStr(MaximumDimension))
+  else MusicStudioPerfAdd('scene.prepare.cached',MusicStudioPerfElapsed(PerfTick));
+  FQueuedTick := MusicStudioPerfStamp;
 end;
 
 procedure TMusicStudioSceneRenderJob.Start;
@@ -165,27 +183,33 @@ begin
 end;
 
 procedure TMusicStudioSceneRenderJob.Execute;
-var Full,Next: TBitmap; Transform: TMusicStudioMotionTransform;
+var Full,Next: TBitmap; Transform: TMusicStudioMotionTransform; PerfTick,TotalTick: Int64;
 begin
   if Terminated then Exit;
+  MusicStudioPerfAdd('scene.queue',MusicStudioPerfElapsed(FQueuedTick)); TotalTick := MusicStudioPerfStamp;
   Full := nil; Next := nil;
   try
     try
       if FBase=nil then begin
         Full := TBitmap.Create;
+        PerfTick := MusicStudioPerfStamp;
         if not FDocument.Render(Full,FOverrides,FMaximumDimension,FScaleKey,FPartScale) then begin ErrorText := FDocument.LastError; Exit; end;
+        MusicStudioPerfAdd('scene.compose',MusicStudioPerfElapsed(PerfTick));
         FBase := Full; Full := nil; Composed := True;
       end;
       if Terminated then Exit;
-      FImage := TBitmap.Create; FImage.Assign(FBase);
+      PerfTick := MusicStudioPerfStamp; FImage := TBitmap.Create; FImage.Assign(FBase);
+      MusicStudioPerfAdd('scene.copy',MusicStudioPerfElapsed(PerfTick));
       for Transform in FTransforms do begin
         if Terminated then Exit;
         // Transform値は縮小キャンバス座標に事前変換済み。
-        Next := TBitmap.Create; RenderMusicStudioMotion(FImage,Next,Transform);
+        Next := TBitmap.Create; PerfTick := MusicStudioPerfStamp; RenderMusicStudioMotion(FImage,Next,Transform);
+        MusicStudioPerfAdd('scene.motion',MusicStudioPerfElapsed(PerfTick),IntToStr(FImage.Width)+'x'+IntToStr(FImage.Height));
         FImage.Free; FImage := Next; Next := nil;
       end;
     except on E: Exception do begin ErrorText := E.Message; FreeAndNil(FImage); end; end;
-  finally Full.Free; Next.Free; end;
+  finally Full.Free; Next.Free; FFinishedTick := MusicStudioPerfStamp;
+    MusicStudioPerfAdd('scene.worker',MusicStudioPerfElapsed(TotalTick)); end;
 end;
 
 function TMusicStudioSceneRenderJob.TakeBase: TBitmap;
@@ -257,6 +281,8 @@ var Patterns: TDictionary<string,TMusicStudioPattern>; Assets: TDictionary<strin
     Track: TMusicStudioTrack; SceneTrack: TMusicStudioSceneTrack; Slot: TMusicStudioSlot;
     Clip: TMusicStudioPlacement; Entry: TMusicStudioScenePlacement;
     I,J: Integer; Path,Key,Config,Error,HiddenID: string;
+    Cue: TMusicStudioAnimationCue; Block: TInstrumentBlock; Step: TMusicStudioLayerStep;
+    Notes: TMusicStudioPerformanceData; Note: TMusicStudioPerformanceNote;
 begin
   Clear;
   if IsNan(TempoBPM) or IsInfinite(TempoBPM) or (TempoBPM<1) or (TempoBPM>1000) then
@@ -302,7 +328,8 @@ begin
         if (Pattern.Kind<>'singing') and (Pattern.Kind<>'emotion') and
           (Pattern.Kind<>'instrument') and (Pattern.Kind<>'animation') and (Pattern.Kind<>'performance') and (Pattern.Kind<>'selection') then Continue;
         Entry := TMusicStudioScenePlacement.Create; SceneTrack.Placements.Add(Entry);
-        Entry.ID := Clip.ID; Entry.Kind := Pattern.Kind;
+        Entry.ID := Clip.ID; Entry.Kind := Pattern.Kind; Entry.SlotKind := Slot.Kind;
+        Entry.SyncSource := MusicStudioAnimationSource(Slot.Kind);
         Entry.StartSeconds := Clip.StartSeconds; Entry.LengthSeconds := Clip.LengthSeconds;
         if Clip.TimeBase='beats' then Entry.StartBeat := Clip.StartBeat
         else Entry.StartBeat := StartBeat(Clip.StartSeconds);
@@ -323,14 +350,36 @@ begin
               Entry.Instrument := TMusicStudioInstrumentData.Create; Entry.Instrument.Load(Pattern.ConfigJSON);
               Entry.Instrument.BindAsset(Track.PsdAssetID);
               Entry.PlaybackBlocks := Entry.Instrument.Blocks.ToArray;
+              for Block in Entry.PlaybackBlocks do if MusicStudioActionRow(Block.Row) then begin
+                Cue.StartValue := Block.StartBeat; Cue.EndValue := Block.EndBeat;
+                Entry.AnimationCues := Entry.AnimationCues+[Cue];
+              end;
+              SortMusicStudioAnimationCues(Entry.AnimationCues);
               Continue;
             end;
-            if not MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) then Continue;
+            if not MusicStudioPerformanceHasLayerSteps(Pattern.ConfigJSON) then begin
+              Notes := TMusicStudioPerformanceData.Create;
+              try
+                Notes.LoadJSON(Pattern.ConfigJSON);
+                for J := 0 to Notes.NoteCount-1 do begin
+                  Note := Notes.NoteAt(J); if Note.Velocity=0 then Continue;
+                  Cue.StartValue := Note.StartBeat; Cue.EndValue := Note.StartBeat+Note.LengthBeats;
+                  Entry.AnimationCues := Entry.AnimationCues+[Cue];
+                end;
+                SortMusicStudioAnimationCues(Entry.AnimationCues);
+              finally Notes.Free; end;
+              Continue;
+            end;
             Entry.Steps := TMusicStudioLayerStepData.Create; Entry.Steps.LoadJSON(Pattern.ConfigJSON);
             if (Entry.Steps.AssetID<>'') and (Entry.Steps.AssetID<>Track.PsdAssetID) then
               raise Exception.Create('演奏stepは別のPSD素材を参照しています。');
             Entry.StepConfigs := TObjectList<TJSONObject>.Create(True);
-            for J := 0 to Entry.Steps.StepCount-1 do Entry.StepConfigs.Add(ParseMusicStudioPsdConfig(Entry.Steps.StepAt(J).ConfigJSON));
+            for J := 0 to Entry.Steps.StepCount-1 do begin
+              Step := Entry.Steps.StepAt(J); Entry.StepConfigs.Add(ParseMusicStudioPsdConfig(Step.ConfigJSON));
+              Cue.StartValue := Step.StartBeat; Cue.EndValue := Step.StartBeat+Step.LengthBeats;
+              Entry.AnimationCues := Entry.AnimationCues+[Cue];
+            end;
+            SortMusicStudioAnimationCues(Entry.AnimationCues);
             Continue;
           end;
           if (Pattern.AssetID<>'') and (Pattern.AssetID<>Track.PsdAssetID) then
@@ -364,6 +413,33 @@ begin
   for Track in FTracks do RefreshTrack(Track);
 end;
 
+function TMusicStudioPsdSceneCache.AnimationPhase(Track: TMusicStudioSceneTrack;
+  const SourceKind: string; out Phase: Double): Boolean;
+var Entry,Selected: TMusicStudioScenePlacement; Source: TMusicStudioVisualSource;
+  Roll: TMusicStudioRollTrack; I: Integer; Local,Latest: Double;
+begin
+  Result := False; Phase := 0; Selected := nil;
+  for Entry in Track.Placements do if (Entry.SlotKind=SourceKind) and (Entry.Kind=SourceKind) and
+    (FSeconds>=Entry.StartSeconds) and (FSeconds<Entry.StartSeconds+Entry.LengthSeconds) then
+    if (Selected=nil) or (Entry.StartSeconds>=Selected.StartSeconds) then Selected := Entry;
+  if (Selected=nil) or (Selected.ErrorText<>'') then Exit;
+  if SourceKind='performance' then
+    Exit(MusicStudioAnimationPhase(Selected.AnimationCues,FBeatPosition-Selected.StartBeat,Phase));
+  if (FMidiCache=nil) or (Selected.MidiTrack<0) then Exit;
+  Source := FMidiCache.Find(vkMidi,Selected.MidiPath);
+  if (Source=nil) or (Source.Status<>vsReady) or (Source.Rolls=nil) or
+    not Source.Rolls.TryGetValue(Selected.MidiTrack,Roll) then Exit;
+  Local := FSeconds-Selected.StartSeconds+Selected.SourceStartSeconds; Latest := -1;
+  I := Roll.FirstOverlap(Local);
+  while (I<Length(Roll.Notes)) and (Roll.Notes[I].StartSeconds<=Local) do begin
+    if (Roll.Notes[I].EndSeconds>Local) and (Roll.Notes[I].StartSeconds>=Latest) then begin
+      Latest := Roll.Notes[I].StartSeconds;
+      Result := Roll.Notes[I].Lyric<>'';
+      if Result then Phase := EnsureRange((Local-Latest)/(Roll.Notes[I].EndSeconds-Latest),0.0,1.0);
+    end;
+    Inc(I);
+  end;
+end;
 function TMusicStudioPsdSceneCache.MouthAt(Placement: TMusicStudioScenePlacement; out Scale: Double): Integer;
 var Source: TMusicStudioVisualSource; Roll: TMusicStudioRollTrack;
     Note,VowelIndex: Integer; Local,LatestStart,Fraction: Double; Vowels: string; C: Char;
@@ -383,11 +459,11 @@ begin
         Vowels := Roll.Notes[Note].Vowels;
         VowelIndex := EnsureRange(Integer(1+Floor(Fraction*Length(Vowels))),1,Length(Vowels));
         Fraction := Frac(Fraction*Length(Vowels));
-        if Fraction<0.2 then Scale := 0.5 else if Fraction<0.4 then Scale := 0.75 else Scale := 1;
+        Scale := 1-0.5*Fraction;
         C := Vowels[VowelIndex];
         case C of
-          'a': Result := 1; 'i': Result := 2; 'u': Result := 3; 'e': Result := 4; 'o': Result := 5; 'n': Result := 6;
-          'A': Result := 7; 'I': Result := 8; 'U': Result := 9; 'E': Result := 10; 'O': Result := 11;
+          'a','A': Result := 1; 'i','I': Result := 2; 'u','U': Result := 3;
+          'e','E': Result := 4; 'o','O': Result := 5; 'n','N': Result := 6;
         else Result := 0; end;
       end else Result := 0;
     end;
@@ -414,7 +490,7 @@ end;
 procedure TMusicStudioPsdSceneCache.RefreshTrack(Track: TMusicStudioSceneTrack);
 var Entry,Singing,Performance,Custom: TMusicStudioScenePlacement; Overrides,Config: TJSONObject;
     Transforms: TMusicStudioSceneTransforms; T: TMusicStudioMotionTransform;
-    Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor: Double; Pair: TJSONPair; CommonVisibility: TJSONObject;
+    Key,Warning: string; Mouth,N,ActiveIndex: Integer; Factor,Phase: Double; Pair: TJSONPair; CommonVisibility: TJSONObject;
     CommonStates: TArray<TInstrumentState>; CommonState: TInstrumentState; PoseActive: Boolean;
     Independent: array[0..3] of TMusicStudioScenePlacement; I,K: Integer; HasIndependent: Boolean;
     ActionRanges: TArray<TInstrumentPlaybackRange>; RangeCount: Integer;
@@ -454,7 +530,11 @@ begin
           if (Singing=nil) or (Entry.StartSeconds>=Singing.StartSeconds) then Singing := Entry;
         end else if Entry.Visibility<>nil then Continue
         else if Entry.Motion<>nil then begin
-          CalculateMusicStudioMotionTransform(Entry.Motion,FBeatPosition-Entry.StartBeat,T);
+          if Entry.SyncSource='tempo' then Phase := FBeatPosition
+          else if Entry.SyncSource<>'' then begin
+            if not AnimationPhase(Track,Entry.SyncSource,Phase) then Continue;
+          end else Phase := FBeatPosition-Entry.StartBeat; // Existing animation slots retain local-beat behavior.
+          CalculateMusicStudioMotionTransform(Entry.Motion,Phase,T);
           T.OffsetX := Round(T.OffsetX*Factor); T.OffsetY := Round(T.OffsetY*Factor); T.TopOffsetX := T.TopOffsetX*Factor;
           N := Length(Transforms); SetLength(Transforms,N+1); Transforms[N] := T;
         end;
@@ -502,6 +582,7 @@ begin
           MergeVisibility(Track.Source.Document,Overrides,Entry.Visibility);
       Track.MouthScale := 1; Track.MouthKey := '';
       if (Singing<>nil) and not PoseActive then Mouth := MouthAt(Singing,Track.MouthScale);
+      if not MusicStudioAnimateMouthSize(Track.Source.Config) then Track.MouthScale := 1;
       if PoseActive then Mouth := -1;
       Config := TJSONObject(Track.Source.Config.Clone);
       Config.RemovePair('visibility').Free; Config.AddPair('visibility',Overrides); Overrides := nil;
@@ -516,7 +597,7 @@ begin
       Track.DesiredKey := Key; Track.ErrorText := ''; Inc(FNextGeneration); Track.RequestGeneration := FNextGeneration;
       Track.Overrides.Free; Track.Overrides := Overrides; Overrides := nil;
       Track.Transforms := Transforms; Track.NeedRender := True;
-      if Track.RenderJob<>nil then Track.RenderJob.Terminate;
+      if not FRealtimePlayback and (Track.RenderJob<>nil) then Track.RenderJob.Terminate;
       // A new vowel/time request is still the same character. Keep the last complete image
       // while the latest generation renders; source changes, errors and Bind clear it below.
       Inc(FSerial);
@@ -547,6 +628,7 @@ begin
     if not Track.Enabled or not Track.NeedRender or (Track.RenderJob<>nil) or (Track.Source.Document=nil) then Continue;
     Base := nil; Track.Source.BaseImages.TryGetValue(Track.BaseKey,Base);
     Render := TMusicStudioSceneRenderJob.Create(Track.Source.Document,Track.Overrides,Base,Track.Transforms,FMaximumImageDimension,Track.MouthKey,Track.MouthScale);
+    Render.PlaybackEpoch := FPlaybackEpoch; Render.PositionSeconds := FSeconds;
     Render.BindGeneration := FGeneration; Render.SourceGeneration := Track.Source.Generation;
     Render.RequestGeneration := Track.RequestGeneration; Render.TrackIndex := Track.TrackIndex;
     Render.SourceKey := Track.Source.Key; Render.BaseKey := Track.BaseKey; Render.ImageKey := Track.DesiredKey;
@@ -622,8 +704,12 @@ begin
           end;
           if R.Composed then Inc(FCompositionCount);
         end;
-        if (Track<>nil) and (Track.RenderJob=R) and (Track.RequestGeneration=R.RequestGeneration) and
-          (Track.DesiredKey=R.ImageKey) then begin
+        if (Track<>nil) and Track.Enabled and (Track.RenderJob=R) and
+          (((Track.RequestGeneration=R.RequestGeneration) and (Track.DesiredKey=R.ImageKey)) or
+           (FRealtimePlayback and (R.PlaybackEpoch=FPlaybackEpoch) and (R.RequestGeneration>Track.PublishedGeneration) and
+            (R.ErrorText='') and (R.FImage<>nil))) then begin
+          Track.PublishedGeneration := R.RequestGeneration; Track.ImageSeconds := R.PositionSeconds;
+          MusicStudioPerfAdd('scene.publishLag',MusicStudioPerfElapsed(R.FFinishedTick));
           Image := R.TakeImage; OldImage := Track.Image; Track.Image := Image; OldImage.Free;
           Track.ErrorText := R.ErrorText;
           if Image<>nil then Track.ImageKey := R.ImageKey
@@ -636,12 +722,31 @@ begin
       end;
     end;
     if (Track<>nil) and (Track.RenderJob=R) then Track.RenderJob := nil;
+    if (Track=nil) or (Track.ImageKey<>R.ImageKey) then MusicStudioPerfAdd('scene.discarded',0);
     FRenders.Delete(I);
   end;
   for Track in FTracks do RefreshTrack(Track); // MIDIの非同期索引完成も次のPollで口形へ反映する。
   StartJobs; Result := Before<>FSerial;
 end;
 
+procedure TMusicStudioPsdSceneCache.SetRealtimePlayback(Value: Boolean);
+var Track: TMusicStudioSceneTrack;
+begin
+  if FRealtimePlayback=Value then Exit;
+  FRealtimePlayback := Value; Inc(FPlaybackEpoch);
+  if not Value then for Track in FTracks do begin
+    if (Track.RenderJob<>nil) and (Track.RenderJob.RequestGeneration<>Track.RequestGeneration) then Track.RenderJob.Terminate;
+    // A paused cursor must converge to its exact image even when the desired key has not changed.
+    if (Track.ImageKey<>Track.DesiredKey) and ((Track.RenderJob=nil) or
+      (Track.RenderJob.RequestGeneration<>Track.RequestGeneration)) then Track.NeedRender := True;
+  end;
+end;
+function TMusicStudioPsdSceneCache.PublishedSecondsForTrack(TrackIndex: Integer): Double;
+var Track: TMusicStudioSceneTrack;
+begin
+  Result := -1; Track := TrackFor(TrackIndex);
+  if (Track<>nil) and Track.Enabled and (Track.Image<>nil) then Result := Track.ImageSeconds;
+end;
 function TMusicStudioPsdSceneCache.SourceEnabled(Source: TMusicStudioSceneSource): Boolean;
 var Track: TMusicStudioSceneTrack;
 begin Result := False; for Track in FTracks do if Track.Enabled and (Track.Source=Source) then Exit(True); end;

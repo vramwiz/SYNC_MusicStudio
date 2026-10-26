@@ -284,6 +284,37 @@ procedure RenderMusicStudioMotion(Source, Dest: TBitmap;
 var Working: TBitmap; X,Y,SX,SY,W,H: Integer; Row: PPixelRow;
   SourceRows: TArray<PPixelRow>; Opaque: Boolean;
   CX,CY,Bottom,CosA,SinA,InverseScale,DX,DY,PX,PY,HeightRatio: Double;
+  procedure RenderUnrotated;
+  var RowShear: Double; Left,Right,Count,X,Y: Integer;
+  begin
+    // Without rotation the source Y and articulated shear are constant across each output row.
+    // Pure bounce/jump additionally copies a complete row span, preserving nearest-neighbour pixels.
+    Left := Max(0,-Transform.OffsetX); Right := Min(W,W-Transform.OffsetX); Count := Max(0,Right-Left);
+    for Y := 0 to H-1 do begin
+      Row := Dest.ScanLine[Y]; FillChar(Row^,NativeUInt(W)*SizeOf(TPixelBGRA),0);
+      DY := Y-CY-Transform.OffsetY; PY := CY+DY*InverseScale;
+      RowShear := 0;
+      if H>1 then begin
+        PY := Bottom+(PY-Bottom)/Transform.VerticalScale;
+        if Transform.TopOffsetX<>0 then begin
+          HeightRatio := EnsureRange((H-1-PY)/(H-1),0.0,1.0);
+          RowShear := Transform.TopOffsetX*PendulumWeight(HeightRatio,Transform.WaistRatio,Transform.JointFlexibility);
+        end;
+      end;
+      SY := Round(PY); if (SY<0) or (SY>=H) then Continue;
+      if (Transform.Scale=1) and (Transform.TopOffsetX=0) then begin
+        if Count>0 then begin
+          Move(SourceRows[SY]^[Left],Row[Left+Transform.OffsetX],Count*SizeOf(TPixelBGRA));
+          if Opaque then for X := Left+Transform.OffsetX to Right+Transform.OffsetX-1 do Row[X].A := 255;
+        end;
+        Continue;
+      end;
+      for X := 0 to W-1 do begin
+        DX := X-CX-Transform.OffsetX; PX := CX+DX*InverseScale-RowShear; SX := Round(PX);
+        if (SX>=0) and (SX<W) then begin Row[X] := SourceRows[SY]^[SX]; if Opaque then Row[X].A := 255; end;
+      end;
+    end;
+  end;
 begin
   if (Source = nil) or (Dest = nil) then raise EArgumentNilException.Create('Bitmap');
   if Source = Dest then raise EArgumentException.Create('SourceとDestは別の画像にしてください。');
@@ -308,6 +339,7 @@ begin
     CX := (W-1)/2.0; CY := (H-1)/2.0; Bottom := H-1;
     CosA := Cos(DegToRad(Transform.AngleDegrees)); SinA := Sin(DegToRad(Transform.AngleDegrees));
     InverseScale := 1.0/Transform.Scale;
+    if Transform.AngleDegrees=0 then begin RenderUnrotated; Exit; end;
     for Y := 0 to H-1 do begin
       Row := Dest.ScanLine[Y]; FillChar(Row^,NativeUInt(W)*SizeOf(TPixelBGRA),0);
       for X := 0 to W-1 do begin

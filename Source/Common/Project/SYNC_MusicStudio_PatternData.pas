@@ -52,6 +52,8 @@ type
     procedure AssignPsd(Index: Integer; const AssetID: string);
     // PSD解析結果を反映する。既存の配置と手動スロットを保持する。
     procedure SetPerformer(Index: Integer; const Attribute: string; const Slots: TArray<string>; UpdateSlots: Boolean = True; const ChoicesJSON: string = '');
+    // 同期animationの直接区間/種類を候補JSONで検証後に採用する。共有素材・他配置は変更しない。
+    procedure WriteAnimationElement(TrackIndex,SlotIndex,ClipIndex,Variant: Integer; StartSeconds,LengthSeconds: Double);
     // 小型枠の候補操作。候補Rootを検証してから採用し、失敗時は作品を変更しない。
     procedure WriteSmallElement(TrackIndex,SlotIndex,ClipIndex: Integer; const Mode,Choice: string; StartSeconds,LengthSeconds: Double);
     function CopyTrack(Index: Integer): string;
@@ -101,7 +103,7 @@ implementation
 uses
   System.Math, System.Generics.Collections, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_TempoPatternData,
   SYNC_MusicStudio_ProjectData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData,
-  SYNC_MusicStudio_PerformerData, SYNC_MusicStudio_PerformanceKinds, SYNC_MusicStudio_SmallSlotData;
+  SYNC_MusicStudio_PerformerData, SYNC_MusicStudio_PerformanceKinds, SYNC_MusicStudio_SmallSlotData, SYNC_MusicStudio_AnimationSlotData, SYNC_MusicStudio_MotionData;
 
 function ValidColor(const Value: string): Boolean;
 var
@@ -123,7 +125,7 @@ var Pair: TJSONPair;
   Volume: Double;
   Duration: TJSONValue;
   SourceTrack: Integer; Performance: TMusicStudioPerformanceData; Timing: TMusicStudioTempoMap; Steps: TMusicStudioLayerStepData; Tempo: TMusicStudioTempoPatternData;
-  Drums: TMusicStudioDrumData;
+  Drums: TMusicStudioDrumData; Motion: TMusicStudioMotionConfig;
   Instrument: TMusicStudioInstrumentData;
 begin
   Result := False;
@@ -226,6 +228,17 @@ begin
             except on E: Exception do begin ErrorText := E.Message; Exit; end; end;
           finally Drums.Free; end;
         end;
+        Continue;
+      end
+      else if (Obj.GetValue('kind').Value='animation') and (Obj.GetValue('motion')<>nil) then begin
+        ErrorText := 'アニメーション設定が不正です。';
+        if not (Obj.GetValue('motion') is TJSONObject) or (Obj.GetValue('reference')<>nil) or
+          (Length(Obj.GetValue('motion').ToJSON)>262144) then Exit;
+        Motion := TMusicStudioMotionConfig.Create;
+        try
+          try Motion.LoadJSON(Obj.GetValue('motion').ToJSON);
+          except on E: Exception do begin ErrorText := E.Message; Exit; end; end;
+        finally Motion.Free; end;
         Continue;
       end
       else if (Obj.GetValue('kind').Value='psd') or (Obj.GetValue('kind').Value='emotion') or
@@ -348,6 +361,7 @@ begin
     if TJSONObject(Obj.GetValue('tempo')).GetValue('filePath') is TJSONString then Result.FilePath := TJSONObject(Obj.GetValue('tempo')).GetValue('filePath').Value;
   end;
   if Obj.GetValue('expression') is TJSONObject then Result.ConfigJSON := Obj.GetValue('expression').ToJSON;
+  if Obj.GetValue('motion') is TJSONObject then Result.ConfigJSON := Obj.GetValue('motion').ToJSON;
   if Obj.GetValue('reference') is TJSONObject then begin
     Audio := TJSONObject(Obj.GetValue('reference'));
     Result.AssetID := Audio.GetValue('assetId').Value; Result.SharedPatternID := Audio.GetValue('sharedPatternId').Value;
@@ -489,6 +503,15 @@ procedure TMusicStudioDocument.AssignPsd(Index: Integer; const AssetID: string);
 begin MusicStudioAssignPsd(FRoot,Index,AssetID); end;
 procedure TMusicStudioDocument.SetPerformer(Index: Integer; const Attribute: string; const Slots: TArray<string>; UpdateSlots: Boolean; const ChoicesJSON: string);
 begin MusicStudioSetPerformer(FRoot,Index,Attribute,Slots,UpdateSlots,ChoicesJSON); end;
+procedure TMusicStudioDocument.WriteAnimationElement(TrackIndex,SlotIndex,ClipIndex,Variant: Integer; StartSeconds,LengthSeconds: Double);
+var Candidate: TJSONObject; Error: string;
+begin
+  Candidate := FRoot.Clone as TJSONObject;
+  try
+    MusicStudioWriteAnimationElement(Candidate,TrackIndex,SlotIndex,ClipIndex,Variant,StartSeconds,LengthSeconds);
+    if not TryLoad(Candidate.ToJSON,Error) then raise Exception.Create(Error);
+  finally Candidate.Free; end;
+end;
 procedure TMusicStudioDocument.WriteSmallElement(TrackIndex,SlotIndex,ClipIndex: Integer; const Mode,Choice: string; StartSeconds,LengthSeconds: Double);
 var Candidate: TJSONObject; Error: string;
 begin
@@ -684,7 +707,7 @@ function TMusicStudioDocument.UpdateSlot(TrackIndex,SlotIndex: Integer; const Na
   const Accepts: TArray<string>; out ErrorText: string): Boolean;
 begin Result := MusicStudioUpdateSlot(FRoot,TrackIndex,SlotIndex,Name,Color,Accepts,ErrorText); end;
 procedure TMusicStudioDocument.RemoveSlot(TrackIndex,SlotIndex: Integer);
-begin ApplyTimingMutation(procedure begin MusicStudioRemoveSlot(FRoot,TrackIndex,SlotIndex); end); end;
+begin ApplyTimingMutation(procedure begin MusicStudioRemoveSlot(FRoot,TrackIndex,SlotIndex); PruneMusicStudioAnimations(FRoot); end); end;
 procedure TMusicStudioDocument.ReorderSlot(TrackIndex,FromIndex,ToIndex: Integer);
 begin ApplyTimingMutation(procedure begin MusicStudioReorderSlot(FRoot,TrackIndex,FromIndex,ToIndex); end); end;
 procedure TMusicStudioDocument.UpdateTrack(Index: Integer; const Name, Color, PsdPath: string);
@@ -697,7 +720,7 @@ begin MusicStudioSetPsdTransform(FRoot,Index,Transform); end;
 procedure TMusicStudioDocument.ReorderTrack(FromIndex,ToIndex: Integer);
 begin ApplyTimingMutation(procedure begin MusicStudioReorderTrack(FRoot,FromIndex,ToIndex); end); end;
 procedure TMusicStudioDocument.RemoveTrack(Index: Integer);
-begin ApplyTimingMutation(procedure begin MusicStudioRemoveTrack(FRoot,Index); end); end;
+begin ApplyTimingMutation(procedure begin MusicStudioRemoveTrack(FRoot,Index); PruneMusicStudioAnimations(FRoot); end); end;
 function TMusicStudioDocument.AddPlacement(TrackIndex: Integer; const PatternID: string;
   StartSeconds, LengthSeconds: Double; out ErrorText: string): Boolean;
 begin Result := AddPlacement(TrackIndex,0,PatternID,StartSeconds,LengthSeconds,ErrorText); end;
@@ -784,7 +807,7 @@ procedure TMusicStudioDocument.RemovePlacement(TrackIndex, ClipIndex: Integer);
 begin RemovePlacement(TrackIndex,0,ClipIndex); end;
 procedure TMusicStudioDocument.RemovePlacement(TrackIndex,SlotIndex,ClipIndex: Integer);
 begin ApplyTimingMutation(procedure begin
-  MusicStudioRemovePlacement(FRoot,TrackIndex,SlotIndex,ClipIndex); MusicStudioPruneSmallElements(FRoot);
+  MusicStudioRemovePlacement(FRoot,TrackIndex,SlotIndex,ClipIndex); MusicStudioPruneSmallElements(FRoot); PruneMusicStudioAnimations(FRoot);
 end); end;
 procedure TMusicStudioDocument.MovePlacement(TrackIndex, ClipIndex: Integer; StartSeconds, LengthSeconds: Double);
 begin MovePlacement(TrackIndex,0,ClipIndex,StartSeconds,LengthSeconds); end;

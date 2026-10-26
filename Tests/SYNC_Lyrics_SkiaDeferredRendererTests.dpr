@@ -1,4 +1,4 @@
-program SYNC_Lyrics_SkiaDeferredRendererTests;
+﻿program SYNC_Lyrics_SkiaDeferredRendererTests;
 
 // Exercises text rendering with the plugin's deferred System.Skia build.
 

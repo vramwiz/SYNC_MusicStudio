@@ -1,4 +1,4 @@
-program SYNC_Lyrics_SkiaInitializationTests;
+﻿program SYNC_Lyrics_SkiaInitializationTests;
 
 // Verifies that loading the plugin does not load Skia under the loader lock.
 

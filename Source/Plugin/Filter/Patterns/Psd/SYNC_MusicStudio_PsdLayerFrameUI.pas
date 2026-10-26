@@ -51,6 +51,7 @@ type
     PathLabel, StateLabel, HintLabel, MappingLabel, SelectionLabel: TLabel;
     LayerList: TMusicStudioPsdLayerList;
     MouthCombo: TComboBox;
+    AnimateMouthSize: TCheckBox;
     AssignButton, ClearButton, ReloadButton, CancelButton: TButton;
     MouthMenu: TPopupMenu;
     PreviewPane, PreviewToolbar: TPanel;
@@ -147,6 +148,12 @@ begin
   UI.PathLabel.WordWrap := False; UI.PathLabel.EllipsisPosition := epPathEllipsis;
   UI.PathLabel.ShowHint := True;
   UI.StateLabel := LabelOn(Frame,UI.Header,12,31,Frame.Width-24,34);
+  UI.AnimateMouthSize := TCheckBox.Create(Frame); UI.AnimateMouthSize.Parent := UI.Header;
+  UI.AnimateMouthSize.Name := 'PsdAnimateMouthSize';
+  UI.AnimateMouthSize.Caption := '口のサイズを滑らかに変化';
+  UI.AnimateMouthSize.Font.Color := SYNC_MUSIC_STUDIO_DARK_TEXT_COLOR;
+  UI.AnimateMouthSize.Hint := '各発音の開始で等倍、終了に向けて1/2まで口だけを縮めます。同じ母音も発音ごとに動きます。';
+  UI.AnimateMouthSize.ShowHint := True;
   UI.Toolbar := Panel(Frame,Frame,alTop,38); UI.Toolbar.Top := 70;
   UI.Toolbar.Name := 'PsdToolbar';
   UI.MouthCombo := TComboBox.Create(Frame); UI.MouthCombo.Parent := UI.Toolbar;
@@ -194,6 +201,7 @@ end;
 procedure SetMusicStudioPsdLayerMode(var UI: TMusicStudioPsdLayerControls; ExpressionMode: Boolean);
 begin
   UI.LayerList.CheckMode := ExpressionMode;
+  UI.AnimateMouthSize.Visible := not ExpressionMode;
   UI.Toolbar.Visible := False;
   UI.MouthCombo.Visible := False; UI.AssignButton.Visible := False;
   UI.ClearButton.Visible := False; UI.ReloadButton.Visible := False; UI.CancelButton.Visible := False;
@@ -202,7 +210,7 @@ begin
     UI.HintLabel.Caption := 'チェックした表示状態を表情として保存します。右クリックで再読込・読込取消。PSD原本は書き換えません。';
   end else begin
     UI.ReloadButton.Left := 368; UI.CancelButton.Left := 460;
-    UI.HintLabel.Caption := '行選択で差分を排他的にプレビュー。右クリックで母音の割当・解除・表示確認。左列: 通常 / あ～ん / 小あ～小お。小さい母音の未割当は通常の同母音を使用。';
+    UI.HintLabel.Caption := '行選択で差分を排他的にプレビュー。右クリックで母音の割当・解除・表示確認。左列: 通常 / あ～ん。口のサイズ変化は上の設定で切り替えます。';
   end;
 end;
 

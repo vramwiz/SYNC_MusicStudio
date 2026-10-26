@@ -1,4 +1,4 @@
-program SYNC_Lyrics_FontHistoryComboTests;
+﻿program SYNC_Lyrics_FontHistoryComboTests;
 
 {$APPTYPE CONSOLE}
 

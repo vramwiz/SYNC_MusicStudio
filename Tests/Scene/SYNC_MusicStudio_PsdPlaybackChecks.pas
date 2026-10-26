@@ -151,7 +151,7 @@ begin
       end else Keys[I] := KeyByName(D,'*shape'+IntToStr(I),'');
       MusicStudioAssignMouth(Config,I,Keys[I]);
     end;
-    MusicStudioAssignMouth(Config,6,Keys[0]); for I := 7 to 11 do MusicStudioAssignMouth(Config,I,Keys[I-6]);
+    MusicStudioAssignMouth(Config,6,Keys[0]);
     A.ConfigJSON := Config.ToJSON; Check(Store.TrySave(A,Error),Error);
     ManagedHash := THashSHA2.GetHashStringFromFile(A.FilePath); MetadataHash := THashSHA2.GetHashStringFromFile(TPath.Combine(ExtractFileDir(A.FilePath),'asset.json'));
     for I := 0 to 5 do begin

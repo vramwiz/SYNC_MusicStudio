@@ -1458,7 +1458,7 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - ユーザーが演奏者トラックへ演奏PSDをドラッグできないと報告し、ドラッグ元はエクスプローラーでなくアプリ左のPSD一覧と確認した。素材やPSD認識の問題ではなく、画像をトラック見出しへ移した後もSettingsFormのDragOverが `SlotIndex<0` と `X<HeaderWidth` を一律拒否していたため。DropLibraryItemAtにもスロット必須条件があり、hoverだけ緩めても割当できない状態だった。
 - PSDをトラックの属性として扱い、kind=psdの演奏者見出し（slot=-1）へ共有PSDを割り当てる。展開/折りたたみの画像・見出し、従来のPSD枠へのドロップを受理し、能力/属性と表示を既存AssignPerformerPSD経路で更新する。音楽トラックへのPSD、互換性のない枠、欠損素材、不正なトラック/座標/別ドラッグ元は拒否する。PSD以外は引き続き対応枠の時間領域へ置く。
 - CanDropLibraryItemAtへ一覧/トラック境界、枠互換、欠損、PSD ID、演奏属性の受入条件を集約。DragDropでも同じ座標判定を再実行し、割当取消/失敗の理由を表示する。実PSDの読込は確定時の既存処理に限定し、hoverや描画で名前解析/PSD読込を追加していない。共有PSD本体/設定の保存や新しい演奏形式は追加していない。
-- 専用ケースTests/SYNC_MusicStudio_PsdDropChecks.pasとNoAudioTestsの `--psd-drop` 入口を追加。変更前は見出し画像中心42,99で「展開したスロットの時間領域へドロップしてください」と拒否され終了1、修正後は同じケースが成功。展開/折りたたみ、演奏型とポーズ専用型、属性/能力更新、割当Undo/Redo、別トラック不変、音楽/ルーラー/別Source/範囲外/互換性のない枠の拒否、欠損/復旧、既存PSD枠/テンポ時間領域、JSON再読込を確認した。
+- 専用ケースTests/Timeline/SYNC_MusicStudio_PsdDropChecks.pasとNoAudioTestsの `--psd-drop` 入口を追加。変更前は見出し画像中心42,99で「展開したスロットの時間領域へドロップしてください」と拒否され終了1、修正後は同じケースが成功。展開/折りたたみ、演奏型とポーズ専用型、属性/能力更新、割当Undo/Redo、別トラック不変、音楽/ルーラー/別Source/範囲外/互換性のない枠の拒否、欠損/復旧、既存PSD枠/テンポ時間領域、JSON再読込を確認した。
 - 同ケースへ受信済みのドラムPSDと等身調整済みバイオリンPSDを渡し、隔離共有rootへ管理コピーを作って実イベント経由の割当成功を確認。原本SHA256一致。テストは設定フォーム所有のOnDragOver/OnDragDropを座標付きで呼び、ドキュメントAPIだけの確認にはしない。AviUtl2実機やユーザー操作によるOSマウスドラッグは今回未確認。
 - 音声エンジン未確保・WaveCache decode数0をassert。`--performer-management` の関連ケースを1回成功させ、従来の共有演奏/PSD割当/他属性拒否との整合を確認。Scripts/BuildLocal.ps1でDebug→Releaseを直列無配備ビルドし警告/エラー0。ReleaseのFoundationはJSON/設定画面/登録ID/最小callbackを全成功。音声処理、DPI変更、全体スイートの反復、実共有設定や作品の書込、配備、commit/pushは行っていない。
 - TRACK_SLOT_UI/DESIGNへPSD見出し割当と他パターンの時間領域制限を記載し、DEVELOPMENTへ専用モードを追加。実装変更は既存SettingsForm内の判定/イベントのみで1500行目安内、新規検証unitはNoAudioTestsだけが参照する。本体の外部依存や不要ソースを追加していない。継承UIは保持し、今回専用のTemp/DCU103件を対象パス限定で削除した。既存Win64成果物やユーザー差分は整理対象にしない。
@@ -1927,3 +1927,53 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - 統合timelineのnative TScrollBarをDarkScrollBarへ置換。横/縦、thumb/矢印/page/keyboard/wheel/repeat、range/visible page、capture取消を独自描画。二重buffer/背景消去抑制/親WS_CLIPCHILDRENと、同値Configureの無描画で白flash・無用な描画を避ける。他画面の継承UIは変更しない。
 - C:/Users/vramw/AppData/Local/Temp/SYNC_MusicStudio-DarkScroll-20261026/finalの--dark-scroll成功。thumb/arrow/page/key/clamp/cancel/WM_ERASEBKGND、同値で再描画なし、drag中timeline30回再描画でもbarのPaintCount不変、実OS cursorをarrowへ変えた後のWM_SETCURSOR復元（client/child境界）を確認。slot/compact専用回帰も成功。画像でdark barを確認。音声/DPI処理なし、実AviUtl2での体感は未確認。
 - buildのDebug/Release warning0/error0、LOCAL_NO_DEPLOY。product dpr/dproj81参照一致、欠損/重複0。新DarkScrollBarを両方と独立hostへ登録。変更pas/dprのBOM/CRLFとdiff check成功。新unitは製品に必要で保持、不要sourceなし。作品/共有/配備先へ書込なし、無配備・commit/pushなし。
+
+## 2026-10-26 PSDごとの口サイズ変化（無配備）
+
+- PSD設定へ「口のサイズを滑らかに変化」（仮称）チェックを追加。共有configのanimateMouthSizeへ保存し、未設定/初期値はfalse。不正な型は適用前に拒否。通常/省スペース表示で操作でき、表情編集では共有設定の変更UIを隠す。
+- オフは等倍固定。オンは各発音の開始で1、終了へ向けて0.5まで線形縮小する。複数母音の音符は既存の等分区間を使い、同じ母音も発音ごとに再始動。SceneCacheの口subtree縮小を使用し、身体/表情/原PSDを変更しない。編集と映像workerは同じ時刻評価を使う。
+- 小さい母音の配列/メニュー/割当/フォールバック/描画分岐を撤去。通常口＋あいうえおんの7項目。旧smallA/I/U/E/OのJSONは未知データとして保持し、表示/評価には使用しない。既存の小書きかなは通常の母音を使用する。
+- --mouth-list成功: 初期オフ、オン保存/再読込、オフ復帰、省スペースでも設定可視/枠内、表情編集では非表示、7項目の割当/解除/確認、旧キー保持、不正型拒否。既存の差分試写/キーボード/再読込/選択でJSON不変も維持。
+- 新規専用--mouth-size成功: 合成PSD/MIDIと隔離ライブラリでオフ時の等倍、オン時の開始/25/50/75%/終了直前の口画素数64/49/36/25/16、同母音再始動、逆seek、非表示の合成停止、別表情の口枝とUndo/Redo、音声engine未生成/decode0を確認。Release実DLLのSDK X/Y/倍率も成功。全stageの列メニュー等を通ったという主張はしない。
+- 最初の--stage-editorは列メニュー段階で30秒待機し、テスト所有PID 1756だけを終了。口サイズに直接関係する部分を--mouth-sizeへ分離して確認。ユーザーアプリの停止/フォーカス操作なし。非表示起動のnative画面captureは不完全なため、UI見た目の保証には用いていない。
+- BuildLocalで最終Debug/Releaseとも警告0/エラー0、無配備auf2生成。ReleaseのFoundation（JSON/設定form/製品identity/artifact）成功。音声fixture/decode/再生/試聴/waveOut、DPI変更、全体スイート、実AviUtl2操作/aup2保存再読込は実行しない。
+- 依存監査: 新unit/追加DLLなし、product dprの参照ファイルは全て存在。変更pas/dprはUTF-8 BOM/CRLF。小さい母音の不要コードとテスト設定を整理済み。現行source/継承UIに削除対象なし。以前削除拒否のDCU/空folderは変更しない。実素材/実共有/sample.aup2/参照元/配備は変更せず、commit/pushなし。
+- 証拠: Temp/SYNC_MusicStudio-MouthSize-20261026/。mouth-list-compact.log、mouth-size-verified.log、build-final/build-Debug.log・build-Release.log、foundation-final.log、final-noaudio-compile.log、dependency-audit.json。初期の中断/不完全captureも記録として保持。
+
+## 2026-10-26 同期アニメーション3種類・直接配置（無配備）
+
+- 演奏者にアニメーション（歌唱/演奏/リズム）を追加。歌唱/演奏は同trackに対応slotがあるときだけ追加、リズムは元slot不要。追加APIとメニューの条件を共通化。元slot削除後は配置を保持して動作を停止する。
+- 追加指示を反映し、アニメーションの一覧/＋を非表示にした。空白の左dragで直接区間を作成し、左右向き/グリッド/未確定矩形/Esc/capture取消へ対応。既存区間は中央dragで移動、両端で長さ変更、dragなしの左clickで7種類のpopupへ進む。初期は縮み・伸び（SYNC_Motion由来bounce）、他はなし/縦ジャンプ/縮小/ステップ/振り子1拍/2拍。メニューを開く前にcaptureを解除し、移動/伸縮/doubleclickで誤起動しない。
+- 本文は作品内のkind=animation/motion設定として保存。AnimationSlotDataが候補JSONで検証/確定し、種類変更では配置ID/時刻/長さを維持して他配置から分離する。未使用ローカルmotion設定は変更/区間削除/slot削除/track削除で整理。共有PSD/共有プリセットは書き換えない。旧共有参照と旧animationスロットは互換保持。
+- AnimationSyncは演奏区間の位相計算を分離。Sceneは歌詞付き音符/参照開始offset、演奏の手足区間/旧notes/layerSteps、リズムの作品絶対拍を使う。休符/歌詞なし/配置外は変形なし。同母音も開始で再始動し、変化テンポ/逆seekへ追従する。既存MotionData/workerで口とは独立して全体を変形。SYNC_Motion参照元は読取のみ。
+- --animation-slots成功: 3名称/追加拒否の原子性/20高/一覧非表示と復帰、絶対拍と変化テンポ、歌唱offset/同母音/逆seek/休符/同期元削除、旧notesと手足区間/表情行非トリガー、保存再読込/同時刻再描画抑制、編集/VideoSessionの全画素一致（作品内の種類変更後も含む）。実WM通知の往復drag/確定前JSON不変/Esc/capture解除、作成と種類変更のUndoRedo、種類checked/配置IDと範囲保持/不正値拒否、中央移動/右端伸縮でメニュー非起動、削除時の孤立設定整理も成功。
+- 検証はフォームを表示せず、slot追加menuはOnPopupで構築、左clickのmenu dispatchはprobeでPrepareへ差替えた。native popup自体の表示/クリックは実機確認と区別する。Popup/ShowModal、音声fixture/decode/再生/waveOut、DPI変更と全体suiteは実行していない。runnerはテストprocessをfinallyで終了確認し、終了後の残存なし。
+- 初回の同時刻キャッシュassertはReload後の初回seekを含んでいたため計測位置を修正。直接操作の右端座標もsnapped時刻から求めるよう修正。ローカル設定の整理を分離した後のRemovePlacementへの呼出漏れを専用検証が検出し修正。失敗ログも保持。
+- BuildLocalの最終Debug/Releaseは警告0/エラー0、無配備auf2生成。Release実DLLのFoundation（JSON/設定form/identity/artifact）成功。新2unitはproduct dpr/dprojと関連6hostへ登録。変更pas/dprはBOM/CRLF、参照source欠損なし、追加DLLなし。初期の共有パターン作成default変更は撤回し、不要な中間コードを整理。継承UI/既存sourceに削除対象なし、旧DCU/空folderは触れていない。
+- 証拠: Temp/SYNC_MusicStudio-AnimationSlots-20261026/。direct-video-final.log、build-direct-verified/build-Debug.log・build-Release.log、dependency-audit.json、direct-video-final/animation-demo.json。実AviUtl2操作/aup2保存再読込は未確認。実素材/実共有/sample.aup2/配備/参照元を変更せず、commit/pushなし。
+
+## 2026-10-26 アニメーション行・追加submenu・連続表示
+
+- アニメーションだけ20→28高へ変更し、slot見出しを歌唱/演奏/リズムへ短縮。紫背景/明るい紫文字/左線で通常の歌唱・演奏行と区別。本文も1行用描画へ揃えた。保存名/IDは変更しない。既存slot追加popupを別popupへ開き直す操作を除き、ArrangementMenuの「スロット追加」に同じ候補/追加条件の子menuを実装。上部＋は従来の入口を維持。
+- Scene live更新は実行中合成を取り消さず最新要求へまとめ、同じBind/source/playback epochの完成画像を順に公開。停止/seek/VideoSessionは厳密位置を維持する。再生更新が合成より速い場合に公開を捨て続ける設計を解消した。PublishedSecondsで中間完成フレームを確認。
+- --animation-slotsで従来の直接操作/種類/Undo/Video画素回帰に加え、28高/色差、submenuの階層と条件/別popup起動なし、154BPM・同期元なしで半拍/各拍の画像、実行中frame公開、pauseの厳密復帰を確認。無音時計1.3秒で40完成画像/38画像変化（最適化後回帰では40/39）を公開。小型合成PSDのtimeline-animation.pngを目視し、短いラベル・色・文字の縦収まりを確認。
+- 証拠: Temp/SYNC_MusicStudio-AnimationPolish-20261026/。checks-final.log・checks-final/timeline-animation.png、build/、foundation.png。native popupを実表示せず、テスト所有processは終了確認。DPI/音声/全体suite/実AviUtl2操作は実行しない。
+
+## 2026-10-26 実PSDのアニメーション性能計測と最適化
+
+- ユーザーの計測許可を受け、変更中sample.aup2の対象を読取確認。現在素材はpaperdolls_kiritan_800px、750×800/115layers/2,386,267B。旧noteのドラム素材パスは存在せず、本作品の実IDを使った。元aup2を変更せず、audio track/patternを除いた映像用JSONと同IDのPSD/metadataをTempへコピー。歌唱参照は既存MSCZを読取のみ。共有登録や音声処理は行わない。
+- 変更前: 480×512プレビューの初回合成10.20ms、bounceの単体変形平均10.097ms。Scene合成1回/MIDI読込1回、85回のmotion平均18.107ms（最大36.277ms）、worker平均18.248ms。cached準備0.270ms/copy0.221ms。合成後の汎用画素変形が主なCPU負荷と判断した。headlessのexact待ち時間はWindows Sleep/Poll粒度も含むので純CPUと区別する。
+- MotionDataの回転0を行ごとの参照Y/せん断計算へ分離。bounce/jump/等倍せん断なしは横の連続画素をMoveで転送し、必要時だけalpha255を補正。回転ありは従来処理。Source/Destの分離、端/透明/1px/負座標/丸めを維持した。
+- 変更後: 同じ実PSDのbounce単体平均1.388ms（約7.28倍）、Scene motion平均4.903ms、worker平均5.202ms（約3.51倍）。7種類すべて改善。live 2秒の公開は前後とも61枚で、FPS向上の主張には使わず処理時間削減として記録する。実AviUtl2のUI/音声同時負荷は未計測。
+- 実PSD7種×12位相=84hash完全一致。別途、最適化前のunitコピーと3サイズ/3alpha形式/3変形設定を含む2268ケースで全画素一致。--animation-slotsで直接操作/154BPMの実時計/編集とVideo画素/停止/追加submenu回帰が成功。音声engine未生成/decode0、native popup/DPI試験なし。
+- PerformanceTraceを追加。DebugはTempのprocess別JSONLへ1秒ごとに平均/最大/countを集計し、OutputDebugStringにも出す。workerからdiskへは書かず、UI timerでflush。scene.prepare.cold/cached、queue、compose、copy、motion、worker、publishLag、discarded、ui.tick、ui.stagePaint、ui.timelinePaintを分ける。環境変数で無効/保存先指定可。Releaseは完全無効でログ用初期割当もしない。
+- 最終BuildLocal Debug/Releaseは警告0/エラー0、無配備。Release Foundation成功。PerformanceTraceはproduct dpr/dprojと6hostへ登録、計測専用AnimationCostChecksはNoAudioだけへ登録。BOM/CRLF、参照source欠損/追加DLLなし。必要な既存source/継承UIを保持し、不要な新規product sourceなし。旧削除拒否DCU/空folderは触れていない。
+- 実PSD/実metadata/変更中sample.aup2の前後hash一致。userのaup2差分はそのまま保持。配備/commit/pushなし。証拠: Temp/SYNC_MusicStudio-AnimationProfile-20261026/。baseline/optimized/profile-report.json、baseline-trace.jsonl・optimized-trace.jsonl、summary.json、motion-hashes.txt、MotionEquivalence.dpr/参照unit、regression.log、build-final/、foundation.png、dependency-audit.json。
+
+## 2026-10-26 作業終了・構成整理
+
+- 設定フォームを1641→1504行へ分離。SettingsDialogsは部品/JSON/track/slot/配置/tempoダイアログ、SettingsSlotMenusは追加候補の共通条件を担当。公開処理に目的・入出力・所有権・保存/例外の副作用を記載した。
+- 108ファイルを機能folderへ移動し、form/dfmは同居。Common/ProjectをArrangement/Timing/Performance/Library、FilterをSettings/Timeline/Preview/Controls/Library、Patternsを属性別、LayersをModel/Rulesへ整理。Tests直下45unitを機能別folderへ分離。製品dpr/dprojと現行hostの参照欠損/重複なし。現行MusicStudio最大1504行。継承SYNC_Lyricsの大きいUI/旧hostは保持し、現行検証と区別する。
+- 無配備Debug/Release、Release Foundation、無音--animation-slots成功。音声/DPI/全体suite/native popup実表示なし。sample.aup2のユーザー変更は保持し、今回のコミットに含めない。
+- 生成fixture/コピーPSD/一時EXE/DCUの削除は絶対path境界を検証したPowerShellを自動承認レビューがblocked by policyで拒否。別方法での再試行はしない。未削除の場所: Temp、Tests/Win64、Win64/Debug/DCU、Win64/Release/DCU。TempはGit対象外へ明示。必要なsource/継承UI/実素材/共有設定/参照元を保持。
+- 証拠: Temp/SYNC_MusicStudio-EndOfDay-20261026/（moves.json、audit.json、build/、checks.log、foundation.png）。remote mainはfetch時点でHEADと同一。ユーザーの終了指示で追加変更を停止し、本日のソース・仕様・履歴をコミットしてpushする。

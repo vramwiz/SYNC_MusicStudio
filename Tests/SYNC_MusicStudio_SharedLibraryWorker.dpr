@@ -3,7 +3,7 @@
 // 隔離ライブラリ用の子プロセス。音声/VCL/実ライブラリは使わない。
 uses
   System.SysUtils, System.Classes, System.IOUtils, System.JSON, Winapi.Windows,
-  SYNC_MusicStudio_SharedPsdLibrary in '..\Source\Common\Project\SYNC_MusicStudio_SharedPsdLibrary.pas';
+  SYNC_MusicStudio_SharedPsdLibrary in '..\Source\Common\Project\Library\SYNC_MusicStudio_SharedPsdLibrary.pas';
 type
   TInterruptedCopyLibrary = class(TMusicStudioSharedPsdLibrary)
   protected

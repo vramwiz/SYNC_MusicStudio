@@ -95,6 +95,7 @@ type
     procedure AddPsdTrackClick(Sender: TObject);
     procedure AddTrack(const Kind: string);
     procedure SlotMenuClick(Sender: TObject);
+    procedure SlotAddMenuPopup(Sender: TObject);
     procedure AddSlotClick(Sender: TObject);
     procedure SlotSettingsClick(Sender: TObject);
     procedure SlotDeleteClick(Sender: TObject);
@@ -177,9 +178,9 @@ implementation
 
 uses
   System.IOUtils, System.SysUtils, System.UITypes, System.Math, Vcl.Graphics, Winapi.Windows,
-  SYNC_MusicStudio_Controls, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_ProjectData,
+  SYNC_MusicStudio_SettingsSlotMenus, SYNC_MusicStudio_SettingsDialogs, SYNC_MusicStudio_Controls, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_ProjectData,
   SYNC_MusicStudio_PatternSettingsForm, SYNC_MusicStudio_SharedLibraryEditor,
-  SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_TimingFrame, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_DrumData,
+  SYNC_MusicStudio_ArrangementData, SYNC_MusicStudio_LayerStepData, SYNC_MusicStudio_DrumData,
   SYNC_MusicStudio_InstrumentFrame, SYNC_MusicStudio_InstrumentData,
   SYNC_MusicStudio_PerformanceKinds,
   SYNC_MusicStudio_PerformerPsd, SYNC_MusicStudio_PerformerEditor, SYNC_MusicStudio_PerformanceEditor,
@@ -187,39 +188,6 @@ uses
 
 {$R *.dfm}
 
-const SLOT_KINDS: array[0..13] of string = ('audio','psd','singing','emotion','animation','instrument','performance','rhythm','generic','tempo','face','pose','symbol','customExpression');
-
-function Panel(Owner: TComponent; Parent: TWinControl; Align: TAlign; Size: Integer): TPanel;
-begin
-  Result := TPanel.Create(Owner);
-  Result.Parent := Parent;
-  Result.SetBounds(0, 0, Parent.ClientWidth, Parent.ClientHeight);
-  if Align in [alLeft, alRight] then Result.Width := Size else Result.Height := Size;
-  Result.Align := Align;
-  Result.BevelOuter := bvNone;
-  ApplySyncMusicStudioDarkPanel(Result);
-end;
-
-function Button(Owner: TComponent; Parent: TWinControl; X, Y, Width: Integer;
-  const Caption: string; Click: TNotifyEvent): TButton;
-begin
-  Result := TMusicStudioButton.Create(Owner);
-  Result.Parent := Parent;
-  Result.SetBounds(X, Y, Width, 30);
-  Result.Caption := Caption;
-  Result.OnClick := Click;
-  ApplySyncMusicStudioDarkButton(Result);
-end;
-
-function LabelAt(Owner: TComponent; Parent: TWinControl; X, Y: Integer;
-  const Caption: string): TLabel;
-begin
-  Result := TLabel.Create(Owner);
-  Result.Parent := Parent;
-  Result.Left := X;
-  Result.Top := Y;
-  Result.Caption := Caption;
-end;
 
 procedure TFormMusicStudioSettings.BuildUI;
 var
@@ -229,47 +197,47 @@ var
   LabelControl: TLabel;
   Splitter: TSplitter;
 begin
-  ToolbarPanel := Panel(Self, Self, alTop, 60);
-  ImportButton := Button(Self, ToolbarPanel, 16, 16, 104, 'JSON読込', ImportButtonClick);
-  ExportButton := Button(Self, ToolbarPanel, 128, 16, 104, 'JSON保存', ExportButtonClick);
-  RestoreButton := Button(Self, ToolbarPanel, 248, 16, 160, '開いた時点に戻す', RestoreButtonClick);
-  Button(Self, ToolbarPanel, 424, 16, 108, 'JSONを編集…', RawJSONButtonClick);
-  DebugJSONButton := Button(Self,ToolbarPanel,550,16,132,'サンプルJSON…',DebugJSONClick);
-  FTempoButton := Button(Self,ToolbarPanel,704,16,166,'テンポ / 拍子…',TempoSettingsClick);
+  ToolbarPanel := MusicStudioPanel(Self, Self, alTop, 60);
+  ImportButton := MusicStudioButton(Self, ToolbarPanel, 16, 16, 104, 'JSON読込', ImportButtonClick);
+  ExportButton := MusicStudioButton(Self, ToolbarPanel, 128, 16, 104, 'JSON保存', ExportButtonClick);
+  RestoreButton := MusicStudioButton(Self, ToolbarPanel, 248, 16, 160, '開いた時点に戻す', RestoreButtonClick);
+  MusicStudioButton(Self, ToolbarPanel, 424, 16, 108, 'JSONを編集…', RawJSONButtonClick);
+  DebugJSONButton := MusicStudioButton(Self,ToolbarPanel,550,16,132,'サンプルJSON…',DebugJSONClick);
+  FTempoButton := MusicStudioButton(Self,ToolbarPanel,704,16,166,'テンポ / 拍子…',TempoSettingsClick);
   FTempoButton.ShowHint := True;
   ToolbarPanel.Visible := False;
-  FooterPanel := Panel(Self, Self, alBottom, 58);
-  ApplyButton := Button(Self, FooterPanel, 16, 14, 148, '適用して閉じる', nil);
+  FooterPanel := MusicStudioPanel(Self, Self, alBottom, 58);
+  ApplyButton := MusicStudioButton(Self, FooterPanel, 16, 14, 148, '適用して閉じる', nil);
   ApplyButton.ModalResult := mrOK;
-  CancelButton := Button(Self, FooterPanel, 176, 14, 104, 'キャンセル', CancelButtonClick);
+  CancelButton := MusicStudioButton(Self, FooterPanel, 176, 14, 104, 'キャンセル', CancelButtonClick);
   CancelButton.ModalResult := mrCancel;
   CancelButton.Cancel := True;
-  StatusLabel := LabelAt(Self, FooterPanel, 306, 20, '');
+  StatusLabel := MusicStudioLabelAt(Self, FooterPanel, 306, 20, '');
   StatusLabel.AutoSize := False;
   StatusLabel.Width := FooterPanel.Width - 322;
   StatusLabel.Anchors := [akLeft, akTop, akRight];
-  InfoPanel := Panel(Self, Self, alTop, 40);
+  InfoPanel := MusicStudioPanel(Self, Self, alTop, 40);
   InfoPanel.Top := 0;
-  InfoLabel := LabelAt(Self, InfoPanel, 16, 10,
+  InfoLabel := MusicStudioLabelAt(Self, InfoPanel, 16, 10,
     '右のスロットを選択 → 左の一覧を右クリックで追加・設定 → ドラッグで配置');
   InfoLabel.AutoSize := False;
   InfoLabel.Width := InfoPanel.Width - 32;
   InfoLabel.Anchors := [akLeft, akTop, akRight];
-  WorkPanel := Panel(Self, Self, alClient, 0);
-  PatternPanel := Panel(Self, WorkPanel, alLeft, 268);
+  WorkPanel := MusicStudioPanel(Self, Self, alClient, 0);
+  PatternPanel := MusicStudioPanel(Self, WorkPanel, alLeft, 268);
   PatternPanel.Constraints.MinWidth := 230;
   PatternPanel.Constraints.MaxWidth := 360;
-  Header := Panel(Self, PatternPanel, alTop, 82);
-  FLibraryTabs[0] := Button(Self,Header,8,46,74,'PSD',LibraryTabClick); FLibraryTabs[0].Tag := 0;
-  FLibraryTabs[1] := Button(Self,Header,88,46,74,'演奏',LibraryTabClick); FLibraryTabs[1].Tag := 1;
-  FLibraryTabs[2] := Button(Self,Header,168,46,74,'歌唱',LibraryTabClick); FLibraryTabs[2].Tag := 2;
-  LibraryLabel := LabelAt(Self, Header, 16, 17, 'スロットを選択');
-  AddButton := Button(Self, Header, Header.Width - 50, 10, 34, '＋', AddButtonClick);
+  Header := MusicStudioPanel(Self, PatternPanel, alTop, 82);
+  FLibraryTabs[0] := MusicStudioButton(Self,Header,8,46,74,'PSD',LibraryTabClick); FLibraryTabs[0].Tag := 0;
+  FLibraryTabs[1] := MusicStudioButton(Self,Header,88,46,74,'演奏',LibraryTabClick); FLibraryTabs[1].Tag := 1;
+  FLibraryTabs[2] := MusicStudioButton(Self,Header,168,46,74,'歌唱',LibraryTabClick); FLibraryTabs[2].Tag := 2;
+  LibraryLabel := MusicStudioLabelAt(Self, Header, 16, 17, 'スロットを選択');
+  AddButton := MusicStudioButton(Self, Header, Header.Width - 50, 10, 34, '＋', AddButtonClick);
   AddButton.Anchors := [akTop, akRight];
-  Footer := Panel(Self, PatternPanel, alBottom, 92);
+  Footer := MusicStudioPanel(Self, PatternPanel, alBottom, 92);
   Footer.Visible := False;
-  EditButton := Button(Self, Footer, 16, 12, 142, '選択パターンを設定', EditButtonClick);
-  DeleteButton := Button(Self, Footer, 166, 12, 86, '削除', DeleteButtonClick);
+  EditButton := MusicStudioButton(Self, Footer, 16, 12, 142, '選択パターンを設定', EditButtonClick);
+  DeleteButton := MusicStudioButton(Self, Footer, 166, 12, 86, '削除', DeleteButtonClick);
   PatternList := TMusicStudioFileDropList.Create(Self);
   TMusicStudioFileDropList(PatternList).OnFilesDropped := LibraryFilesDropped;
   PatternList.Parent := PatternPanel;
@@ -289,21 +257,21 @@ begin
   Splitter.Left := PatternPanel.Width;
   Splitter.Width := 6;
   Splitter.MinSize := 230;
-  CenterPanel := Panel(Self, WorkPanel, alClient, 0);
-  Overview := Panel(Self, WorkPanel, alTop, 240); Overview.Top := 0;
+  CenterPanel := MusicStudioPanel(Self, WorkPanel, alClient, 0);
+  Overview := MusicStudioPanel(Self, WorkPanel, alTop, 240); Overview.Top := 0;
   Splitter := TSplitter.Create(Self); Splitter.Parent := WorkPanel; Splitter.Align := alTop; Splitter.Top := 240; Splitter.Height := 5; Splitter.MinSize := 120;
   FOverview := Overview;
   FPreview := TMusicStudioPreviewFrame.Create(Self); FPreview.Parent := Overview;
   FPreview.Align := alClient; PreviewBox := FPreview.Stage;
   FPreview.DockTransport(Self);
-  TrackHeader := Panel(Self, CenterPanel, alTop, 44);
+  TrackHeader := MusicStudioPanel(Self, CenterPanel, alTop, 44);
   TrackHeader.Top := 0;
-  TrackAddButton := Button(Self, TrackHeader, 12, 7, 120, 'トラック＋', TrackAddClick);
-  SlotAddButton := Button(Self,TrackHeader,140,7,112,'スロット＋',SlotMenuClick);
+  TrackAddButton := MusicStudioButton(Self, TrackHeader, 12, 7, 120, 'トラック＋', TrackAddClick);
+  SlotAddButton := MusicStudioButton(Self,TrackHeader,140,7,112,'スロット＋',SlotMenuClick);
   FTempoButton.Parent := TrackHeader; FTempoButton.SetBounds(264,7,130,30);
-  Button(Self,TrackHeader,402,7,88,'元に戻す',HistoryButtonClick).Tag := 0;
-  Button(Self,TrackHeader,496,7,88,'やり直す',HistoryButtonClick).Tag := 1;
-  LabelControl := LabelAt(Self,TrackHeader,592,14,'時間目盛りをドラッグで横移動 / ホイールで拡縮');
+  MusicStudioButton(Self,TrackHeader,402,7,88,'元に戻す',HistoryButtonClick).Tag := 0;
+  MusicStudioButton(Self,TrackHeader,496,7,88,'やり直す',HistoryButtonClick).Tag := 1;
+  LabelControl := MusicStudioLabelAt(Self,TrackHeader,592,14,'時間目盛りをドラッグで横移動 / ホイールで拡縮');
   LabelControl.AutoSize := False; LabelControl.Width := Max(1,TrackHeader.Width - 608);
   LabelControl.Anchors := [akLeft,akTop,akRight];
   TimelineBox := TMusicStudioArrangementView.Create(Self);
@@ -355,13 +323,17 @@ begin
   FClipEditItem.OnClick := ClipEditClick; ArrangementMenu.Items.Add(FClipEditItem);
   FClipDeleteItem := TMenuItem.Create(ArrangementMenu); FClipDeleteItem.Caption := 'この配置を削除';
   FClipDeleteItem.OnClick := ClipDeleteClick; ArrangementMenu.Items.Add(FClipDeleteItem);
-  SlotAddMenu := TPopupMenu.Create(Self);
+  SlotAddMenu := TPopupMenu.Create(Self); SlotAddMenu.OnPopup := SlotAddMenuPopup;
   for I := 0 to High(SLOT_KINDS) do begin
     Item := TMenuItem.Create(SlotAddMenu); Item.Caption := MusicStudioSlotKindName(SLOT_KINDS[I])+'スロット';
     Item.Tag := I; Item.OnClick := AddSlotClick; SlotAddMenu.Items.Add(Item);
   end;
-  FSlotAddItem := TMenuItem.Create(ArrangementMenu); FSlotAddItem.Caption := 'このトラックにスロットを追加…';
-  FSlotAddItem.OnClick := SlotMenuClick; ArrangementMenu.Items.Add(FSlotAddItem);
+  FSlotAddItem := TMenuItem.Create(ArrangementMenu); FSlotAddItem.Caption := 'スロット追加';
+  ArrangementMenu.Items.Add(FSlotAddItem);
+  for I := 0 to High(SLOT_KINDS) do begin
+    Item := TMenuItem.Create(ArrangementMenu); Item.Caption := MusicStudioSlotKindName(SLOT_KINDS[I])+'スロット';
+    Item.Tag := I; Item.OnClick := AddSlotClick; FSlotAddItem.Add(Item);
+  end;
   FSlotSettingsItem := TMenuItem.Create(ArrangementMenu); FSlotSettingsItem.Caption := 'スロット設定…';
   FSlotSettingsItem.OnClick := SlotSettingsClick; ArrangementMenu.Items.Add(FSlotSettingsItem);
   FSlotDeleteItem := TMenuItem.Create(ArrangementMenu); FSlotDeleteItem.Caption := 'このスロットを削除…';
@@ -384,6 +356,7 @@ begin
   BuildUI;
   FSmallEditor := TMusicStudioSmallSlotEditor.Create(Self,TimelineBox,FDocument,CommitMutation);
   FSmallEditor.Store := FSharedLibrary; TimelineBox.OnSmallMenu := FSmallEditor.ShowMenu;
+  TimelineBox.OnAnimationCreate := FSmallEditor.CreateAnimation;
   FLibraryThumbnails := TMusicStudioLibraryThumbnails.Create(PatternList,TimelineBox.VisualCache);
   FLibraryThumbnails.OnMetadataChange := LibraryMetadataChanged;
   KeyPreview := True; OnKeyDown := TransportKeyDown; OnKeyUp := TransportKeyUp;
@@ -422,7 +395,7 @@ end;
 destructor TFormMusicStudioSettings.Destroy;
 begin
   FValid := False;
-  TimelineBox.OnSmallMenu := nil; FreeAndNil(FSmallEditor);
+  TimelineBox.OnSmallMenu := nil; TimelineBox.OnAnimationCreate := nil; FreeAndNil(FSmallEditor);
   FreeAndNil(FTempoRuler); FreeAndNil(FLibraryThumbnails); FreeAndNil(FEditHistory); FreeAndNil(FPerformanceHistory);
   if Assigned(FPreview) then begin FPreview.Bind(nil); FPreview.SharedVisualCache := nil; FPreview.SharedLibrary := nil; end;
   if Assigned(TimelineBox) then begin TimelineBox.Bind(nil); TimelineBox.SceneCache := nil; end;
@@ -535,6 +508,7 @@ procedure TFormMusicStudioSettings.HistoryButtonClick(Sender: TObject);
 begin if TButton(Sender).Tag=0 then UndoEdit else RedoEdit; end;
 procedure TFormMusicStudioSettings.UpdateLibrary;
 var I,N: Integer; SelectedID,Kind,AssetID,K: string; T: TMusicStudioTrack; S: TMusicStudioSlot; Item: TMenuItem;
+  DirectAnimation: Boolean;
   Assets: TArray<TMusicStudioPsdAsset>; Emotions: TArray<TMusicStudioLibraryItem>; P: TMusicStudioPattern;
 begin
   T := Default(TMusicStudioTrack);
@@ -558,6 +532,9 @@ begin
     else if FLibraryContext<>'' then begin Kind := FLibraryContext; FAvailableKinds := [Kind]; end
     else if (Kind='') and (T.Kind='psd') then begin Kind := 'psd'; FAvailableKinds := ['psd']; end;
   end;
+  DirectAnimation := (MusicStudioAnimationSource(S.Kind)<>'') and (FLibraryContext='');
+  if DirectAnimation then begin Kind := ''; FAvailableKinds := nil; end;
+  PatternList.Visible := not DirectAnimation; AddButton.Visible := not DirectAnimation;
   FLibraryKind := Kind;
   for I := 0 to High(FLibraryTabs) do FLibraryTabs[I].Enabled := FValid and (TimelineBox.SelectedTrack>=0) and (T.Kind<>'audio');
   PatternList.ShowHint := (Kind='psd') or (Kind='audio');
@@ -576,6 +553,10 @@ begin
   if Kind='audio' then LibraryLabel.Caption := '音声 / パターン';
   if Kind='performance' then LibraryLabel.Caption := PerformanceKindName(FPerformanceAttribute)+' / 共通演奏';
   if Kind='singing' then LibraryLabel.Caption := '歌唱 / プロジェクト共有';
+  if DirectAnimation then begin
+    LibraryLabel.Caption := MusicStudioSlotKindName(S.Kind);
+    StatusLabel.Caption := '空白をドラッグして配置。区間を左クリックで種類変更、両端ドラッグで長さ変更。';
+  end;
   if (S.Kind='animation') and (S.Name='ポーズ') then LibraryLabel.Caption := 'ポーズ';
   if S.Kind='customExpression' then LibraryLabel.Caption := '表情カスタム';
   if FValid then FLibraryItems := MusicStudioLibraryItems(FDocument,FSharedLibrary,FAvailableKinds,AssetID,FPerformanceAttribute) else FLibraryItems := nil;
@@ -1077,41 +1058,10 @@ begin
 end;
 
 procedure TFormMusicStudioSettings.RawJSONButtonClick(Sender: TObject);
-var
-  Dialog: TForm;
-  Memo: TMemo;
-  Footer: TPanel;
-  Text, ErrorText: string;
+var Text: string;
 begin
-  Dialog := TForm.CreateNew(Self);
-  try
-    Dialog.Caption := '演奏スタジオ - JSON編集';
-    Dialog.SetBounds(Left + 40, Top + 40, 880, 600);
-    ApplySyncMusicStudioDarkForm(Dialog);
-    ApplyMusicStudioEditorFont(Dialog);
-    Footer := Panel(Dialog, Dialog, alBottom, 48);
-    Button(Dialog, Footer, 12, 10, 140, '編集画面へ反映', nil).ModalResult := mrOK;
-    Button(Dialog, Footer, 164, 10, 100, 'キャンセル', nil).ModalResult := mrCancel;
-    Memo := TMemo.Create(Dialog);
-    Memo.Parent := Dialog;
-    Memo.Align := alClient;
-    Memo.ScrollBars := ssBoth;
-    Memo.WordWrap := False;
-    Memo.Font.Name := 'Consolas';
-    Memo.Text := JSONMemo.Text;
-    ApplySyncMusicStudioDarkMemo(Memo);
-    while Dialog.ShowModal = mrOK do
-    begin
-      if TryNormalizeMusicStudioJSON(Memo.Text, Text, ErrorText) then
-      begin
-        JSONMemo.Text := Text;
-        Break;
-      end;
-      MessageDlg(ErrorText, mtError, [mbOK], 0);
-    end;
-  finally
-    Dialog.Free;
-  end;
+  Text := JSONMemo.Text;
+  if EditMusicStudioRawJSON(Self,Text) then JSONMemo.Text := Text;
 end;
 
 function TFormMusicStudioSettings.CommitMutation: Boolean;
@@ -1277,7 +1227,7 @@ begin
   FTrackSettingsItem.Enabled := Selected; FTrackDeleteItem.Enabled := Selected;
   FClipEditItem.Enabled := Selected and (TimelineBox.SelectedClip >= 0);
   FClipDeleteItem.Enabled := FClipEditItem.Enabled;
-  FSlotAddItem.Enabled := Selected;
+  FSlotAddItem.Enabled := Selected; if Selected then SlotAddMenuPopup(nil);
   FSlotSettingsItem.Enabled := Selected and (TimelineBox.SelectedSlot >= 0);
   FSlotDeleteItem.Enabled := FSlotSettingsItem.Enabled;
   FSlotUpItem.Enabled := FSlotSettingsItem.Enabled and (TimelineBox.SelectedSlot > 0);
@@ -1287,31 +1237,23 @@ begin
 end;
 
 procedure TFormMusicStudioSettings.TrackSettingsClick(Sender: TObject);
-var T: TMusicStudioTrack; D: TMusicStudioPatternSettings; Index: Integer;
 begin
-  Index := TimelineBox.SelectedTrack; if not FValid or (Index < 0) then Exit;
-  T := FDocument.TrackAt(Index); if (T.Kind <> 'audio') and (T.Kind <> 'psd') then Exit;
-  D := TMusicStudioPatternSettings.Create(Self);
-  try
-    D.LoadTrack(T); if D.ShowModal <> mrOK then Exit; D.ReadTrack(T);
-    if (T.Kind='psd') and not ChooseMusicStudioAttribute(Self,T.PerformanceAttribute) then Exit;
-    if T.Kind='psd' then FDocument.SetPerformer(Index,T.PerformanceAttribute,nil,False);
-    FDocument.UpdateTrack(Index,T.Name,T.Color,T.PsdPath); CommitMutation;
-  finally D.Free; end;
+  if FValid and (TimelineBox.SelectedTrack>=0) then
+    EditMusicStudioTrack(Self,FDocument,TimelineBox.SelectedTrack,CommitMutation);
 end;
 
-procedure TFormMusicStudioSettings.SlotMenuClick(Sender: TObject);
-var P: TPoint; T: TMusicStudioTrack; I: Integer; K: string;
+procedure TFormMusicStudioSettings.SlotAddMenuPopup(Sender: TObject);
+var T: TMusicStudioTrack;
 begin
-  if not FValid or (TimelineBox.SelectedTrack < 0) then begin StatusLabel.Caption := '先にトラックを選択してください。'; Exit; end;
+  if not FValid or (TimelineBox.SelectedTrack<0) then begin StatusLabel.Caption := '先にトラックを選択してください。'; Exit; end;
   T := FDocument.TrackAt(TimelineBox.SelectedTrack);
-  if (T.Kind <> 'audio') and (T.Kind <> 'psd') then Exit;
-  for I := 0 to High(SLOT_KINDS) do begin
-    SlotAddMenu.Items[I].Enabled := ((T.Kind='audio') and ((SLOT_KINDS[I]='audio') or (SLOT_KINDS[I]='tempo'))) or
-      ((T.Kind='psd') and (T.PsdAssetID<>'') and (SLOT_KINDS[I]='customExpression'));
-    for K in T.ProvidedSlots do if SLOT_KINDS[I]=K then SlotAddMenu.Items[I].Enabled := True;
-    SlotAddMenu.Items[I].Visible := SlotAddMenu.Items[I].Enabled;
-  end;
+  if (T.Kind<>'audio') and (T.Kind<>'psd') then Exit;
+  ApplyMusicStudioSlotMenu(T,SlotAddMenu,FSlotAddItem);
+end;
+procedure TFormMusicStudioSettings.SlotMenuClick(Sender: TObject);
+var P: TPoint;
+begin
+  if not FValid or (TimelineBox.SelectedTrack<0) then Exit;
   P := SlotAddButton.ClientToScreen(Point(0,SlotAddButton.Height)); SlotAddMenu.Popup(P.X,P.Y);
 end;
 procedure TFormMusicStudioSettings.AddSlotClick(Sender: TObject);
@@ -1324,20 +1266,11 @@ begin
   if CommitMutation then TimelineBox.SelectSlot(TrackIndex,Index);
 end;
 procedure TFormMusicStudioSettings.SlotSettingsClick(Sender: TObject);
-var TIndex,SIndex: Integer; S: TMusicStudioSlot; D: TMusicStudioPatternSettings; ErrorText: string;
 begin
-  TIndex := TimelineBox.SelectedTrack; SIndex := TimelineBox.SelectedSlot;
-  if not FValid or (TIndex < 0) or (SIndex < 0) then Exit;
-  S := FDocument.TrackAt(TIndex).Slots[SIndex]; D := TMusicStudioPatternSettings.Create(Self);
-  try
-    D.LoadSlot(S);
-    while D.ShowModal = mrOK do begin
-      D.ReadSlot(S);
-      if FDocument.UpdateSlot(TIndex,SIndex,S.Name,S.Color,S.Accepts,ErrorText) then begin CommitMutation; Break; end;
-      MessageDlg(ErrorText,mtWarning,[mbOK],0);
-    end;
-  finally D.Free; end;
+  if FValid and (TimelineBox.SelectedTrack>=0) and (TimelineBox.SelectedSlot>=0) then
+    EditMusicStudioSlot(Self,FDocument,TimelineBox.SelectedTrack,TimelineBox.SelectedSlot,CommitMutation);
 end;
+
 procedure TFormMusicStudioSettings.SlotDeleteClick(Sender: TObject);
 var TIndex,SIndex: Integer;
 begin
@@ -1443,6 +1376,12 @@ begin
   if T.Kind='psd' then InfoLabel.Caption := InfoLabel.Caption+' / 演奏属性: '+PerformanceKindName(T.PerformanceAttribute);
   if TimelineBox.SelectedSlot >= 0 then InfoLabel.Caption := InfoLabel.Caption+
     '  /  スロット: '+T.Slots[TimelineBox.SelectedSlot].Name;
+  if (TimelineBox.SelectedSlot>=0) and (MusicStudioAnimationSource(T.Slots[TimelineBox.SelectedSlot].Kind)<>'') then begin
+    InfoLabel.Caption := InfoLabel.Caption+' ・ 空白をドラッグで配置 / 左クリックで種類変更';
+    if not MusicStudioCanAddAnimationSlot(T,T.Slots[TimelineBox.SelectedSlot].Kind) then
+      InfoLabel.Caption := InfoLabel.Caption+' / 同期元スロットがありません。配置は保持しています。';
+    Exit;
+  end;
   InfoLabel.Caption := InfoLabel.Caption+'  ・  右クリックで設定 / 並べ替え / 削除';
   if (TimelineBox.SelectedSlot>=0) and T.HasCapabilityMetadata then begin
     K := T.Slots[TimelineBox.SelectedSlot].Kind; Supported := (K='psd') or (K='customExpression');
@@ -1452,63 +1391,16 @@ begin
 end;
 
 procedure TFormMusicStudioSettings.ClipEditClick(Sender: TObject);
-var D: TForm; Footer: TPanel; StartEdit, LengthEdit: TEdit; C: TMusicStudioPlacement;
-  StartValue, LengthValue, MaximumEnd: Double; TIndex, SIndex, CIndex: Integer; FS: TFormatSettings; ErrorText: string;
 begin
-  TIndex := TimelineBox.SelectedTrack; SIndex := TimelineBox.SelectedSlot; CIndex := TimelineBox.SelectedClip;
-  if not FValid or (TIndex < 0) or (SIndex < 0) or (CIndex < 0) then Exit;
-  C := FDocument.TrackAt(TIndex).Slots[SIndex].Clips[CIndex]; FS := TFormatSettings.Invariant;
-  if C.TimeBase='beats' then MaximumEnd := 1000000 else MaximumEnd := 604800;
-  D := TForm.CreateNew(Self);
-  try
-    D.Caption := '配置の開始・長さ'; D.Position := poOwnerFormCenter;
-    D.ClientWidth := 420; D.ClientHeight := 210; D.BorderStyle := bsDialog;
-    ApplySyncMusicStudioDarkForm(D);
-    if C.TimeBase='beats' then begin LabelAt(D,D,20,20,'開始 (拍)'); LabelAt(D,D,20,82,'長さ (拍)'); end
-    else begin LabelAt(D,D,20,20,'開始 (秒)'); LabelAt(D,D,20,82,'長さ (秒)'); end;
-    StartEdit := TEdit.Create(D); StartEdit.Parent := D; StartEdit.SetBounds(180,18,210,26);
-    StartEdit.Text := FloatToStr(C.StartSeconds,FS); ApplySyncMusicStudioDarkEdit(StartEdit);
-    LengthEdit := TEdit.Create(D); LengthEdit.Parent := D; LengthEdit.SetBounds(180,80,210,26);
-    LengthEdit.Text := FloatToStr(C.LengthSeconds,FS); ApplySyncMusicStudioDarkEdit(LengthEdit);
-    if C.TimeBase='beats' then begin StartEdit.Text := FloatToStr(C.StartBeat,FS); LengthEdit.Text := FloatToStr(C.LengthBeats,FS); end;
-    Footer := Panel(D,D,alBottom,56);
-    Button(D,Footer,164,12,100,'OK',nil).ModalResult := mrOK;
-    Button(D,Footer,276,12,114,'キャンセル',nil).ModalResult := mrCancel;
-    while D.ShowModal = mrOK do begin
-      if TryStrToFloat(StartEdit.Text,StartValue,FS) and TryStrToFloat(LengthEdit.Text,LengthValue,FS) and
-        (StartValue >= 0) and (LengthValue >= 0.001) and (StartValue + LengthValue <= MaximumEnd) then begin
-        if C.TimeBase='beats' then begin
-          if not FDocument.MoveBeatPlacement(TIndex,SIndex,CIndex,StartValue,LengthValue,ErrorText) then begin MessageDlg(ErrorText,mtWarning,[mbOK],0); Continue; end;
-        end else FDocument.MovePlacement(TIndex,SIndex,CIndex,StartValue,LengthValue);
-        CommitMutation; Break;
-      end;
-      if C.TimeBase='beats' then ErrorText := '開始は0以上、長さは0.001拍以上、終了は1000000拍以内で入力してください。'
-      else ErrorText := '開始は0以上、長さは0.001秒以上、終了は604800秒以内で入力してください。';
-      MessageDlg(ErrorText,mtWarning,[mbOK],0);
-    end;
-  finally D.Free; end;
+  if FValid and (TimelineBox.SelectedTrack>=0) and (TimelineBox.SelectedSlot>=0) and (TimelineBox.SelectedClip>=0) then
+    EditMusicStudioPlacement(Self,FDocument,TimelineBox.SelectedTrack,TimelineBox.SelectedSlot,TimelineBox.SelectedClip,CommitMutation);
 end;
 
 procedure TFormMusicStudioSettings.TempoSettingsClick(Sender: TObject);
-var D: TForm; Frame: TMusicStudioTimingFrame; Footer: TPanel; Error: string;
 begin
-  if not FValid then Exit;
-  D := TForm.CreateNew(Self);
-  try
-    D.Caption := 'テンポ / 拍子'; D.Position := poOwnerFormCenter; D.ClientWidth := 760; D.ClientHeight := 440;
-    D.Constraints.MinWidth := 670; D.Constraints.MinHeight := 430;
-    ApplySyncMusicStudioDarkForm(D); ApplyMusicStudioEditorFont(D);
-    Footer := Panel(D,D,alBottom,60); Button(D,Footer,404,15,100,'OK',nil).ModalResult := mrOK;
-    Button(D,Footer,516,15,114,'キャンセル',nil).ModalResult := mrCancel;
-    Frame := TMusicStudioTimingFrame.Create(D); Frame.Parent := D; Frame.Align := alClient;
-    Frame.LoadTiming(FDocument.ManualTimingJSON);
-    while D.ShowModal=mrOK do begin
-      if not Frame.CanApply then begin MessageDlg(Frame.StateText,mtWarning,[mbOK],0); Continue; end;
-      if FDocument.SetTiming(Frame.ConfigJSON,Error) then begin CommitMutation; Break; end;
-      MessageDlg(Error,mtWarning,[mbOK],0);
-    end;
-  finally D.Free; end;
+  if FValid then EditMusicStudioTiming(Self,FDocument,CommitMutation);
 end;
+
 procedure TFormMusicStudioSettings.PreviewPositionChange(Sender: TObject);
 begin if Assigned(TimelineBox) then TimelineBox.SetPlayhead(FPreview.Position); end;
 function TFormMusicStudioSettings.PreviewTempoEdit(Beat,BPM: Double; out ErrorText: string): Boolean;

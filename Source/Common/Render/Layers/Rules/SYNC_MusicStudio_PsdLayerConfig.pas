@@ -7,11 +7,10 @@ interface
 uses System.SysUtils, System.JSON, SYNC_MusicStudio_PsdLayers;
 
 const
-  MUSIC_STUDIO_MOUTH_NAMES: array[0..11] of string =
-    ('normal','a','i','u','e','o','n','smallA','smallI','smallU','smallE','smallO');
-  MUSIC_STUDIO_MOUTH_CAPTIONS: array[0..11] of string =
-    ('通常 / 閉じ口','あ','い','う','え','お','ん','小さい あ','小さい い',
-     '小さい う','小さい え','小さい お');
+  MUSIC_STUDIO_MOUTH_NAMES: array[0..6] of string =
+    ('normal','a','i','u','e','o','n');
+  MUSIC_STUDIO_MOUTH_CAPTIONS: array[0..6] of string =
+    ('通常 / 閉じ口','あ','い','う','え','お','ん');
 
 function ParseMusicStudioPsdConfig(const Text: string): TJSONObject;
 function MusicStudioPsdConfigObject(Config: TJSONObject; const Name: string): TJSONObject;
@@ -27,8 +26,19 @@ function BuildMusicStudioExpressionOverrides(Document: TMusicStudioLayerDocument
 function ResolveMusicStudioMouthConfig(Document: TMusicStudioLayerDocument; Config: TJSONObject): TJSONObject;
 function MusicStudioSelectedMouth(Document: TMusicStudioLayerDocument; Config: TJSONObject; MouthIndex: Integer): string;
 function MusicStudioCanSing(Document: TMusicStudioLayerDocument; Config: TJSONObject): Boolean;
+// Missing settings stay off; malformed types are rejected before applying configuration.
+function MusicStudioAnimateMouthSize(Config: TJSONObject): Boolean;
 implementation
 uses SYNC_MusicStudio_ArtLayerName;
+
+function MusicStudioAnimateMouthSize(Config: TJSONObject): Boolean;
+var Value: TJSONValue;
+begin
+  Result := False; if Config=nil then Exit;
+  Value := Config.GetValue('animateMouthSize'); if Value=nil then Exit;
+  if not (Value is TJSONBool) then raise Exception.Create('口のサイズ変化の設定が不正です。');
+  Result := TJSONBool(Value).AsBoolean;
+end;
 
 function ResolveMusicStudioMouthConfig(Document: TMusicStudioLayerDocument; Config: TJSONObject): TJSONObject;
 const Names: array[1..6] of string = ('あ','い','う','え','お','ん');
@@ -46,8 +56,8 @@ end;
 function AutoMouth(Config: TJSONObject; Index: Integer): TJSONArray;
 var Auto: TJSONValue;
 begin
-  Result := nil; if (Config=nil) or (Index<1) or (Index>11) then Exit;
-  if Index>=7 then Dec(Index,6); Auto := Config.GetValue('autoMouthLayers');
+  Result := nil; if (Config=nil) or (Index<1) or (Index>6) then Exit;
+  Auto := Config.GetValue('autoMouthLayers');
   if Auto is TJSONObject then if TJSONObject(Auto).GetValue(MUSIC_STUDIO_MOUTH_NAMES[Index]) is TJSONArray then
     Result := TJSONArray(TJSONObject(Auto).GetValue(MUSIC_STUDIO_MOUTH_NAMES[Index]));
 end;
@@ -55,7 +65,6 @@ function MusicStudioSelectedMouth(Document: TMusicStudioLayerDocument; Config: T
 var Keys: TJSONArray; Key: TJSONValue; Visibility: TJSONObject;
 begin
   Result := MusicStudioMouthLayer(Config,MouthIndex);
-  if (Result='') and (MouthIndex>=7) then Result := MusicStudioMouthLayer(Config,MouthIndex-6);
   if Document.HasLayer(Result) then Exit; Result := ''; Keys := AutoMouth(Config,MouthIndex); if Keys=nil then Exit;
   Visibility := MusicStudioPsdConfigObject(Config,'visibility');
   for Key in Keys do if (Key is TJSONString) and Document.LayerBranchVisible(Key.Value,Visibility) then Exit(Key.Value);
@@ -95,15 +104,16 @@ begin
     if Result.GetValue('version')=nil then Result.AddPair('version',TJSONNumber.Create(1));
     for Pair in MusicStudioPsdConfigObject(Result,'visibility') do
       if not (Pair.JsonValue is TJSONBool) then raise Exception.Create('PSDレイヤーの表示設定が不正です。');
+    MusicStudioAnimateMouthSize(Result);
     MusicStudioPsdConfigObject(Result,'mouthLayers');
-    for I := 0 to 11 do MusicStudioMouthLayer(Result,I);
+    for I := 0 to 6 do MusicStudioMouthLayer(Result,I);
   except Result.Free; raise; end;
 end;
 
 function MusicStudioMouthLayer(Config: TJSONObject; Index: Integer): string;
 var Value: TJSONValue;
 begin
-  Result := ''; if (Config=nil) or (Index<0) or (Index>11) then Exit;
+  Result := ''; if (Config=nil) or (Index<0) or (Index>6) then Exit;
   Value := MusicStudioPsdConfigObject(Config,'mouthLayers').GetValue(MUSIC_STUDIO_MOUTH_NAMES[Index]);
   if Value=nil then Exit;
   if not (Value is TJSONString) then raise Exception.Create('PSD母音の割当が不正です。');
@@ -113,7 +123,7 @@ end;
 procedure MusicStudioAssignMouth(Config: TJSONObject; Index: Integer; const Key: string);
 var Obj: TJSONObject; Pair: TJSONPair;
 begin
-  if (Config=nil) or (Index<0) or (Index>11) then Exit;
+  if (Config=nil) or (Index<0) or (Index>6) then Exit;
   Obj := MusicStudioPsdConfigObject(Config,'mouthLayers');
   Pair := Obj.RemovePair(MUSIC_STUDIO_MOUTH_NAMES[Index]); Pair.Free;
   if Key<>'' then Obj.AddPair(MUSIC_STUDIO_MOUTH_NAMES[Index],Key);
@@ -132,10 +142,10 @@ begin
           if Pair.JsonValue is TJSONBool then
             MusicStudioSetJsonBoolean(Result,Pair.JsonString.Value,TJSONBool(Pair.JsonValue).AsBoolean);
     end;
-    if (Document=nil) or (MouthIndex<0) or (MouthIndex>11) then Exit;
+    if (Document=nil) or (MouthIndex<0) or (MouthIndex>6) then Exit;
     Selected := MusicStudioSelectedMouth(Document,Config,MouthIndex);
     if not Document.HasLayer(Selected) then Exit;
-    for I := 0 to 11 do begin
+    for I := 0 to 6 do begin
       Key := MusicStudioMouthLayer(Config,I);
       if Document.HasLayer(Key) then MusicStudioSetJsonBoolean(Result,Key,False);
       Keys := AutoMouth(Config,I); if Keys<>nil then for AutoKey in Keys do

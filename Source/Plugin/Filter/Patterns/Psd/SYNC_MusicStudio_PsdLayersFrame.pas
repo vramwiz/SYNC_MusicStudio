@@ -53,6 +53,7 @@ type
     procedure Changed;
     procedure PollTimer(Sender: TObject);
     procedure MouthChanged(Sender: TObject);
+    procedure AnimateMouthSizeChanged(Sender: TObject);
     procedure LayerChecked(Sender: TObject);
     procedure LayerClicked(Sender: TObject);
     procedure LayerContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -155,6 +156,7 @@ begin
   // Combo bounds and checklist recreation may request handles as well as Items.
   if FUI.Toolbar=nil then begin
     BuildMusicStudioPsdLayerControls(Self,FUI);
+    FUI.AnimateMouthSize.OnClick := AnimateMouthSizeChanged;
     FUI.MouthCombo.OnChange := MouthChanged; FUI.LayerList.OnClickCheck := LayerChecked;
     FUI.LayerList.OnClick := LayerClicked; FUI.AssignButton.OnClick := AssignClick;
     FUI.ClearButton.OnClick := ClearClick; FUI.ReloadButton.OnClick := ReloadClick;
@@ -169,7 +171,7 @@ begin
     FUI.LayerList.OnKeyUp := LayerKeyUp;
     FUI.LayerList.OnMouseMove := LayerMouseMove; FUI.LayerList.OnDrawItem := DrawLayer;
     FUI.MouthMenu.OnPopup := MouthMenuPopup;
-    for I := 0 to 11 do begin
+    for I := 0 to 6 do begin
       Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := MUSIC_STUDIO_MOUTH_CAPTIONS[I];
       Item.Tag := I; Item.OnClick := MouthMenuClick; FUI.MouthMenu.Items.Add(Item);
     end;
@@ -178,7 +180,7 @@ begin
     Item.OnClick := ClearLayerAssignments; FUI.MouthMenu.Items.Add(Item);
     Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '-'; FUI.MouthMenu.Items.Add(Item);
     Item := TMenuItem.Create(FUI.MouthMenu); Item.Caption := '母音の表示確認'; FUI.MouthMenu.Items.Add(Item);
-    for I := 0 to 11 do begin
+    for I := 0 to 6 do begin
       Sub := TMenuItem.Create(FUI.MouthMenu); Sub.Caption := MUSIC_STUDIO_MOUTH_CAPTIONS[I];
       Sub.Tag := I; Sub.OnClick := PreviewMouthClick; Item.Add(Sub);
     end;
@@ -190,7 +192,7 @@ begin
   if (FUI.MouthCombo<>nil) and (FUI.MouthCombo.Items.Count=0) then begin
     FUpdating := True;
     try
-      for I := 0 to 11 do FUI.MouthCombo.Items.Add('確認: '+MUSIC_STUDIO_MOUTH_CAPTIONS[I]);
+      for I := 0 to 6 do FUI.MouthCombo.Items.Add('確認: '+MUSIC_STUDIO_MOUTH_CAPTIONS[I]);
       FUI.MouthCombo.ItemIndex := 0;
     finally FUpdating := False; end;
   end;
@@ -213,7 +215,12 @@ begin
   FUI.PathLabel.SetBounds(Margin,MulDiv(6,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight);
   if FCompactLayout then FUI.StateLabel.SetBounds(Margin,MulDiv(6,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight*2)
   else FUI.StateLabel.SetBounds(Margin,FUI.PathLabel.Top+LineHeight+Gap,Max(1,ClientWidth-Margin*2),LineHeight*2);
-  FUI.Header.Height := FUI.StateLabel.Top+FUI.StateLabel.Height+Gap;
+  FUI.StateLabel.Visible := not FCompactLayout or NeedsCompactStatus;
+  if FUI.StateLabel.Visible then Offset := FUI.StateLabel.Top+FUI.StateLabel.Height+Gap
+  else Offset := MulDiv(6,PPI,96);
+  FUI.AnimateMouthSize.SetBounds(Margin,Offset,Max(1,ClientWidth-Margin*2),LineHeight);
+  if FExpressionMode then FUI.Header.Height := FUI.StateLabel.Top+FUI.StateLabel.Height+Gap
+  else FUI.Header.Height := FUI.AnimateMouthSize.Top+LineHeight+Gap;
   if not FExpressionMode and (ClientWidth<MulDiv(658,PPI,96)) then Offset := 34 else Offset := 0;
   FUI.Toolbar.Height := MulDiv(38+Offset,PPI,96);
   FUI.AssignButton.SetBounds(MulDiv(12,PPI,96),MulDiv(4,PPI,96),MulDiv(142,PPI,96),MulDiv(28,PPI,96));
@@ -232,7 +239,7 @@ begin
     FUI.ReloadButton.Left := MulDiv(470,PPI,96); FUI.CancelButton.Left := MulDiv(562,PPI,96);
   end;
   FUI.PathLabel.Visible := not FCompactLayout;
-  FUI.Header.Visible := not FCompactLayout or NeedsCompactStatus; FUI.MappingLabel.Visible := not FCompactLayout;
+  FUI.Header.Visible := not FCompactLayout or not FExpressionMode or NeedsCompactStatus; FUI.MappingLabel.Visible := not FCompactLayout;
   FUI.Toolbar.Visible := False;
   if FCompactLayout then FUI.Footer.Height := MulDiv(64,PPI,96) else FUI.Footer.Height := MulDiv(89,PPI,96);
   FUI.SelectionLabel.SetBounds(Margin,MulDiv(3,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight);
@@ -258,7 +265,7 @@ begin
 end;
 procedure TMusicStudioPsdLayersFrame.RefreshCompactStatus;
 begin
-  if FCompactLayout and (FUI.Header<>nil) and (FUI.Header.Visible<>NeedsCompactStatus) then Resize;
+  if FCompactLayout and (FUI.Header<>nil) and (FUI.StateLabel.Visible<>NeedsCompactStatus) then Resize;
 end;
 
 procedure TMusicStudioPsdLayersFrame.ClearPreview;
@@ -284,6 +291,7 @@ begin
     FUI.PathLabel.Hint := Path; FUI.MouthCombo.ItemIndex := 0;
     try
       Config := ParseMusicStudioPsdConfig(ConfigJSON); FConfig.Free; FConfig := Config;
+      FUI.AnimateMouthSize.Checked := MusicStudioAnimateMouthSize(FConfig);
       FNeedLoad := Trim(Path)<>'';
       if FNeedLoad then FUI.StateLabel.Caption := 'PSDレイヤーを読み込み中…'
       else FUI.StateLabel.Caption := 'PSDが未選択です。';
@@ -538,7 +546,7 @@ end;
 
 procedure TMusicStudioPsdLayersFrame.SelectMouth(Index: Integer);
 begin
-  if (Index<0) or (Index>11) then Exit;
+  if (Index<0) or (Index>6) then Exit;
   FUI.MouthCombo.ItemIndex := Index; FPreviewLayerKey := '';
   FUpdating := True; try UpdateChecks; SelectAssignedLayer; finally FUpdating := False; end;
   UpdateMapping; QueueRender; StartPendingJobs;
@@ -558,6 +566,12 @@ procedure TMusicStudioPsdLayersFrame.PollTimer(Sender: TObject);
 begin PollResults; end;
 procedure TMusicStudioPsdLayersFrame.MouthChanged(Sender: TObject);
 begin if not FUpdating then SelectMouth(FUI.MouthCombo.ItemIndex); end;
+procedure TMusicStudioPsdLayersFrame.AnimateMouthSizeChanged(Sender: TObject);
+begin
+  if FUpdating or FExpressionMode then Exit;
+  MusicStudioSetJsonBoolean(FConfig,'animateMouthSize',FUI.AnimateMouthSize.Checked);
+  if Assigned(FOnChange) then FOnChange(Self);
+end;
 procedure TMusicStudioPsdLayersFrame.LayerClicked(Sender: TObject);
 var I: Integer;
 begin
@@ -573,14 +587,14 @@ end;
 function TMusicStudioPsdLayersFrame.SelectedMouthNames: string;
 begin Result := MouthNames(SelectedLayerKey,False); end;
 function TMusicStudioPsdLayersFrame.MouthNames(const Key: string; Compact: Boolean): string;
-const ShortNames: array[0..11] of string = ('通常','あ','い','う','え','お','ん','小あ','小い','小う','小え','小お');
+const ShortNames: array[0..6] of string = ('通常','あ','い','う','え','お','ん');
 var I: Integer;
 begin
   Result := ''; if Key='' then Exit;
-  for I := 0 to 11 do if MusicStudioMouthLayer(FConfig,I)=Key then begin
+  for I := 0 to 6 do if MusicStudioMouthLayer(FConfig,I)=Key then begin
     if Compact and (Result<>'') then begin
-      // Two glyphs: show the first vowel plus '+'; the tooltip retains every size/assignment.
-      if Result='通常' then Result := '通' else if Result.StartsWith('小') then Result := Result.Substring(1);
+      // Two glyphs: show the first vowel plus '+'; the tooltip retains every assignment.
+      if Result='通常' then Result := '通';
       Exit(Result+'+');
     end;
     if Result<>'' then if Compact then Result := Result+',' else Result := Result+' / ';
@@ -591,15 +605,15 @@ procedure TMusicStudioPsdLayersFrame.MouthMenuPopup(Sender: TObject);
 var I: Integer; Key: string;
 begin
   Key := SelectedLayerKey;
-  for I := 0 to 11 do begin
+  for I := 0 to 6 do begin
     FUI.MouthMenu.Items[I].Enabled := not FExpressionMode and (Key<>'');
     FUI.MouthMenu.Items[I].Checked := (Key<>'') and (MusicStudioMouthLayer(FConfig,I)=Key);
   end;
-  FUI.MouthMenu.Items[13].Enabled := not FExpressionMode and (SelectedMouthNames<>'');
-  FUI.MouthMenu.Items[15].Enabled := not FExpressionMode and (FDocument<>nil);
-  for I := 0 to 11 do FUI.MouthMenu.Items[15].Items[I].Checked := (FPreviewLayerKey='') and (FUI.MouthCombo.ItemIndex=I);
-  FUI.MouthMenu.Items[16].Enabled := FPath<>'';
-  FUI.MouthMenu.Items[17].Enabled := IsLoading or IsRendering;
+  FUI.MouthMenu.Items[8].Enabled := not FExpressionMode and (SelectedMouthNames<>'');
+  FUI.MouthMenu.Items[10].Enabled := not FExpressionMode and (FDocument<>nil);
+  for I := 0 to 6 do FUI.MouthMenu.Items[10].Items[I].Checked := (FPreviewLayerKey='') and (FUI.MouthCombo.ItemIndex=I);
+  FUI.MouthMenu.Items[11].Enabled := FPath<>'';
+  FUI.MouthMenu.Items[12].Enabled := IsLoading or IsRendering;
 end;
 procedure TMusicStudioPsdLayersFrame.MouthMenuClick(Sender: TObject);
 begin if not FExpressionMode then AssignSelectedMouth(TMenuItem(Sender).Tag); end;
@@ -609,7 +623,7 @@ procedure TMusicStudioPsdLayersFrame.ClearLayerAssignments(Sender: TObject);
 var I: Integer; Key: string;
 begin
   Key := SelectedLayerKey; if FExpressionMode or (Key='') then Exit;
-  for I := 0 to 11 do if MusicStudioMouthLayer(FConfig,I)=Key then MusicStudioAssignMouth(FConfig,I,'');
+  for I := 0 to 6 do if MusicStudioMouthLayer(FConfig,I)=Key then MusicStudioAssignMouth(FConfig,I,'');
   Changed;
 end;
 procedure TMusicStudioPsdLayersFrame.PopupMouthAt(const Position: TPoint);

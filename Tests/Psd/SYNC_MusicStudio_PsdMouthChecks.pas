@@ -14,7 +14,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.Hash, System.JSON, 
 type
   TMouthDriver = class
     Timer, PopupTimer: TTimer;
-    Keys: array[0..11] of string;
+    Keys: array[0..6] of string;
     OldKey, BranchKey, Dir, Failure: string;
     Index, Step: Integer;
     Reopen, CancelAfter, CheckParts: Boolean;
@@ -183,17 +183,17 @@ begin
     SaveClient(D,TPath.Combine(Dir,'selection-zoom-pan.png'));
     // Compare native name pixels before/after assigning; only the fixed left vowel column changes.
     Check(F.SelectLayer(Keys[5]),'vowel label target absent');
-    F.UIControls.MouthMenu.Items[13].Click; Await;
+    F.UIControls.MouthMenu.Items[8].Click; Await;
     Row := F.Document.LayerIndex(Keys[5]); CaptureRow(NameBefore,LabelsBefore);
-    F.AssignSelectedMouth(11); Await; CheckView; CaptureRow(NameAfter,LabelsAfter);
+    F.AssignSelectedMouth(5); Await; CheckView; CaptureRow(NameAfter,LabelsAfter);
     Check(SamePixels(NameBefore,NameAfter),'assignment shifted/repainted layer-name X coordinates');
-    Check(not SamePixels(LabelsBefore,LabelsAfter),'vowel column did not display assigned small vowel');
+    Check(not SamePixels(LabelsBefore,LabelsAfter),'vowel column did not display assigned vowel');
     R := F.UIControls.LayerList.ItemRect(Row);
     F.UIControls.LayerList.OnMouseMove(F.UIControls.LayerList,[],4,(R.Top+R.Bottom) div 2);
-    Check(Pos(MUSIC_STUDIO_MOUTH_CAPTIONS[11],F.UIControls.LayerList.Hint)>0,'full assigned vowel tooltip missing');
-    SaveClient(D,TPath.Combine(Dir,'assigned-small-vowel-fixed-column.png'));
+    Check(Pos(MUSIC_STUDIO_MOUTH_CAPTIONS[5],F.UIControls.LayerList.Hint)>0,'full assigned vowel tooltip missing');
+    SaveClient(D,TPath.Combine(Dir,'assigned-vowel-fixed-column.png'));
     // Restore the starting assignments through the same public editor commands.
-    for I := 0 to 11 do if MusicStudioMouthLayer(Config,I)='' then F.ClearSelectedMouth(I)
+    for I := 0 to 6 do if MusicStudioMouthLayer(Config,I)='' then F.ClearSelectedMouth(I)
     else begin Check(F.SelectLayer(MusicStudioMouthLayer(Config,I)),'restore assigned key absent'); F.AssignSelectedMouth(I); end;
     F.SelectMouth(0); Await; CheckView;
     F.UIControls.Preview.Perform(WM_LBUTTONDBLCLK,MK_LBUTTON,MakeLParam(2,2));
@@ -213,10 +213,10 @@ begin
   PopupTimer.Enabled := False;
   try
     Check(PopupFrame.SelectedLayerKey=PopupKey,'context menu selected a different row');
-    Check(PopupFrame.UIControls.MouthMenu.Items.Count=14,'popup 12 assignments/clear missing');
+    Check(PopupFrame.UIControls.MouthMenu.Items.Count=13,'popup 7 assignments/clear missing');
     Config := ParseMusicStudioPsdConfig(PopupFrame.ConfigJSON);
     try
-      for I := 0 to 11 do Check(PopupFrame.UIControls.MouthMenu.Items[I].Checked=
+      for I := 0 to 6 do Check(PopupFrame.UIControls.MouthMenu.Items[I].Checked=
         (MusicStudioMouthLayer(Config,I)=PopupKey),'popup assigned checkmark wrong');
     finally Config.Free; end;
     PopupSeen := True;
@@ -293,7 +293,7 @@ begin
     Check(F.CanApply,F.StateText);
     Check(not F.UIControls.Toolbar.Showing and not F.UIControls.AssignButton.Showing and
       not F.UIControls.ClearButton.Showing,'duplicate middle controls visible');
-    Check(F.UIControls.MouthMenu.Items[15].Count=12,'preview menu does not contain all 12 shapes');
+    Check(F.UIControls.MouthMenu.Items[10].Count=7,'preview menu does not contain all 7 shapes');
     if Step<0 then begin
       // Assert before touching the combo or invoking OnChange: FillLayers must restore the saved row.
       Check(F.UIControls.MouthCombo.ItemIndex=0,'loaded modal did not select normal mouth');
@@ -328,21 +328,22 @@ begin
       Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
       try
         Check((MusicStudioMouthLayer(Config,0)='') and (MusicStudioMouthLayer(Config,6)=''),'clear selected layer did not clear both assigned mouths');
-        for N := 1 to 10 do if N<>6 then Check(MusicStudioMouthLayer(Config,N)=Keys[N],'clear layer changed unrelated assignment');
+        for N := 1 to 5 do if N<>6 then Check(MusicStudioMouthLayer(Config,N)=Keys[N],'clear layer changed unrelated assignment');
       finally Config.Free; end;
       Timer.Enabled := False; D.ModalResult := mrCancel; Exit;
     end;
     if Step=2 then begin
       Config := ParseMusicStudioPsdConfig(F.ConfigJSON); Expected := nil; B := TBitmap.Create;
       try
-        Check(MusicStudioMouthLayer(Config,11)='','clear button kept small-O assignment');
-        Expected := BuildMusicStudioPsdOverrides(F.Document,Config,11);
-        Value := Expected.GetValue(Keys[5]); Check((Value is TJSONBool) and TJSONBool(Value).AsBoolean,'small-O fallback missing');
-        Check(F.Document.Render(B,Expected) and SamePixels(B,F.PreviewBitmap),'small-O fallback preview mismatch');
+        Check(MusicStudioMouthLayer(Config,6)='','clear button kept N assignment');
+
+        Expected := BuildMusicStudioPsdOverrides(F.Document,Config,5);
+        Value := Expected.GetValue(Keys[5]); Check((Value is TJSONBool) and TJSONBool(Value).AsBoolean,'normal O preview missing');
+        Check(F.Document.Render(B,Expected) and SamePixels(B,F.PreviewBitmap),'normal O preview preview mismatch');
         if CheckParts then CheckPartsPixels(F.PreviewBitmap);
       finally B.Free; Expected.Free; Config.Free; end;
       Check(F.SelectLayer(Keys[0]),'clear-layer row missing'); PopupFrame := F;
-      PopupKey := Keys[0]; PopupPick := 13; PopupSeen := False; Timer.Enabled := False; PopupTimer.Enabled := True;
+      PopupKey := Keys[0]; PopupPick := 8; PopupSeen := False; Timer.Enabled := False; PopupTimer.Enabled := True;
       try F.UIControls.AssignButton.Click; Application.ProcessMessages;
       finally PopupTimer.Enabled := False; Timer.Enabled := True; end;
       Check(Failure='',Failure); Check(PopupSeen,'clear-layer popup absent'); Step := 3; Exit;
@@ -351,7 +352,7 @@ begin
       if not ViewChecksDone then begin CheckSelectionView(D,F); ViewChecksDone := True; end;
       if Reopen then begin
         Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
-        try for N := 0 to 11 do Check(MusicStudioMouthLayer(Config,N)=Keys[N],'saved assignment lost: '+IntToStr(N));
+        try for N := 0 to 6 do Check(MusicStudioMouthLayer(Config,N)=Keys[N],'saved assignment lost: '+IntToStr(N));
         finally Config.Free; end;
       end;
       // Layer first for every initial/reopened/integrated flow; never change the combo first.
@@ -379,10 +380,10 @@ begin
       Check(F.UIControls.LayerList.Checked[F.Document.LayerIndex(BranchKey)],'checks hide active phoneme parent');
       if Index=1 then SaveClient(D,TPath.Combine(Dir,'modal-'+BoolToStr(Reopen,True)+'-a.png'));
     finally B.Free; Expected.Free; Config.Free; end;
-    Inc(Index); Step := 0; if Index<=11 then Exit;
+    Inc(Index); Step := 0; if Index<=6 then Exit;
     if CancelAfter then begin
       // Cancellation after an edit must not replace the saved shared settings.
-      F.UIControls.ClearButton.Click; Step := 2;
+      F.UIControls.ClearButton.Click; F.SelectMouth(5); Step := 2;
     end else begin
       Timer.Enabled := False;
       for I := 0 to D.ComponentCount-1 do if (D.Components[I] is TButton) and
@@ -425,14 +426,14 @@ begin
     Driver.Deadline := GetTickCount64+45000; Driver.Timer.Enabled := True;
     try Main.PatternList.OnDblClick(Main.PatternList);
     finally Driver.Timer.Enabled := False; end;
-    Check(Driver.Failure='',Driver.Failure); Check(Driver.Index=12,'integrated mouth flow did not complete');
+    Check(Driver.Failure='',Driver.Failure); Check(Driver.Index=7,'integrated mouth flow did not complete');
     Check(Main.SharedLibrary.TryRead(Pattern.AssetID,Saved,Error),Error);
     Config := ParseMusicStudioPsdConfig(Saved.ConfigJSON);
-    try for I := 0 to 11 do Check(MusicStudioMouthLayer(Config,I)=Driver.Keys[I],'integrated entry lost mouth assignment');
+    try for I := 0 to 6 do Check(MusicStudioMouthLayer(Config,I)=Driver.Keys[I],'integrated entry lost mouth assignment');
     finally Config.Free; end;
     Check(Main.Document.TrySave(After,Error) and (Before=After),'opening shared PSD settings changed project JSON');
     Check(not Main.Preview.AudioEngineAllocated and (Main.TimelineBox.WaveCache.DecodeCount=0),'integrated entry started audio');
-    Writeln('PSD_LAYER_FIRST_INTEGRATED_RIGHT_ROW_POPUP_12_KEYBOARD_NARROW_LOCAL_NAMES_ASSIGN_PREVIEW_SAVE_NO_AUDIO_OK ppi=',PPI);
+    Writeln('PSD_LAYER_FIRST_INTEGRATED_RIGHT_ROW_POPUP_7_KEYBOARD_NARROW_LOCAL_NAMES_ASSIGN_PREVIEW_SAVE_NO_AUDIO_OK ppi=',PPI);
   finally Driver.Dir := OriginalDir; Driver.IntegratedPPI := 0; Main.Free; end;
 end;
 procedure Flow(const Dir,Source,SeedAssetJSON: string; Actual: Boolean);
@@ -460,7 +461,7 @@ begin
       Driver.OldKey := FindName(D,'*ordinary'); Driver.BranchKey := FindName(D,'*phonemes');
       for I := 0 to 5 do Driver.Keys[I] := FindName(D,'*shape'+IntToStr(I),'/mouth/');
     end;
-    Driver.Keys[6] := Driver.Keys[0]; for I := 7 to 11 do Driver.Keys[I] := Driver.Keys[I-6];
+    Driver.Keys[6] := Driver.Keys[0];
     Config := ParseMusicStudioPsdConfig(''); Seed := nil;
     try
       if SeedAssetJSON<>'' then begin
@@ -475,7 +476,7 @@ begin
     Check(Store.TryRead(A.ID,Saved,Error),Error); Check(Saved.ID=A.ID,'asset identity changed'); Revision := Saved.Revision;
     Config := ParseMusicStudioPsdConfig(Saved.ConfigJSON);
     try
-      for I := 0 to 11 do Check(MusicStudioMouthLayer(Config,I)=Driver.Keys[I],'persisted stable key lost');
+      for I := 0 to 6 do Check(MusicStudioMouthLayer(Config,I)=Driver.Keys[I],'persisted stable key lost');
       Check(Config.GetValue<string>('mouthTestExtension')='preserve','unknown config member lost');
     finally Config.Free; end;
     Other := TMusicStudioSharedPsdLibrary.Create(Store.Root);
@@ -483,7 +484,7 @@ begin
       Check(Other.TryRead(A.ID,Saved,Error),Error); P.ConfigJSON := Saved.ConfigJSON;
       RunDialog(Other,P,Driver,True); Check(Other.TryRead(A.ID,Saved,Error),Error);
       Config := ParseMusicStudioPsdConfig(Saved.ConfigJSON);
-      try for I := 0 to 11 do Check(MusicStudioMouthLayer(Config,I)=Driver.Keys[I],'reopen assign/save overwrote mouth');
+      try for I := 0 to 6 do Check(MusicStudioMouthLayer(Config,I)=Driver.Keys[I],'reopen assign/save overwrote mouth');
       finally Config.Free; end;
       Revision := Saved.Revision; P.ConfigJSON := Saved.ConfigJSON;
       Before := THashSHA2.GetHashStringFromFile(TPath.Combine(ExtractFileDir(A.FilePath),'asset.json'));
@@ -493,7 +494,7 @@ begin
     Check(THashSHA2.GetHashStringFromFile(TPath.Combine(ExtractFileDir(A.FilePath),'asset.json'))=Before,'cancel changed shared JSON');
     RunIntegratedDialog(Store,P,Driver,96); RunIntegratedDialog(Store,P,Driver,144);
     Check((THashSHA2.GetHashStringFromFile(Source)=SourceHash) and (THashSHA2.GetHashStringFromFile(A.FilePath)=ManagedHash),'mouth editor changed PSD bytes');
-    Writeln('PSD_MOUTH_INITIAL_RELOAD_REOPEN_ROW_NO_CHANGE_EVENT_ASSIGN_SAVE_12_PREVIEW_PARTS_PIXELS_SHARED_CANCEL_SOURCE_UNCHANGED_OK source=',Source);
+    Writeln('PSD_MOUTH_INITIAL_RELOAD_REOPEN_ROW_NO_CHANGE_EVENT_ASSIGN_SAVE_7_PREVIEW_PARTS_PIXELS_SHARED_CANCEL_SOURCE_UNCHANGED_OK source=',Source);
   finally Application.OnException := OldException; Driver.PopupTimer.Free; Driver.Timer.Free; Driver.Free; D.Free; Store.Free; end;
 end;
 procedure RunPsdMouthChecks(const Root,ActualPSD,SeedAssetJSON: string);
@@ -546,6 +547,19 @@ begin
     F.LoadPSD(Path,'{}',False); Await;
     AKey := FindName(F.Document,'*A 普通'); FKey := FindName(F.Document,'*F 不満'); GKey := FindName(F.Document,'!*G 平眉毛');
     ExtraKey := FindName(F.Document,'確認用の口'); Check(F.SelectLayer(ExtraKey),'select mouth'); F.AssignSelectedMouth(0); Await;
+    Check(F.UIControls.AnimateMouthSize.Showing and not F.UIControls.AnimateMouthSize.Checked,'size option default/visibility');
+    Check(F.UIControls.MouthCombo.Items.Count=7,'retired small mouths remain');
+    F.UIControls.AnimateMouthSize.Checked := True;
+    Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
+    Check(MusicStudioAnimateMouthSize(Config),'size option not saved'); FreeAndNil(Config);
+    F.LoadPSD(Path,F.ConfigJSON,False); Await;
+    Check(F.UIControls.AnimateMouthSize.Checked,'size option lost on reload');
+    F.UIControls.AnimateMouthSize.Checked := False;
+    Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
+    Check(not MusicStudioAnimateMouthSize(Config),'size option not disabled'); FreeAndNil(Config);
+    F.CompactLayout := True; Application.ProcessMessages;
+    Check(F.UIControls.AnimateMouthSize.Showing,'compact mode hides size option');
+    Check(F.UIControls.AnimateMouthSize.BoundsRect.Bottom<=F.UIControls.Header.ClientHeight,'size option clipped');
     Before := F.ConfigJSON;
     Check(not F.UIControls.Toolbar.Visible,'middle toolbar visible');
     Check(not F.UIControls.AssignButton.Showing and not F.UIControls.ClearButton.Showing and
@@ -561,14 +575,25 @@ begin
     F.UIControls.MouthMenu.Items[1].Click; Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
     Check(MusicStudioMouthLayer(Config,1)=AKey,'right menu assignment'); FreeAndNil(Config);
     F.UIControls.MouthMenu.OnPopup(F.UIControls.MouthMenu);
-    F.UIControls.MouthMenu.Items[13].Click; Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
+    F.UIControls.MouthMenu.Items[8].Click; Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
     Check(MusicStudioMouthLayer(Config,1)='','right menu clearing'); FreeAndNil(Config); Await;
-    Check(F.UIControls.MouthMenu.Items[15].Count=12,'preview submenu');
-    F.UIControls.MouthMenu.Items[15].Items[0].Click; Await;
+    Check(F.UIControls.MouthMenu.Items[10].Count=7,'preview submenu');
+    F.UIControls.MouthMenu.Items[10].Items[0].Click; Await;
     Check(PByte(F.PreviewBitmap.ScanLine[0])[11]=255,'mouth preview menu not applied');
-    Selected(FKey,150); F.UIControls.MouthMenu.Items[16].Click; Await;
+    Selected(FKey,150); F.UIControls.MouthMenu.Items[11].Click; Await;
     Check(F.Document.HasLayer(FKey),'reload menu'); Selected(FKey,150);
     SaveClient(D,TPath.Combine(Root,'mouth-list.png'));
+    F.CompactLayout := False;
+    F.LoadPSD(Path,'{"mouthLayers":{"smallA":"legacy"},"animateMouthSize":true}',True); Await;
+    Check(not F.UIControls.AnimateMouthSize.Showing,'expression mode exposes shared option');
+    Config := ParseMusicStudioPsdConfig(F.ConfigJSON);
+    Check(MusicStudioMouthLayer(Config,7)='','retired small mouth resolved');
+    Check(MusicStudioPsdConfigObject(Config,'mouthLayers').GetValue('smallA').Value='legacy','legacy unknown data lost');
+    FreeAndNil(Config);
+    Key := 0;
+    try Config := ParseMusicStudioPsdConfig('{"animateMouthSize":"yes"}');
+    except on E: Exception do Key := 1; end;
+    Check(Key=1,'invalid size option accepted');
     Writeln('PSD_MOUTH_LIST_CONTEXT_ONLY_EXCLUSIVE_ANCESTORS_MODIFIERS_SELECTION_KEYBOARD_ASSIGN_CLEAR_PREVIEW_RELOAD_CONFIG_UNCHANGED_OK');
   finally Config.Free; D.Free; end;
 end;

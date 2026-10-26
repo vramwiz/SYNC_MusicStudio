@@ -16,6 +16,7 @@ type
   TMusicStudioTrackVisible = function(TrackIndex: Integer): Boolean of object;
   TMusicStudioClipMoveEvent = procedure(TrackIndex, SlotIndex, ClipIndex: Integer; StartSeconds: Double) of object;
   TMusicStudioClipResizeEvent = procedure(TrackIndex, SlotIndex, ClipIndex: Integer; StartSeconds,LengthSeconds: Double) of object;
+  TMusicStudioAnimationCreateEvent = procedure(TrackIndex,SlotIndex: Integer; StartSeconds,LengthSeconds: Double) of object;
   TMusicStudioSeekEvent = procedure(Seconds: Double) of object;
   TMusicStudioTempoMenuEvent = procedure(Beat: Double) of object;
   TMusicStudioSmallMenuEvent = procedure(TrackIndex,SlotIndex,ClipIndex: Integer; Seconds: Double; const ScreenPoint: TPoint) of object;
@@ -43,6 +44,7 @@ type
     FOnSeek: TMusicStudioSeekEvent;
     FOnTempoMenu: TMusicStudioTempoMenuEvent;
     FOnSmallMenu: TMusicStudioSmallMenuEvent;
+    FOnAnimationCreate: TMusicStudioAnimationCreateEvent;
     FPlayhead: Double;
     FSelectionScope: TMusicStudioSelectionScope;
     FTrackDragging,FTrackDragMoved: Boolean;
@@ -144,6 +146,7 @@ type
     property Playhead: Double read FPlayhead;
     property OnSeek: TMusicStudioSeekEvent read FOnSeek write FOnSeek;
     property OnTempoMenu: TMusicStudioTempoMenuEvent read FOnTempoMenu write FOnTempoMenu;
+    property OnAnimationCreate: TMusicStudioAnimationCreateEvent read FOnAnimationCreate write FOnAnimationCreate;
     property OnSmallMenu: TMusicStudioSmallMenuEvent read FOnSmallMenu write FOnSmallMenu;
     property SelectedTrack: Integer read FSelectedTrack;
     property SelectedSlot: Integer read FSelectedSlot;
@@ -159,7 +162,7 @@ type
 
 implementation
 
-uses System.SysUtils, System.Math, System.UITypes, Winapi.Windows, Vcl.Graphics,
+uses SYNC_MusicStudio_PerformanceTrace, System.SysUtils, System.Math, System.UITypes, Winapi.Windows, Vcl.Graphics,
   SYNC_MusicStudio_BeatData, SYNC_MusicStudio_TimelineContent, SYNC_MusicStudio_SmallSlotData,
   SYNC_MusicStudio_PerformanceKinds;
 
@@ -254,6 +257,7 @@ end;
 function TMusicStudioArrangementView.SlotHeight(const Kind: string): Integer;
 begin
   if (Kind='singing') or (Kind='performance') then Result := Scale(60)
+  else if MusicStudioAnimationSource(Kind)<>'' then Result := Scale(28)
   else if MusicStudioSmallSlot(Kind) or (Kind='customExpression') then Result := Scale(20)
   else if Kind='psd' then Result := Scale(32) else Result := RowHeight;
 end;
@@ -392,6 +396,7 @@ function TMusicStudioArrangementView.ActiveDragCursor: TCursor;
 begin
   if FTrackDragging and FTrackDragMoved then Result := crSizeNS
   else if FRulerPanning then Result := crHandPoint
+  else if FDragging and (FMovingClip<0) then Result := crCross
   else if FDragging then begin if FResizeEdge<>0 then Result := crSizeWE else Result := crSizeAll; end
   else Result := crDefault;
 end;
@@ -697,7 +702,7 @@ begin
     Canvas.Brush.Color := TitleColor; Canvas.Pen.Color := FrameColor;
     if not Summary then Canvas.Rectangle(R);
     Canvas.Brush.Style := bsClear; Canvas.Font.Color := ClipTextColor(TitleColor);
-    if (MusicStudioSmallSlot(T.Slots[SlotIndex].Kind) or (T.Slots[SlotIndex].Kind='customExpression')) and not Summary then begin
+    if (MusicStudioSmallSlot(T.Slots[SlotIndex].Kind) or (T.Slots[SlotIndex].Kind='customExpression') or (MusicStudioAnimationSource(T.Slots[SlotIndex].Kind)<>'')) and not Summary then begin
       TextRect := R; Inc(TextRect.Left,Scale(6)); Inc(TextRect.Top,Scale(4));
       DrawLabel(Canvas,TextRect,P.Name); Exit;
     end;
@@ -782,8 +787,9 @@ procedure TMusicStudioArrangementView.EyeCommand(Sender: TObject);
 begin if Assigned(FOnVisibility) then begin FOnVisibility(FSelectedTrack,TMenuItem(Sender).Tag); Invalidate; end; end;
 procedure TMusicStudioArrangementView.Paint;
 var I,J,K,Pass,Y,H,X,Saved,NextLabel: Integer; T: TMusicStudioTrack; Slot: TMusicStudioSlot;
-  Area,R,ThumbR: TRect; Beat,LastBeat,Step,Factor: Double; Text: string; Thumb: TBitmap; Visual: TMusicStudioVisualSource;
+  Area,R,ThumbR: TRect; Beat,LastBeat,Step,Factor: Double; PerfTick: Int64; Text: string; Thumb: TBitmap; Visual: TMusicStudioVisualSource;
 begin
+  PerfTick := MusicStudioPerfStamp;
   Canvas.Font.Assign(Font); Canvas.Brush.Color := $00232323; Canvas.FillRect(ClientRect);
   Canvas.Brush.Color := $00313131; Canvas.FillRect(Rect(0,0,ClientWidth,RulerHeight)); Canvas.Font.Color := clSilver;
   DrawLabel(Canvas,Rect(Scale(8),Scale(8),TrackColumnWidth,RulerHeight),'トラック');
@@ -820,7 +826,15 @@ begin
         end;
         if Text='' then if (T.PsdAssetID='') and (T.PsdPath='') then Text := 'PSD未割当' else Text := '演出';
       end;
-      DrawLabel(Canvas,Rect(TrackColumnWidth+Scale(7),Y+Scale(6),HeaderWidth-Scale(4),Y+H),Text);
+      if (J>=0) and (MusicStudioAnimationSource(T.Slots[J].Kind)<>'') then begin
+        Text := MusicStudioAnimationSource(T.Slots[J].Kind); if Text='tempo' then Text := 'リズム'
+        else if Text='singing' then Text := '歌唱' else Text := '演奏';
+        Canvas.Brush.Color := $00473550; if (FSelectedTrack=FRows[I].TrackIndex) and (FSelectedSlot=J) then Canvas.Brush.Color := $00684A72;
+        Canvas.FillRect(Rect(TrackColumnWidth,Y,HeaderWidth,Y+H));
+        Canvas.Brush.Color := $00D8A9EE; Canvas.FillRect(Rect(TrackColumnWidth,Y,TrackColumnWidth+Scale(3),Y+H));
+        Canvas.Font.Color := $00F2C8FF;
+      end;
+      DrawLabel(Canvas,Rect(TrackColumnWidth+Scale(7),Y+Scale(4),HeaderWidth-Scale(4),Y+H),Text);
       if J>=0 then begin
         Slot := T.Slots[J]; for K := 0 to High(Slot.Clips) do PaintClip(FRows[I].TrackIndex,J,K,Area,False);
       end else for Pass := 0 to 1 do for J := 0 to High(T.Slots) do begin
@@ -828,6 +842,11 @@ begin
         if ((Pass=0) and (T.Slots[J].Kind<>'performance') and (T.Slots[J].Kind<>'audio')) or
            ((Pass=1) and (T.Slots[J].Kind<>'singing')) then Continue;
         for K := 0 to High(T.Slots[J].Clips) do PaintClip(FRows[I].TrackIndex,J,K,Area,True);
+      end;
+      if FDragging and (FMovingClip<0) and (FMovingTrack=FRows[I].TrackIndex) and (FMovingSlot=FRows[I].SlotIndex) then begin
+        R := Rect(Max(HeaderWidth,Metrics.XAtSeconds(FProposedStart)),Y+Scale(2),
+          Min(Area.Right,Metrics.XAtSeconds(FProposedStart+FProposedLength)),Y+H-Scale(2));
+        if R.Right>R.Left then begin Canvas.Brush.Color := $00664B78; Canvas.Pen.Color := $00D2A9F0; Canvas.Rectangle(R); end;
       end;
       Canvas.Pen.Color := $00444444; Canvas.MoveTo(TrackColumnWidth,Y+H); Canvas.LineTo(Area.Right,Y+H);
     end;
@@ -865,7 +884,7 @@ begin
       Canvas.Pen.Color := $0055DFFF; Canvas.Pen.Width := Scale(3); Canvas.MoveTo(0,Y); Canvas.LineTo(Area.Right,Y); Canvas.Pen.Width := 1;
     end;
   finally RestoreDC(Canvas.Handle,Saved); Canvas.Refresh; end;
-  PaintPlayhead;
+  PaintPlayhead; MusicStudioPerfAdd('ui.timelinePaint',MusicStudioPerfElapsed(PerfTick));
 end;
 
 function TMusicStudioArrangementView.SingingClipAt(X,Y: Integer): Boolean;
@@ -942,6 +961,14 @@ begin
   if Assigned(FOnSelectionChange) then FOnSelectionChange(Self);
   if (Button=mbLeft) and (ClipIndex<0) and (SlotIndex>=0) and (X>=HeaderWidth) then
     if MusicStudioSmallSlot(FDocument.TrackAt(TrackIndex).Slots[SlotIndex].Kind) and Assigned(FOnSeek) then FOnSeek(SecondsAtSlot(X,TrackIndex,SlotIndex));
+  if (Button=mbLeft) and not (ssDouble in Shift) and (ClipIndex<0) and (TrackIndex>=0) and
+    (SlotIndex>=0) and (X>=HeaderWidth) and (MusicStudioAnimationSource(FDocument.TrackAt(TrackIndex).Slots[SlotIndex].Kind)<>'') then begin
+    FMovingTrack := TrackIndex; FMovingSlot := SlotIndex; FMovingClip := -1;
+    FOriginalStart := SnapSecondsForSlot(SecondsAtSlot(X,TrackIndex,SlotIndex),TrackIndex,SlotIndex);
+    FProposedStart := FOriginalStart; FProposedLength := 0; FOriginalLength := 0;
+    FMouseDownPoint := Point(X,Y); FDragStarted := False; FResizeEdge := 0; FDragging := True;
+    MouseCapture := True; Cursor := crCross; Exit;
+  end;
   // VCLはDblClickでモーダル設定を閉じた後にもssDouble付きMouseDownを呼ぶ。
   // そのMouseDownで再捕捉すると、設定終了後にドラッグ状態が残ってしまう。
   if (Button = mbLeft) and not (ssDouble in Shift) and (FSelectedClip >= 0) then begin
@@ -964,7 +991,8 @@ procedure TMusicStudioArrangementView.DblClick;
 begin
   CancelInteraction;
   if (FDocument<>nil) and (FSelectedTrack>=0) and (FSelectedSlot>=0) then
-    if MusicStudioSmallSlot(FDocument.TrackAt(FSelectedTrack).Slots[FSelectedSlot].Kind) then Exit;
+    if MusicStudioSmallSlot(FDocument.TrackAt(FSelectedTrack).Slots[FSelectedSlot].Kind) or
+      (MusicStudioAnimationSource(FDocument.TrackAt(FSelectedTrack).Slots[FSelectedSlot].Kind)<>'') then Exit;
   inherited;
 end;
 
@@ -1028,6 +1056,11 @@ begin
       if Abs(X-FMouseDownPoint.X)<Max(Scale(3),GetSystemMetrics(SM_CXDRAG)) then Exit;
       FDragStarted := True;
     end;
+    if FMovingClip<0 then begin
+      EdgeTime := SnapSecondsForSlot(SecondsAtSlot(X,FMovingTrack,FMovingSlot),FMovingTrack,FMovingSlot);
+      FProposedStart := Min(FOriginalStart,EdgeTime); FProposedLength := Abs(EdgeTime-FOriginalStart);
+      Cursor := crCross; Invalidate; Exit;
+    end;
     if X=FMouseDownPoint.X then begin FProposedStart := FOriginalStart; FProposedLength := FOriginalLength; Invalidate; Exit; end;
     if FResizeEdge<>0 then begin
       EdgeBeat := Max(0.0,Metrics.BeatAtX(X)-FMouseOffset); EdgeTime := FDocument.BeatToSeconds(EdgeBeat);
@@ -1090,7 +1123,17 @@ begin
   end;
   if (Button <> mbLeft) or not FDragging then Exit;
   MouseMove(Shift,X,Y);
-  if not FDragStarted then begin CancelInteraction; MouseMove([],X,Y); Exit; end;
+  if not FDragStarted then begin
+    Click := (FMovingClip>=0) and (MusicStudioAnimationSource(FDocument.TrackAt(FMovingTrack).Slots[FMovingSlot].Kind)<>'');
+    CancelInteraction; MouseMove([],X,Y);
+    if Click and Assigned(FOnSmallMenu) then FOnSmallMenu(FMovingTrack,FMovingSlot,FMovingClip,SecondsAtSlot(X,FMovingTrack,FMovingSlot),ClientToScreen(Point(X,Y)));
+    Exit;
+  end;
+  if FMovingClip<0 then begin
+    Click := FProposedLength>=0.001; CancelInteraction;
+    if Click and Assigned(FOnAnimationCreate) then FOnAnimationCreate(FMovingTrack,FMovingSlot,FProposedStart,FProposedLength);
+    Exit;
+  end;
   FDragging := False; FDragStarted := False; MouseCapture := False;
   if FResizeEdge<>0 then begin
     if Assigned(FOnClipResize) then FOnClipResize(FMovingTrack,FMovingSlot,FMovingClip,FProposedStart,FProposedLength);

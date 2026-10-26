@@ -38,3 +38,6 @@ Win64/
 
 # Generated editor test fixtures, screenshots and transfer scratch files.
 /Temp/EditorStage1/
+
+# Local generated verification evidence and fixtures.
+/Temp/

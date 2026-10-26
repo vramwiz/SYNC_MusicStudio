@@ -143,7 +143,7 @@ type
   end;
 implementation
 {$POINTERMATH ON}
-uses AviUtl2FilterTypes, System.SysUtils, System.Math, System.UITypes, Winapi.Windows,
+uses SYNC_MusicStudio_PerformanceTrace, AviUtl2FilterTypes, System.SysUtils, System.Math, System.UITypes, Winapi.Windows,
   SYNC_MusicStudio_Controls, SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_ArrangementData;
 {$R *.dfm}
 constructor TMusicStudioPreviewFrame.Create(AOwner: TComponent);
@@ -459,12 +459,14 @@ begin
   FTransport.Caption := Format('%.2f / %.2f 秒',[FPosition,FEnd]);
   FTransport.Hint := Format('%.2f / %.2f 秒   ·   30 fps位置 %d',[FPosition,FEnd,Floor(FPosition*30)]);
   FTransport.Hint := FTransport.Hint+sLineBreak+Format('プレビュー範囲: %.2f秒 / 素材配置の終端: %.2f秒。BPM編集後も音源の長さは変えません。',[FEnd,FContentEnd]);
+  FSceneCache.RealtimePlayback := IsPlaying;
   FSceneCache.SetPosition(FPosition);
   if Assigned(FOnPositionChange) then FOnPositionChange(Self); Stage.Invalidate;
 end;
 procedure TMusicStudioPreviewFrame.Tick(Sender: TObject);
-var S: TMusicStudioPlaybackSnapshot; I,MidiDone: Integer;
+var S: TMusicStudioPlaybackSnapshot; I,MidiDone: Integer; PerfTick: Int64;
 begin
+  MusicStudioPerfFlush; PerfTick := MusicStudioPerfStamp;
   RefreshHostBackground;
   if FSceneCache.PollResults then Stage.Invalidate;
   if FVisualRunning then begin
@@ -489,6 +491,7 @@ begin
     end;
     UpdatePosition;
   end;
+  MusicStudioPerfAdd('ui.tick',MusicStudioPerfElapsed(PerfTick));
   FStatus.Hint := FStatus.Caption+sLineBreak+'ホイール: 拡縮 / 左ドラッグ: 表示移動 / ダブルクリック: 全体表示 / Ctrl+ドラッグ: PSD配置編集'+sLineBreak+Stage.Hint;
 end;
 procedure TMusicStudioPreviewFrame.PlayClick(Sender: TObject);
@@ -673,9 +676,9 @@ begin
   Result := FFlipped[Index];
 end;
 procedure TMusicStudioPreviewFrame.PaintStage(Sender: TObject);
-var Canvas: TCanvas; V,R,Output: TRect; I,Saved: Integer; Image: Vcl.Graphics.TBitmap; Text: string;
+var Canvas: TCanvas; V,R,Output: TRect; I,Saved: Integer; Image: Vcl.Graphics.TBitmap; Text: string; PerfTick: Int64;
 begin
-  Canvas := Stage.Canvas; Canvas.Font.Assign(Font);
+  PerfTick := MusicStudioPerfStamp; Canvas := Stage.Canvas; Canvas.Font.Assign(Font);
   Canvas.Brush.Color := $00343434; Canvas.FillRect(Stage.ClientRect); V := VideoRect;
   Saved := SaveDC(Canvas.Handle);
   try
@@ -699,6 +702,7 @@ begin
     Canvas.Font.Color := $00D0D0D0;
     Text := '仮想ステージ 7680×4320 / 中心(0,0) / 黄色枠: 出力範囲 / 左drag: 配置 / 中drag: 表示移動';
     Canvas.TextOut(8,4,Text); FPlacement.Paint(Canvas);
-  finally RestoreDC(Canvas.Handle,Saved); Canvas.Refresh; end;
+  finally RestoreDC(Canvas.Handle,Saved); Canvas.Refresh;
+    MusicStudioPerfAdd('ui.stagePaint',MusicStudioPerfElapsed(PerfTick)); end;
 end;
 end.

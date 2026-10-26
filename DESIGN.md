@@ -164,14 +164,14 @@ UIの変更が検証・文字数上限で拒否された場合、変更前のJSO
   置換なしの原子的renameで`source.psd`へ公開する。コピー中の部分ファイルは正本名で存在しない。
   新規登録は本体公開後にmetadataを確定する。コピー/検証/公開失敗は所有する一時ファイルだけを整理し、
   既存の本体/metadata/固定IDを保持する。プロセス中断で残った一時ファイルやmetadataのない孤立フォルダーは登録済と認識しない。
-- 部位キーは階層パスと同名の序数。固定レイヤー名を要求しない。母音12枠、表示状態、表情/姿勢はJSONへ保存。
+- 部位キーは階層パスと同名の序数。固定レイヤー名を要求しない。母音7枠、表示状態、表情/姿勢はJSONへ保存。
   母音を選ぶと対象と全祖先を開き、各階層の'*'兄弟を排他にする。非'*'の装飾や別階層の目は変更しない。
   歌唱PSDの行選択は一時的なプレビュー用キーとして保持し、保存する母音/visibilityとは分離する。
   選択レイヤーと全祖先の排他規則を適用した表示だけを合成し、行選択では変更通知やJSON更新を行わない。
   歌唱PSDのチェックUIは約2文字幅（基準36px、フォント/DPI換算）の母音列に置換。複数割当は「通+」「あ+」等へ省略し、全文はツールチップへ。
   表情/姿勢編集は明示的な表示チェックを維持する。登録済母音を確認コンボで選ぶと割当先の行も選択する。
   初回表示・再読込・再オープンの読込完了時にも同じ割当行を選択する。保存済みキーが欠損した場合は無関係な行を選ばない。
-  母音割当はレイヤー先選択→右クリック/割当ボタンの12枠ポップアップで行う。確認コンボの先選択は不要。
+  母音割当はレイヤー先選択→右クリックの7枠ポップアップで行う。確認コンボの先選択は不要。
   行番号と内部キーの対応は維持し、各行はローカル実名、親グループは太字、深さは最大3段の浅い字下げで示す。
   同名の階層はツールチップ、同階層の同名は元レコード番号で区別。選択レイヤーの割当済み母音をラベルとメニューチェックへ反映する。
   右クリックはクリック位置をhit-testしてからメニューを開く。EnterはリストのCM_DIALOGKEYで処理し、フォームのOKへ流さない。
@@ -179,7 +179,7 @@ UIの変更が検証・文字数上限で拒否された場合、変更前のJSO
   プレビューは背景消去を抑えたダブルバッファのnative control。描画はfit倍率×表示倍率(0.1～32倍)と中心からの移動量を使う。
   ホイールはカーソル下の画像座標を固定し、左ドラッグは専用のnative captureを使用。解除/取消/リサイズでcaptureを解放する。
   選択/割当では倍率・移動量を変えず、同一PSD再読込も維持。別PSDと全体表示/ダブルクリックはfitへ戻す。表示操作は再合成しない。
-  smallA/I/U/E/Oの未割当は同母音の通常サイズへフォールバック。口形は同一MIDIトラックのかな母音と配置ローカル時刻から選ぶ。
+  小さい母音の専用割当は撤廃（旧JSONの未知キーとして保存のみ維持）。口形は同一MIDIトラックのかな母音と配置ローカル時刻から選ぶ。
 - Syncroh2由来の読取/合成を本プロジェクトへコピーして適応。v1/RGB8/raw・RLE、通常/乗算画像、画像マスクと通常の隔離グループマスク。
   乗算は透明な背景部分を保つsource-over式。グループマスクは子の合成後に不透明度と掛け、座標/既定値/反転/無効化を保持する。
   group passは不透明度255・マスクなしだけ。その他blend・clipping等は未対応理由を表示する。16M画素・512MiB予算。
@@ -266,7 +266,6 @@ UIの変更が検証・文字数上限で拒否された場合、変更前のJSO
 歌声生成、音符からの楽器別手足動作生成、ドラムのPSD演奏描画、途中の拍子変更の専用GUIは未対応。
 プレビュー上のPSD移動・四隅拡縮・反転と最小AviUtl2映像出力は実装済み。PSD間スナップは将来作業。
 楽器別PSD必須構成、再生速度変更、開始/終了ポーズ規則は保留。
-母音のonset/decayは将来作業。同母音の連続でも発音開始ごとに口の中心を基準とした縮小で区切る方針を保持する。
 
 ## 無音検証境界
 
@@ -470,6 +469,8 @@ PsdTransform.stageは論理7680×4320の中心基準座標と原寸倍率。Stag
 
 SceneCacheのHiddenTrackIDsは編集専用。Bind時に無効化して読込/評価/描画予約を止め、再表示時は現時刻を評価する。映像workerには渡さない。PsdLayerConfigは自動母音候補表を読込時に構築し、6音対応判定と現在表示する親枝の選択に使用する。LayerScaleは描画cloneの口subtreeだけを中心縮小し、原本/キャッシュ元を変更しない。口サイズを描画キーへ含める。
 
+PSD共有設定のanimateMouthSize（初期値false）で口のサイズ変化を切り替える。オン時は発音開始の1から終了直前の0.5へ線形縮小し、同母音も各発音で再始動する。複数母音の歌詞は音符を母音数で等分する。オフ時は等倍。休符/歌詞なしは従来の通常口へ戻す。口中心と身体/表情は固定し、編集と映像workerで同じSceneCacheを使う。
+
 表情カスタムはlocal emotion patternのexpressionへ完全なvisibility snapshotを保存する。最終有効区間を選び、親の再表示を行わずliteralに基本状態へ適用した後、既存演奏/独立指定/母音を重ねる。SmallSlotEditorが作成・置換・孤立local pattern整理を同じ作品履歴へまとめる。共有ライブラリには書かない。
 
 ArrangementViewはトラック/スロット/clipの選択範囲を保持し、メニュー・Del・ドラッグ並替の通知をSettingsへ渡す。並替はDocumentのtrack配列だけを移し、ID/参照/未知フィールドを保持する。preview上の変形はPlacementEditorへ委譲し、確定時だけ作品履歴へ積む。
@@ -486,3 +487,21 @@ ArrangementViewはトラック/スロット/clipの選択範囲を保持し、�
 
 
 2026-10-26: ArrangementViewのscrollbarをDarkScrollBarへ置換。位置は既存の水平64ticks/拍・垂直pixelを維持し、Maxは移動可能な最大位置、PageSizeはthumb比率用。Configureは同値を無視し、位置変更だけOnChangeを通知する。独自の不透明二重buffer/背景消去抑制と親WS_CLIPCHILDRENにより、clip draftの再描画でbarを塗り直さない。ActiveDragCursorをcursor propertyとWin32 SetCursorに適用し、capture中のWM_SETCURSORでも維持する。既存clipのdrag/Undo境界は変更しない。
+
+## 2026-10-26 アニメーション同期
+
+animationSinging/animationPerformance/animationRhythmはaccepts=['animation']。同期方式は本文へ保存せず、スロットからScenePlacement.SyncSourceへ値コピーする。ArrangementDataのAnimationSource/CanAddAnimationSlotを追加APIとメニューで共有し、専用スロットの受入属性変更を拒否する。既存PSDのprovidedSlotsは変更しない。
+
+AnimationSlotDataは直接配置の作成/種類変更/孤立ローカル設定の整理を担当する。kind=animation、motionオブジェクトの作品内設定をPatternDataで検証し、Sceneへ渡す。変更は候補JSONで検証して一括採用する。種類変更は新しい内部設定へ分離し、配置IDと範囲を保持する。他配置/共有プリセットを変更しない。区間/slot/track削除時は未使用motion設定だけを整理する。旧referenceとの併記は拒否し、旧共有animation参照は従来どおり読める。
+
+ArrangementViewの空白dragは仮矩形だけを描き、mouse-upでSmallSlotEditor.CreateAnimationへ返す。clickとdragを区別し、captureを解除した後だけ種類メニューへ進む。SmallSlotEditorが7種類のメニューを構築し、作品CommitMutationへ確定を返す。アニメーション選択時の一覧/＋を隠し、PSD等の明示タブ切替と他slot選択では通常の一覧へ戻す。
+
+SceneCache.Bindで演奏の区間をAnimationCueへ複製し、開始順に索引化する。AnimationSyncは純粋な位相計算を担当。歌唱は既存VisualCacheの音符索引を借用し、worker読込後の値だけを参照する。frame中に解析/ファイル読込を追加しない。歌唱は参照元秒、演奏は作品テンポの拍、リズムは絶対拍で評価。既存MotionConfig/worker/変形キーを使用する。初期値はbounce/strength50/speed2で、SYNC_Motion由来のコピー済みMotionDataを使用する。口サイズ設定とは独立して全体を変形し、音声処理を追加しない。
+
+## 2026-10-26 連続再生と変形処理の負荷
+
+SceneCache.RealtimePlaybackは編集再生中だけ有効。新時刻は実行中jobを取消さず最新要求1件へまとめ、同じBind/source/playback epochの完成画像を公開する。停止時は古い要求を破棄して厳密な位置へ収束し、VideoSessionは既定の厳密評価を維持する。PublishedSecondsForTrackは完成画像の要求時刻を診断する。
+
+MotionDataの回転0変形は行ごとに参照Yとせん断を計算する。等倍/せん断0のbounce/jump等は行の連続領域を転送し、Opaqueの場合だけalpha補正する。拡縮/振り子等は行の値を再利用し、回転ありは従来の汎用逆変換へ残す。透明/端/負移動/1pixel/銀行丸めを保持する。PSD原本やSource bitmapを変更しない。
+
+PerformanceTraceはDEBUGの合成準備/copy/compose/motion/worker/queue/公開待ち/ui.tick/stagePaint/timelinePaintを集計する。workerはメモリ集計だけを行い、UI timerが最大1秒ごとにJSONLとOutputDebugStringへ出力する。DEBUG既定はTempのprocess別log、Releaseは無効。ログ用の外部DLLは追加しない。

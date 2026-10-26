@@ -1,4 +1,4 @@
-program SYNC_Lyrics_ColorPickerTests;
+﻿program SYNC_Lyrics_ColorPickerTests;
 
 {$APPTYPE CONSOLE}
 

@@ -62,6 +62,9 @@ function MusicStudioSlotCompatible(const PatternKind: string; const Slot: TMusic
 // 旧トラック直下clipsの検証専用。新UIの適合性にはSlotCompatibleを使う。
 function MusicStudioCompatible(const PatternKind, TrackKind: string; out Reason: string): Boolean;
 function MusicStudioSlotKindName(const Kind: string): string;
+// New animation slots accept shared animation patterns; synchronization belongs to the placement's slot.
+function MusicStudioAnimationSource(const Kind: string): string;
+function MusicStudioCanAddAnimationSlot(const Track: TMusicStudioTrack; const Kind: string): Boolean;
 implementation
 uses System.SysUtils, System.Math, System.Generics.Collections, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_ClipTempo,
   SYNC_MusicStudio_SmallSlotData;
@@ -88,12 +91,30 @@ begin
   N := TJSONNumber(Obj.GetValue(Key)).AsDouble;
   Result := not IsNan(N) and not IsInfinite(N) and (N >= Minimum) and (N <= Maximum);
 end;
+function MusicStudioAnimationSource(const Kind: string): string;
+begin
+  Result := '';
+  if Kind='animationSinging' then Result := 'singing'
+  else if Kind='animationPerformance' then Result := 'performance'
+  else if Kind='animationRhythm' then Result := 'tempo';
+end;
+function MusicStudioCanAddAnimationSlot(const Track: TMusicStudioTrack; const Kind: string): Boolean;
+var Slot: TMusicStudioSlot; Source: string;
+begin
+  Result := False; Source := MusicStudioAnimationSource(Kind);
+  if (Track.Kind<>'psd') or (Source='') then Exit;
+  if Source='tempo' then Exit(True);
+  for Slot in Track.Slots do if Slot.Kind=Source then Exit(True);
+end;
 function MusicStudioSlotKindName(const Kind: string): string;
 begin
   if Kind = 'audio' then Result := '音声'
   else if Kind = 'singing' then Result := '歌唱 / 口パク'
   else if Kind = 'psd' then Result := 'PSD割当'
   else if Kind = 'instrument' then Result := '楽器'
+  else if Kind = 'animationSinging' then Result := 'アニメーション（歌唱）'
+  else if Kind = 'animationPerformance' then Result := 'アニメーション（演奏）'
+  else if Kind = 'animationRhythm' then Result := 'アニメーション（リズム）'
   else if Kind = 'animation' then Result := 'アニメーション'
   else if Kind = 'performance' then Result := '演奏'
   else if Kind = 'tempo' then Result := 'テンポ'
@@ -108,6 +129,7 @@ begin
 end;
 function DefaultAccepts(const Kind: string): TArray<string>;
 begin
+  if MusicStudioAnimationSource(Kind)<>'' then Exit(TArray<string>.Create('animation'));
   if Kind = 'customExpression' then Result := TArray<string>.Create('emotion')
   else if Kind = 'generic' then Result := TArray<string>.Create('audio','singing')
   else Result := TArray<string>.Create(Kind);
@@ -238,6 +260,10 @@ begin
           (Trim(Name) = '') or not TextField(SObj,'name',Name) or (Trim(Name) = '') or
           not TextField(SObj,'color',Color) or not ColorValid(Color) or not (SObj.GetValue('order') is TJSONNumber) or
           not TryStrToInt(SObj.GetValue('order').Value,Order) or not (SObj.GetValue('clips') is TJSONArray) or not ReadAccepts(SObj,Accepts) then Exit;
+        if (MusicStudioAnimationSource(SObj.GetValue<string>('kind'))<>'') and
+          ((Length(Accepts)<>1) or (Accepts[0]<>'animation')) then begin
+          ErrorText := 'アニメーションスロットの受入属性はアニメーションです。'; Exit;
+        end;
         ErrorText := 'スロットorderは配列順の0始まり連番にしてください。';
         if Order <> I then Exit; Inc(I); if not UniqueID(SlotID,IDs,ErrorText) then Exit;
         if not ValidateClips(TJSONArray(SObj.GetValue('clips')),SlotID,Accepts,Version,IDs,PatternKinds,ErrorText) then Exit;
@@ -366,6 +392,12 @@ end;
 function MusicStudioAddSlot(Root: TJSONObject; TrackIndex: Integer; const Kind: string): Integer;
 var Items: TJSONArray; Color: string;
 begin
+  if MusicStudioAnimationSource(Kind)<>'' then begin
+    if not MusicStudioCanAddAnimationSlot(MusicStudioTrackAt(Root,TrackIndex),Kind) then
+      raise Exception.Create('対応する歌唱・演奏スロットが必要です。');
+    Items := SlotArray(Root,TrackIndex); Result := Items.Count;
+    Items.AddElement(NewSlot(NewID,Kind,'#B897D6',Result)); Exit;
+  end;
   if (MusicStudioTrackAt(Root,TrackIndex).Kind='psd') and (Kind<>'psd') and
     (MusicStudioTrackAt(Root,TrackIndex).PsdAssetID='') and (MusicStudioTrackAt(Root,TrackIndex).PsdPath='') then
     raise Exception.Create('先に登録PSDを割り当ててください。');
@@ -435,6 +467,10 @@ begin
       ErrorText := '割当PSDはこの受入属性に対応していません。'; Exit;
     end;
   Obj := SlotObject(Root,TrackIndex,SlotIndex);
+  if (MusicStudioAnimationSource(Obj.GetValue<string>('kind'))<>'') and
+    ((Length(Accepts)<>1) or (Accepts[0]<>'animation')) then begin
+    ErrorText := 'アニメーションスロットの受入属性はアニメーションです。'; Exit;
+  end;
   for V in TJSONArray(Obj.GetValue('clips')) do if not ContainsKind(Accepts,PatternKind(Root,TJSONObject(V).GetValue('patternId').Value)) then begin
     ErrorText := '既存配置が使用する属性は解除できません。先にその配置を削除してください。'; Exit;
   end;

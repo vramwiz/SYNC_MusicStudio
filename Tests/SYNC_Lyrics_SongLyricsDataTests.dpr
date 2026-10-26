@@ -1,4 +1,4 @@
-program SYNC_Lyrics_SongLyricsDataTests;
+﻿program SYNC_Lyrics_SongLyricsDataTests;
 
 {$APPTYPE CONSOLE}
 
