@@ -287,3 +287,10 @@ AnimationProfile-20261026のMotionEquivalenceは最適化前unitを証拠root内
 ## 終了時の構成整理（2026-10-26）
 
 SourceとTestsは機能別folderへ分離した。統合UIはFilter/Settings、時間軸はTimeline、試写はPreview、一覧/キャッシュはLibrary、属性UIはPatternsの各属性folderへ置く。Common/ProjectはArrangement/Timing/Performance/Library/Performerを使う。入口dprとTests/Win64の基準位置は変更しない。継承SYNC_Lyricsは現行hostと区別して保持する。
+
+
+## ソース構成の事前検査（2026-10-28）
+
+`Scripts/TestSourceLayout.ps1` は現行の `Source/**/SYNC_MusicStudio_*.pas` を検査する。1ユニット1,500行以内、同一フォルダー12ユニット以内を確認し、増える場合は責務と機能別の子フォルダーへ分離する。継承SYNC_Lyrics、生成物、Git内部は対象外。現在の最大は1,489行、同一フォルダー6ユニット。
+
+UTF-8 BOM/CRLF、unit先頭の目的・責務コメント、dpr/dprojへの登録、参照の重複/欠損、フォームのdfm同居も確認する。公開処理の入出力・所有権・保存/例外等の副作用は従来どおりコードレビューで確認する。コメントの内容までは自動判定しない。`BuildLocal.ps1` はビルド前にこの検査を実行して違反時に停止する。IDEで直接ビルドする場合は検査スクリプトを別途実行する。

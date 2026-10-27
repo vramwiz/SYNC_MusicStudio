@@ -39,14 +39,17 @@ type
     function LoadFile(const Path: string): Boolean;
     // Copies metadata and shares immutable channel arrays; safe for a worker's lifetime.
     function Clone: TMusicStudioLayerDocument;
+    // Keyは完全パスと同名兄弟を識別する安定キー。検索結果のレイヤー配列はDocument所有。
     function HasLayer(const Key: string): Boolean;
     function LayerIndex(const Key: string): Integer;
+    // 呼出元所有のOverridesへ祖先の表示指定を追加する。読込済みPSDの初期状態は変更しない。
     procedure RequireVisibleAncestors(Overrides: TJSONObject; const Key: string);
     // Honors PSDTool '*' exclusivity at the selected layer and every opened ancestor.
     procedure SelectLayerOverride(Overrides: TJSONObject; const Key: string);
-    // Caller owns Target and Overrides. BGRA is premultiplied for VCL alpha drawing.
     // 母音自身の初期表示を除き、現在の表情で親の枝が表示されているかを確認する。
     function LayerBranchVisible(const Key: string; Overrides: TJSONObject): Boolean;
+    // Target/Overridesは借用。成功時はTargetへpremultiplied BGRAを出力し、内部cacheを更新する。
+    // 失敗時はLastErrorを設定する。原PSDの保存や共有設定の変更は行わない。
     function Render(Target: TBitmap; Overrides: TJSONObject = nil; MaximumDimension: Integer = 0; const ScaleKey: string = ''; PartScale: Double = 1): Boolean;
     property Loaded: Boolean read GetLoaded;
     property FilePath: string read FFilePath;
@@ -61,6 +64,7 @@ type
     property InstrumentRules: TMusicStudioInstrumentRules read FInstrumentRules;
   end;
 
+// 呼出元所有のObjの指定キーだけを置き換える。nilは何もせず、Objを解放しない。
 procedure MusicStudioSetJsonBoolean(Obj: TJSONObject; const Key: string; Value: Boolean);
 
 implementation

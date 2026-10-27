@@ -148,20 +148,26 @@ type
     procedure LoadDocument(const JSONText: string);
     // 共有設定の保存後にrevisionを読み直し、シーンと左一覧を更新する。
     procedure SharedLibraryChanged;
+    // 作品と共通演奏の履歴を一段戻す/進める。共有保存に失敗した履歴は確定しない。
     procedure UndoEdit;
     procedure RedoEdit;
+    // JSONファイルを検証後に作業文書へ読み込む。失敗理由を返し、ホストへは適用しない。
     function ImportJSONFile(const Path: string; out ErrorText: string): Boolean;
+    // 一覧の配置を作品内へ追加し履歴を確定する。拒否時はReasonを返し、配置を追加しない。
     function DropPatternAt(PatternIndex, TrackIndex: Integer; StartSeconds: Double; out Reason: string): Boolean; overload;
     function DropPatternAt(PatternIndex, TrackIndex, SlotIndex: Integer; StartSeconds: Double; out Reason: string): Boolean; overload;
+    // 以下のDocument/Preview/SharedLibrary等の参照はフォーム所有。呼出元は解放しない。
     property SilentVisualMode: Boolean read FSilentVisualMode write SetSilentVisualMode;
     property SharedLibrary: TMusicStudioSharedPsdLibrary read FSharedLibrary;
     property LibraryRoot: string read GetLibraryRoot write SetLibraryRoot;
     property LibraryKind: string read FLibraryKind;
+    // 現在の共有一覧選択を指定秒へ配置する。素材は借用し、共有正本は変更しない。
     function DropSelectedLibraryAt(TrackIndex,SlotIndex: Integer; StartSeconds: Double; out Reason: string): Boolean;
     // Explorerのdropと削除ボタンの処理境界。PSD一覧以外/不正選択では書き込まない。
     function ImportDroppedPsd(const Path: string; out ErrorText: string): Boolean;
     // 音声一覧への外部drop。原本をコピー/解析せず、作品内に参照を登録する。
     function ImportDroppedAudio(const Path: string; out ErrorText: string): Boolean;
+    // 共有登録の削除を試みる。作品内の既存参照は保持し、失敗時は理由を返す。
     function RemoveSelectedLibraryPsd(out ErrorText: string): Boolean;
     property SelectedLibraryPattern: Integer read SelectedPatternIndex;
     property Document: TMusicStudioDocument read FDocument;
@@ -192,8 +198,6 @@ uses
 procedure TFormMusicStudioSettings.BuildUI;
 var
   Header, Footer, Overview, TrackHeader: TPanel;
-  Item: TMenuItem;
-  I: Integer;
   LabelControl: TLabel;
   Splitter: TSplitter;
 begin
@@ -300,48 +304,29 @@ begin
   SaveDialog.Options := [ofOverwritePrompt, ofEnableSizing];
   AddMenu := TPopupMenu.Create(Self);
   FPatternMenu := TPopupMenu.Create(Self); FPatternMenu.OnPopup := PatternMenuPopup; PatternList.PopupMenu := FPatternMenu;
-  FPatternAdd := TMenuItem.Create(FPatternMenu); FPatternAdd.Caption := '追加…'; FPatternAdd.OnClick := AddButtonClick; FPatternMenu.Items.Add(FPatternAdd);
-  FPatternEdit := TMenuItem.Create(FPatternMenu); FPatternEdit.Caption := '設定…'; FPatternEdit.OnClick := EditButtonClick; FPatternMenu.Items.Add(FPatternEdit);
-  FPatternDelete := TMenuItem.Create(FPatternMenu); FPatternDelete.Caption := '削除…'; FPatternDelete.OnClick := DeleteButtonClick; FPatternMenu.Items.Add(FPatternDelete);
+  FPatternAdd := AddMusicStudioSettingsMenu(FPatternMenu.Items, '追加…', AddButtonClick);
+  FPatternEdit := AddMusicStudioSettingsMenu(FPatternMenu.Items, '設定…', EditButtonClick);
+  FPatternDelete := AddMusicStudioSettingsMenu(FPatternMenu.Items, '削除…', DeleteButtonClick);
   TrackAddMenu := TPopupMenu.Create(Self);
-  Item := TMenuItem.Create(TrackAddMenu); Item.Caption := '音楽トラック';
-  Item.OnClick := AddAudioTrackClick; TrackAddMenu.Items.Add(Item);
-  Item := TMenuItem.Create(TrackAddMenu); Item.Caption := '演奏者トラック';
-  Item.OnClick := AddPsdTrackClick; TrackAddMenu.Items.Add(Item);
+  AddMusicStudioSettingsMenu(TrackAddMenu.Items, '音楽トラック', AddAudioTrackClick);
+  AddMusicStudioSettingsMenu(TrackAddMenu.Items, '演奏者トラック', AddPsdTrackClick);
   ArrangementMenu := TPopupMenu.Create(Self); ArrangementMenu.OnPopup := ArrangementMenuPopup;
-  Item := TMenuItem.Create(ArrangementMenu); Item.Caption := '音楽トラックを追加';
-  Item.OnClick := AddAudioTrackClick; ArrangementMenu.Items.Add(Item);
-  Item := TMenuItem.Create(ArrangementMenu); Item.Caption := '演奏者トラックを追加';
-  Item.OnClick := AddPsdTrackClick; ArrangementMenu.Items.Add(Item);
-  FTrackSettingsItem := TMenuItem.Create(ArrangementMenu); FTrackSettingsItem.Caption := 'トラック設定…';
-  FTrackSettingsItem.OnClick := TrackSettingsClick; ArrangementMenu.Items.Add(FTrackSettingsItem);
-  FTrackDeleteItem := TMenuItem.Create(ArrangementMenu); FTrackDeleteItem.Caption := 'トラックを削除…';
-  FTrackDeleteItem.OnClick := TrackDeleteClick; ArrangementMenu.Items.Add(FTrackDeleteItem);
-  Item := TMenuItem.Create(ArrangementMenu); Item.Caption := 'トラックをコピー'; Item.OnClick := CopyTrackClick; ArrangementMenu.Items.Add(Item);
-  Item := TMenuItem.Create(ArrangementMenu); Item.Caption := 'トラックをペースト'; Item.OnClick := PasteTrackClick; ArrangementMenu.Items.Add(Item);
-  FClipEditItem := TMenuItem.Create(ArrangementMenu); FClipEditItem.Caption := '配置の開始・長さ…';
-  FClipEditItem.OnClick := ClipEditClick; ArrangementMenu.Items.Add(FClipEditItem);
-  FClipDeleteItem := TMenuItem.Create(ArrangementMenu); FClipDeleteItem.Caption := 'この配置を削除';
-  FClipDeleteItem.OnClick := ClipDeleteClick; ArrangementMenu.Items.Add(FClipDeleteItem);
+  AddMusicStudioSettingsMenu(ArrangementMenu.Items, '音楽トラックを追加', AddAudioTrackClick);
+  AddMusicStudioSettingsMenu(ArrangementMenu.Items, '演奏者トラックを追加', AddPsdTrackClick);
+  FTrackSettingsItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'トラック設定…', TrackSettingsClick);
+  FTrackDeleteItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'トラックを削除…', TrackDeleteClick);
+  AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'トラックをコピー', CopyTrackClick);
+  AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'トラックをペースト', PasteTrackClick);
+  FClipEditItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, '配置の開始・長さ…', ClipEditClick);
+  FClipDeleteItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'この配置を削除', ClipDeleteClick);
   SlotAddMenu := TPopupMenu.Create(Self); SlotAddMenu.OnPopup := SlotAddMenuPopup;
-  for I := 0 to High(SLOT_KINDS) do begin
-    Item := TMenuItem.Create(SlotAddMenu); Item.Caption := MusicStudioSlotKindName(SLOT_KINDS[I])+'スロット';
-    Item.Tag := I; Item.OnClick := AddSlotClick; SlotAddMenu.Items.Add(Item);
-  end;
-  FSlotAddItem := TMenuItem.Create(ArrangementMenu); FSlotAddItem.Caption := 'スロット追加';
-  ArrangementMenu.Items.Add(FSlotAddItem);
-  for I := 0 to High(SLOT_KINDS) do begin
-    Item := TMenuItem.Create(ArrangementMenu); Item.Caption := MusicStudioSlotKindName(SLOT_KINDS[I])+'スロット';
-    Item.Tag := I; Item.OnClick := AddSlotClick; FSlotAddItem.Add(Item);
-  end;
-  FSlotSettingsItem := TMenuItem.Create(ArrangementMenu); FSlotSettingsItem.Caption := 'スロット設定…';
-  FSlotSettingsItem.OnClick := SlotSettingsClick; ArrangementMenu.Items.Add(FSlotSettingsItem);
-  FSlotDeleteItem := TMenuItem.Create(ArrangementMenu); FSlotDeleteItem.Caption := 'このスロットを削除…';
-  FSlotDeleteItem.OnClick := SlotDeleteClick; ArrangementMenu.Items.Add(FSlotDeleteItem);
-  FSlotUpItem := TMenuItem.Create(ArrangementMenu); FSlotUpItem.Caption := 'スロットを上へ';
-  FSlotUpItem.OnClick := SlotUpClick; ArrangementMenu.Items.Add(FSlotUpItem);
-  FSlotDownItem := TMenuItem.Create(ArrangementMenu); FSlotDownItem.Caption := 'スロットを下へ';
-  FSlotDownItem.OnClick := SlotDownClick; ArrangementMenu.Items.Add(FSlotDownItem);
+  PopulateMusicStudioSlotMenu(SlotAddMenu.Items, AddSlotClick);
+  FSlotAddItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'スロット追加', nil);
+  PopulateMusicStudioSlotMenu(FSlotAddItem, AddSlotClick);
+  FSlotSettingsItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'スロット設定…', SlotSettingsClick);
+  FSlotDeleteItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'このスロットを削除…', SlotDeleteClick);
+  FSlotUpItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'スロットを上へ', SlotUpClick);
+  FSlotDownItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'スロットを下へ', SlotDownClick);
   TimelineBox.PopupMenu := ArrangementMenu;
 end;
 

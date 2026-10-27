@@ -17,9 +17,11 @@ type
   protected
     procedure Execute; override;
   public
+    // Pathと世代をコピーして待機状態で作成。Start後に読取専用でロードし、失敗はErrorMessageへ返す。
     constructor Create(const Path: string; Generation: Integer);
     destructor Destroy; override;
     procedure Start; reintroduce;
+    // Finished確認後にUI側で呼ぶ。結果の所有権を呼出元へ移し、再呼出はnilを返す。
     function TakeDocument: TMusicStudioLayerDocument;
     property ErrorMessage: string read FError;
     property Path: string read FPath;
@@ -41,6 +43,7 @@ type
     constructor Create(Document: TMusicStudioLayerDocument; Overrides: TJSONObject; Generation: Integer; MaximumDimension: Integer = 0);
     destructor Destroy; override;
     procedure Start; reintroduce;
+    // Finished確認後にUI側で呼ぶ。結果の所有権を呼出元へ移し、再呼出はnilを返す。
     function TakeBitmap: TBitmap;
     property ErrorMessage: string read FError;
     property Generation: Integer read FGeneration;

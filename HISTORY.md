@@ -1977,3 +1977,19 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - 無配備Debug/Release、Release Foundation、無音--animation-slots成功。音声/DPI/全体suite/native popup実表示なし。sample.aup2のユーザー変更は保持し、今回のコミットに含めない。
 - 生成fixture/コピーPSD/一時EXE/DCUの削除は絶対path境界を検証したPowerShellを自動承認レビューがblocked by policyで拒否。別方法での再試行はしない。未削除の場所: Temp、Tests/Win64、Win64/Debug/DCU、Win64/Release/DCU。TempはGit対象外へ明示。必要なsource/継承UI/実素材/共有設定/参照元を保持。
 - 証拠: Temp/SYNC_MusicStudio-EndOfDay-20261026/（moves.json、audit.json、build/、checks.log、foundation.png）。remote mainはfetch時点でHEADと同一。ユーザーの終了指示で追加変更を停止し、本日のソース・仕様・履歴をコミットしてpushする。
+## 2026-10-28 不要生成物整理の再開
+
+- ユーザー指定で前回未完了の整理を再開。作業開始時のGit差分なし、現行mainは1893a65。Tests/Win64、Win64/Debug/DCU、Win64/Release/DCUにGit管理ファイルなし。テスト/コンパイラ/MSBuildの動作プロセスなし。
+- 再生成できる上記3ディレクトリだけを、workspace絶対パス境界・リンク・Git管理対象の拒否条件付きでPowerShellから削除しようとしたが、自動承認レビューが実行前にblocked by policyで拒否した。削除なし、別方法での再試行なし。手動整理する場合の対象は上記3か所。Tempの検証ログ・比較画像・性能根拠は調査記録として保持する。
+- 製品ソース、ビルド済みプラグイン、実作品・素材・共有設定・継承UI・参照元に変更なし。ソース変更がないためビルド/テスト/配備は実行しない。
+
+
+## 2026-10-28 ユニット肥大化防止・構成とコメントの整理
+
+- ユーザーが不要生成物を手動削除する方針となり、Temp・Tests/Win64・Debug/Release DCUのリンクを提示。削除操作は再実行しない。
+- 前回の機能別フォルダー分離とform/dfm同居を再監査。現行84unit、同一フォルダー最大6unit。継承UIと参照元を保持し、追加の移動は不要と確認。
+- SettingsFormのメニュー構築を既存SettingsSlotMenusの部品生成/スロット候補構築へ共通化し、1504→1489行へ縮小。項目順・caption・Tag・イベント・所有者・追加条件・submenu構造を維持。新しいproduct unitやDLL依存は追加しない。
+- 公開処理の入力/結果、所有権移譲、保存対象、失敗時の挙動をSettingsForm/SettingsSlotMenus/PsdLayers/PsdLayerJobsに補記。Renderの所有権コメントが別APIへ掛かっていた位置も修正。
+- TestSourceLayout.ps1を追加しBuildLocalの事前検査へ接続。現行unitの1500行・folder12unit上限、目的コメントの存在、BOM/CRLF、dpr/dproj登録と参照欠損/重複、dfm同居を確認。継承UI/生成物/Git内部は検査対象外。
+- 事前検査、無配備Debug/Release（警告0/エラー0）、Release Foundation、専用--animation-slots成功。154BPM無音時計で38公開/35画像変化、submenu条件と直接操作/Undo/映像画素一致を維持。native popup・音声・DPI・全体suiteは実行せず、テスト所有processは終了確認。作品・実PSD・共有設定・配備先は変更なし。
+- 証拠: Temp/SYNC_MusicStudio-SourceLayout-20261028/（build、foundation.png、animation.log/err）。手動削除される可能性があるため完了結果は本履歴に保持する。
