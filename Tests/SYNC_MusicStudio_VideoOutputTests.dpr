@@ -1,6 +1,7 @@
 ﻿program SYNC_MusicStudio_VideoOutputTests;
 {$APPTYPE CONSOLE}
 uses
+  SYNC_MusicStudio_MeterEditor in '..\Source\Plugin\Filter\Patterns\Timing\SYNC_MusicStudio_MeterEditor.pas',
   SYNC_MusicStudio_SmallSlotData in '..\Source\Common\Project\Performer\SYNC_MusicStudio_SmallSlotData.pas',
   SYNC_MusicStudio_SmallSlotEditor in '..\Source\Plugin\Filter\Performer\SYNC_MusicStudio_SmallSlotEditor.pas',
   SYNC_MusicStudio_PerformanceKinds in '..\Source\Common\Project\Performance\SYNC_MusicStudio_PerformanceKinds.pas',

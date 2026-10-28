@@ -1,6 +1,8 @@
 ﻿program SYNC_MusicStudio_NoAudioTests;
 {$APPTYPE CONSOLE}
 uses
+  SYNC_MusicStudio_MeterEditorChecks in 'Timing\SYNC_MusicStudio_MeterEditorChecks.pas',
+  SYNC_MusicStudio_MeterEditor in '..\Source\Plugin\Filter\Patterns\Timing\SYNC_MusicStudio_MeterEditor.pas',
   SYNC_MusicStudio_SingingFormatChecks in 'Singing\SYNC_MusicStudio_SingingFormatChecks.pas',
   SYNC_MusicStudio_InstrumentEndChecks in 'Instrument\SYNC_MusicStudio_InstrumentEndChecks.pas',
   SYNC_MusicStudio_InstrumentAppliedChecks in 'Instrument\SYNC_MusicStudio_InstrumentAppliedChecks.pas',
@@ -130,6 +132,7 @@ begin
   try
     SetTextCodePage(Output,65001); SetTextCodePage(ErrOutput,65001);
     Application.Initialize;
+    if ParamStr(2)='--meter-editor' then begin RunMeterEditorChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--dark-scroll' then begin RunDarkScrollChecks(ParamStr(1)); RunSingingGestureChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--singing-gestures' then begin RunSingingGestureChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--singing-formats' then begin RunSingingFormatChecks(ParamStr(1)); Exit; end;

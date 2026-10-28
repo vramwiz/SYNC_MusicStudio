@@ -179,6 +179,7 @@
     <DCCReference Include="Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PatternSettingsForm.pas">
       <Form>MusicStudioPatternSettings</Form>
     </DCCReference>
+    <DCCReference Include="Source\Plugin\Filter\Patterns\Timing\SYNC_MusicStudio_MeterEditor.pas" />
     <DCCReference Include="Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsDialogs.pas" />
     <DCCReference Include="Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsSlotMenus.pas" />
     <DCCReference Include="Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsForm.pas">

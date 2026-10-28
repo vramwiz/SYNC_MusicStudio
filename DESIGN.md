@@ -263,7 +263,7 @@ UIの変更が検証・文字数上限で拒否された場合、変更前のJSO
 
 ## 実装待ち
 
-歌声生成、音符からの楽器別手足動作生成、ドラムのPSD演奏描画、途中の拍子変更の専用GUIは未対応。
+歌声生成と音符からの楽器別手足動作生成は未対応。ドラムを含む共通演奏PSD描画と途中拍子の専用GUIは実装済み。
 プレビュー上のPSD移動・四隅拡縮・反転と最小AviUtl2映像出力は実装済み。PSD間スナップは将来作業。
 楽器別PSD必須構成、再生速度変更、開始/終了ポーズ規則は保留。
 
@@ -361,7 +361,7 @@ AudioClipFrameはファイル参照と音量を維持したままdecodeを起動
 - 手動tempoPointsは`measure`（1始まり）/`beatInMeasure`を正本、`beat`は四分拍の互換値として保存する。
   旧beatのみはそのまま読める。MeterMapが`meterChanges:[{measure,numerator,denominator,beat}]`を変換し、tempo変更は小節位置を動かさない。
   拍子変更は小節頭のみ。旧beat指定も小節境界なら移行、未知属性を保持。先頭拍子の変更ではtempoの小節アンカーを保つ。
-  新拍子に収まらない小節内offsetは原子的に拒否し、既存点を勝手に次の小節へ送らない。途中拍子のGUI表編集は未実装、JSONの読込/保存/ルーラーは対応。
+  新拍子に収まらない小節内offsetは原子的に拒否し、既存点を勝手に次の小節へ送らない。途中拍子は「テンポ / 拍子」の「拍子変更」タブで小節単位に追加/編集/削除できる（2026-10-28）。JSONの読込/保存/ルーラーも同じ拍子表を使う。
 
 SDKの小数tempo境界テストは二つの期待値を区別する。VideoSessionで生成した全RGBAは編集側とDLLの整合性検証。
 追加の基準はtempo clipを含まない固定手動120 BPMの実DLL出力を保存し、手計算した開始/終端前後の時刻でactive/rest画素へ比較する。
@@ -505,3 +505,12 @@ SceneCache.RealtimePlaybackは編集再生中だけ有効。新時刻は実行�
 MotionDataの回転0変形は行ごとに参照Yとせん断を計算する。等倍/せん断0のbounce/jump等は行の連続領域を転送し、Opaqueの場合だけalpha補正する。拡縮/振り子等は行の値を再利用し、回転ありは従来の汎用逆変換へ残す。透明/端/負移動/1pixel/銀行丸めを保持する。PSD原本やSource bitmapを変更しない。
 
 PerformanceTraceはDEBUGの合成準備/copy/compose/motion/worker/queue/公開待ち/ui.tick/stagePaint/timelinePaintを集計する。workerはメモリ集計だけを行い、UI timerが最大1秒ごとにJSONLとOutputDebugStringへ出力する。DEBUG既定はTempのprocess別log、Releaseは無効。ログ用の外部DLLは追加しない。
+
+
+## 途中拍子の編集GUI（2026-10-28）
+
+TimingFrameを「テンポ」と「拍子変更」の2タブへ分離する。MeterEditorは途中拍子だけを小節/分子/分母で編集し、先頭拍子は既存のテンポタブに残す。追加は最後の変更の次小節（変更がなければ2小節）、その地点の拍子を初期値にする。開始小節の変更では行を並べ替え、既存の未知属性を変更対象の行へ引き継ぐ。削除後は直前の拍子が続く。
+
+編集部品はTimingFrame所有のTempoMapを借用する。追加/編集/削除はBeatDataでJSON候補を作り、MeterMapとtempo小節内offsetの検証が成功した場合だけ採用する。重複小節/1小節目/不正分母/上限超過/tempo offsetの範囲外は無変更で拒否する。小節頭の四分拍とテンポ点の開始秒を再計算するが、tempoの小節アンカーを保持する。
+
+入力不正はテキストと理由を残して外側の適用を拒否し、修正または行の再選択で復帰する。別タブの変更だけでは不正入力を解除しない。外側OKで作品の既存SetTiming/Commitへ渡し、キャンセルは作業mapを破棄する。作品の保存と履歴は既存経路を使い、新規ファイルや共有設定は書き換えない。終了時は借用editorを解放してからmapを破棄する。

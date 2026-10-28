@@ -5,6 +5,7 @@
 {$APPTYPE CONSOLE}
 
 uses
+  SYNC_MusicStudio_MeterEditor in '..\Source\Plugin\Filter\Patterns\Timing\SYNC_MusicStudio_MeterEditor.pas',
   SYNC_MusicStudio_InstrumentPreview in '..\Source\Plugin\Filter\Patterns\Performance\SYNC_MusicStudio_InstrumentPreview.pas',
   SYNC_MusicStudio_FileDropList in '..\Source\Plugin\Filter\Controls\SYNC_MusicStudio_FileDropList.pas',
   SYNC_MusicStudio_PsdImport in '..\Source\Common\Project\Library\SYNC_MusicStudio_PsdImport.pas',

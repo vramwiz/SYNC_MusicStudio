@@ -1,17 +1,20 @@
 ﻿unit SYNC_MusicStudio_TimingFrame;
 
-// 手動テンポ表と先頭拍子を編集する属性独立フレーム。
+// 手動テンポ表と先頭/途中拍子を編集する属性独立フレーム。
 // 拍位置と未知JSONフィールドを保持する。確定/取消は外側のダイアログが担当する。
 // 音声、時計、ファイル入出力を起動しない。
 interface
 
 uses System.Classes, System.JSON, System.Types, Winapi.Windows, Vcl.Forms, Vcl.Controls,
-  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.Graphics, SYNC_MusicStudio_BeatData;
+  Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Grids, Vcl.Graphics, Vcl.ComCtrls, SYNC_MusicStudio_BeatData,
+  SYNC_MusicStudio_MeterEditor;
 
 type
   TMusicStudioTimingFrame = class(TFrame)
   private
     FMap: TMusicStudioTempoMap;
+    FMeterEditor: TMusicStudioMeterEditor;
+    FPages: TPageControl;
     FRows: TStringGrid;
     FBeatEdit, FBPMEdit: TEdit;
     FNumerator, FDenominator: TComboBox;
@@ -21,6 +24,7 @@ type
     FUpdating: Boolean;
     FError: string;
     FOnChange: TNotifyEvent;
+    procedure MeterEditorChanged(Sender: TObject);
     procedure BuildUI;
     procedure ShowTiming;
     procedure ShowSelected;
@@ -52,6 +56,9 @@ type
     procedure DeleteTempoPoint(Index: Integer);
     procedure SelectTempoPoint(Index: Integer);
     procedure SetMeter(Numerator, Denominator: Integer);
+    // 拍子編集は同じmapを借用し、外側のOK/取消と作品Undoで確定する。呼出元は解放しない。
+    property MeterEditor: TMusicStudioMeterEditor read FMeterEditor;
+    property Pages: TPageControl read FPages;
     property TempoMap: TMusicStudioTempoMap read FMap;
     property SelectedTempoPoint: Integer read FSelected;
     property CanApply: Boolean read GetCanApply;
@@ -92,7 +99,10 @@ begin
 end;
 
 destructor TMusicStudioTimingFrame.Destroy;
-begin FreeAndNil(FMap); inherited; end;
+begin
+  if FMeterEditor<>nil then FMeterEditor.OnChange := nil;
+  FreeAndNil(FMeterEditor); FreeAndNil(FMap); inherited;
+end;
 
 procedure TMusicStudioTimingFrame.SetParent(AParent: TWinControl);
 var Component: TComponent;
@@ -109,9 +119,13 @@ begin
 end;
 
 procedure TMusicStudioTimingFrame.BuildUI;
-var Header, Info, Footer: TPanel; LabelControl: TLabel; Button: TButton; I: Integer;
+var Header, Info, Footer: TPanel; LabelControl: TLabel; Button: TButton; I: Integer; TempoTab, MeterTab: TTabSheet;
 begin
-  Header := TPanel.Create(Self); Header.Parent := Self; Header.Align := alTop;
+  FPages := TPageControl.Create(Self); FPages.Parent := Self; FPages.Align := alClient;
+  TempoTab := TTabSheet.Create(Self); TempoTab.PageControl := FPages; TempoTab.Caption := 'テンポ';
+  MeterTab := TTabSheet.Create(Self); MeterTab.PageControl := FPages; MeterTab.Caption := '拍子変更';
+  FPages.ActivePage := TempoTab;
+  Header := TPanel.Create(Self); Header.Parent := TempoTab; Header.Align := alTop;
   Header.Height := 46; Header.BevelOuter := bvNone; ApplySyncMusicStudioDarkPanel(Header);
   LabelControl := TLabel.Create(Self); LabelControl.Parent := Header;
   LabelControl.SetBounds(12,14,94,22); LabelControl.Caption := '先頭の拍子';
@@ -127,13 +141,13 @@ begin
   FDenominator.Color := $002E2E2E; FDenominator.Font.Color := $00E3E3E3;
   for I := Low(DENOMINATORS) to High(DENOMINATORS) do FDenominator.Items.Add(IntToStr(DENOMINATORS[I]));
   FDenominator.OnChange := MeterChanged;
-  Info := TPanel.Create(Self); Info.Parent := Self; Info.Align := alTop;
+  Info := TPanel.Create(Self); Info.Parent := TempoTab; Info.Align := alTop;
   Info.Height := 54; Info.BevelOuter := bvNone; ApplySyncMusicStudioDarkPanel(Info);
   LabelControl := TLabel.Create(Self); LabelControl.Parent := Info; LabelControl.Align := alClient;
   LabelControl.AutoSize := False; LabelControl.WordWrap := True;
   LabelControl.Caption := '四分音符＝1拍。テンポは指定拍から変更します。'+sLineBreak+
-    '0拍は必須。小節位置を保持して秒を再計算します。途中拍子の表編集は未対応です。';
-  Footer := TPanel.Create(Self); Footer.Parent := Self; Footer.Align := alBottom;
+    '0拍は必須。小節位置を保持して秒を再計算します。途中の変更は「拍子変更」タブで編集します。';
+  Footer := TPanel.Create(Self); Footer.Parent := TempoTab; Footer.Align := alBottom;
   Footer.Height := 100; Footer.BevelOuter := bvNone; ApplySyncMusicStudioDarkPanel(Footer);
   LabelControl := TLabel.Create(Self); LabelControl.Parent := Footer;
   LabelControl.SetBounds(12,14,60,22); LabelControl.Caption := '開始拍';
@@ -151,12 +165,14 @@ begin
   FStateLabel := TLabel.Create(Self); FStateLabel.Parent := Footer;
   FStateLabel.SetBounds(12,46,Width-24,48); FStateLabel.Anchors := [akLeft,akTop,akRight];
   FStateLabel.AutoSize := False; FStateLabel.WordWrap := True;
-  FRows := TStringGrid.Create(Self); FRows.Parent := Self; FRows.Align := alClient;
+  FRows := TStringGrid.Create(Self); FRows.Parent := TempoTab; FRows.Align := alClient;
   FRows.ColCount := 3; FRows.FixedCols := 0; FRows.FixedRows := 1; FRows.RowCount := 2;
   FRows.Options := [goFixedVertLine,goFixedHorzLine,goVertLine,goHorzLine,goRowSelect,goThumbTracking];
   FRows.DefaultDrawing := False; FRows.Color := $00272727; FRows.FixedColor := $00373737;
   FRows.Font.Assign(Font); FRows.Font.Color := $00E3E3E3;
   FRows.OnDrawCell := DrawCell; FRows.OnSelectCell := RowSelected;
+  FMeterEditor := TMusicStudioMeterEditor.Create(Self); FMeterEditor.Parent := MeterTab;
+  FMeterEditor.Align := alClient; FMeterEditor.Bind(FMap); FMeterEditor.OnChange := MeterEditorChanged;
 end;
 
 procedure TMusicStudioTimingFrame.Resize;
@@ -224,7 +240,7 @@ begin
     FNumerator.ItemIndex := FMap.Numerator-1;
     for I := Low(DENOMINATORS) to High(DENOMINATORS) do
       if FMap.Denominator = DENOMINATORS[I] then FDenominator.ItemIndex := I;
-    RefreshRows; ShowSelected;
+    RefreshRows; ShowSelected; FMeterEditor.Bind(FMap);
   finally FUpdating := False; end;
   SetState(FError,False);
 end;
@@ -240,14 +256,22 @@ begin
 end;
 
 function TMusicStudioTimingFrame.GetCanApply: Boolean;
-begin Result := FError = ''; end;
+begin Result := (FError = '') and ((FMeterEditor=nil) or FMeterEditor.CanApply); end;
 
 function TMusicStudioTimingFrame.GetStateText: string;
 begin
   if FError <> '' then Exit(FError);
+  if (FMeterEditor<>nil) and not FMeterEditor.CanApply then Exit(FMeterEditor.ErrorText);
   Result := Format('%d 個のテンポ点 ・ %d/%d 拍子 ・ 1小節 %.5g 拍'+sLineBreak+
     '数値の変更は選択行へ反映されます。拍の位置を保持し、秒位置を再計算します。',
     [FMap.PointCount,FMap.Numerator,FMap.Denominator,FMap.BeatsPerMeasure]);
+end;
+
+procedure TMusicStudioTimingFrame.MeterEditorChanged(Sender: TObject);
+begin
+  // 拍子変更でtempoの絶対拍が移る。未確定のtempo入力を上書きせず、表だけを同期する。
+  RefreshRows; if FError='' then ShowSelected;
+  SetState(FError,True);
 end;
 
 procedure TMusicStudioTimingFrame.Changed;
@@ -265,7 +289,7 @@ begin if TimingJSON = nil then LoadTiming('') else LoadTiming(TimingJSON.ToJSON)
 
 function TMusicStudioTimingFrame.ConfigJSON: string;
 begin
-  if not CanApply then raise EArgumentException.Create(FError);
+  if not CanApply then raise EArgumentException.Create(StateText);
   Result := FMap.TimingJSON;
 end;
 
@@ -324,7 +348,7 @@ begin
     FMap.SetMeter(FNumerator.ItemIndex+1,DENOMINATORS[FDenominator.ItemIndex]);
       // 小節アンカーから新しい拍位置を表示する。古い拍入力を再適用しない。
       // 不正入力は拍子選択だけで解除せず、そのテキストと理由を保持する。
-      RefreshRows; if FError='' then ShowSelected; SetState(FError,True);
+      RefreshRows; if FError='' then ShowSelected; FMeterEditor.RefreshMap; SetState(FError,True);
   except on E: Exception do SetState(E.Message,True); end;
 end;
 

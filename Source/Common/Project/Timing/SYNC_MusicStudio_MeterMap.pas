@@ -18,6 +18,9 @@ type
     constructor Create;
     procedure Load(Root: TJSONObject; Numerator,Denominator: Integer);
     procedure WriteChanges(Root: TJSONObject);
+    // 先頭拍子を含むsnapshotを値で返す。範囲外indexは例外とし、配列の所有権は移さない。
+    function PointCount: Integer;
+    function PointAt(Index: Integer): TMusicStudioMeterPoint;
     function MeasureAtBeat(Beat: Double): Integer;
     function MeasureStart(Measure: Integer): Double;
     function MeasureLengthAtBeat(Beat: Double): Double;
@@ -74,6 +77,13 @@ begin
     Put(O,'numerator',TJSONNumber.Create(P.Numerator)); Put(O,'denominator',TJSONNumber.Create(P.Denominator)); A.AddElement(O);
   end;
   Put(Root,'meterChanges',A);
+end;
+function TMusicStudioMeterMap.PointCount: Integer;
+begin Result := Length(FPoints); end;
+function TMusicStudioMeterMap.PointAt(Index: Integer): TMusicStudioMeterPoint;
+begin
+  if (Index<0) or (Index>=Length(FPoints)) then raise EArgumentOutOfRangeException.Create('Meter index');
+  Result := FPoints[Index];
 end;
 function TMusicStudioMeterMap.PointAtBeat(Beat: Double): Integer;
 begin Result := High(FPoints); while (Result>0) and (Beat<FPoints[Result].Beat) do Dec(Result); end;

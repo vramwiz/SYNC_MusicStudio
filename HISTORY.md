@@ -1993,3 +1993,14 @@ Dotsのキーボード・ドラム素材14 ZIPを`Temp/Dots_20261009/`へ取得�
 - TestSourceLayout.ps1を追加しBuildLocalの事前検査へ接続。現行unitの1500行・folder12unit上限、目的コメントの存在、BOM/CRLF、dpr/dproj登録と参照欠損/重複、dfm同居を確認。継承UI/生成物/Git内部は検査対象外。
 - 事前検査、無配備Debug/Release（警告0/エラー0）、Release Foundation、専用--animation-slots成功。154BPM無音時計で38公開/35画像変化、submenu条件と直接操作/Undo/映像画素一致を維持。native popup・音声・DPI・全体suiteは実行せず、テスト所有processは終了確認。作品・実PSD・共有設定・配備先は変更なし。
 - 証拠: Temp/SYNC_MusicStudio-SourceLayout-20261028/（build、foundation.png、animation.log/err）。手動削除される可能性があるため完了結果は本履歴に保持する。
+
+
+## 2026-10-28 計画項目の棚卸し・途中拍子GUI
+
+- 未着手の計画を確認し、音声関連テスト停止のまま進められる途中拍子GUIを実装。音符からの手足生成、歌声生成、PSD間スナップ等は別項目として保持。DESIGNの古い「ドラムPSD演奏描画は未対応」を現行実装に合わせて訂正。
+- TimingFrameへテンポ/拍子変更タブを追加。新MeterEditorは小節/分子/分母の表、入力、追加/削除を担当し、mapを借用する。モデルAPIをBeatDataへ追加し、JSON候補検証後だけ採用。重複/小節範囲/分母/tempo小節内offsetを拒否し、tempo小節アンカー・未知行属性を保持。単一unitへUI/モデルを詰め込まずTiming folderへ分離。
+- 専用--meter-editor成功。並べ替え・未知属性・開始拍/秒・重複等の原子性・全行削除再読込・旧nullを確認。実control通知・追加/削除button・不正入力と修正/再選択・別タブの不正入力保持・Document保存再読込・EditHistory Undo/Redoを確認。外側のnative modal操作/実AviUtl2での保存再読込を実施したとは扱わない。
+- 初期検証は終了時Bind(nil)による親window未取得例外を検出。終了時はeditorを先に解放してmapを破棄するよう修正し、最終process終了成功。初回のコンパイル入口/出力folder不足・テスト側JSONText誤指定も修正。画面外native captureは不完全/失敗のため保証に用いず、個別controlのPaintTo描画をmeter-controls.pngへ保存。native popupは起動せず、画面外formとテスト所有processはfinallyで破棄・終了確認。
+- BuildLocalの最終Debug/Releaseは警告0/エラー0・無配備。Release Foundation成功。SourceLayoutは現行85unit、最大1489行、folder上限内。新unitはproduct dpr/dprojおよびTimingFrameを使う5test hostへ登録。新test unitはNoAudio専用登録。追加DLLなし、BOM/CRLFとdiff check成功。
+- 音声/DPI/全体suite/配備なし。実作品・PSD・共有設定・参照元・継承UIに変更なし。不要な生成物の削除はユーザー担当のため実行しない。
+- 証拠: Temp/SYNC_MusicStudio-MeterEditor-20261028/（checks.log/err、build、foundation.png、meter-controls.png）。

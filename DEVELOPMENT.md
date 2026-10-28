@@ -294,3 +294,10 @@ SourceとTestsは機能別folderへ分離した。統合UIはFilter/Settings、�
 `Scripts/TestSourceLayout.ps1` は現行の `Source/**/SYNC_MusicStudio_*.pas` を検査する。1ユニット1,500行以内、同一フォルダー12ユニット以内を確認し、増える場合は責務と機能別の子フォルダーへ分離する。継承SYNC_Lyrics、生成物、Git内部は対象外。現在の最大は1,489行、同一フォルダー6ユニット。
 
 UTF-8 BOM/CRLF、unit先頭の目的・責務コメント、dpr/dprojへの登録、参照の重複/欠損、フォームのdfm同居も確認する。公開処理の入出力・所有権・保存/例外等の副作用は従来どおりコードレビューで確認する。コメントの内容までは自動判定しない。`BuildLocal.ps1` はビルド前にこの検査を実行して違反時に停止する。IDEで直接ビルドする場合は検査スクリプトを別途実行する。
+
+
+## 途中拍子GUIの専用無音検証（2026-10-28）
+
+NoAudioTestsの `<Temp証拠先> --meter-editor`。途中拍子の追加/移動/並べ替え/削除、未知属性の行への追従、tempo小節アンカーと秒の再計算、重複/先頭/不正分母/小節内offset超過の原子性、最後の行の削除再読込、旧null配列を確認する。実入力通知と追加/削除button、入力不正/修正/再選択、別タブの不正入力保持、作品保存再読込と履歴Undo/Redoも確認する。
+
+フォームは画面外・非アクティブで作成し、native popup/ShowModal/音声/DPI変更は実行しない。runnerは45秒上限とfinallyでテスト所有processだけを終了確認する。meter-controls.pngは個別controlを同座標へPaintToした描画確認用であり、native画面captureではない。画面外PrintWindowの空白/失敗は見た目の合格根拠にしない。既存TimingChecks全体はDPI試験を含むため使わない。

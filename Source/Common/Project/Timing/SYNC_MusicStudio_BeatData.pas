@@ -25,6 +25,7 @@ type
     FPointExtras: TObjectList<TJSONObject>;
     FNumerator, FDenominator: Integer;
     FMeters: TMusicStudioMeterMap;
+    procedure MutateMeterChange(Index, Measure, Numerator, Denominator: Integer; Delete: Boolean);
     procedure RebuildSeconds;
     function PointAtBeat(Beat: Double): Integer;
     function PointAtSeconds(Seconds: Double): Integer;
@@ -51,6 +52,14 @@ type
     procedure SetTempoPoint(Index: Integer; Beat, BPM: Double);
     procedure DeleteTempoPoint(Index: Integer);
     procedure SetMeter(Numerator, Denominator: Integer);
+    // 途中拍子だけを0始まりで参照する。先頭拍子はSetMeterで扱う。
+    function MeterChangeCount: Integer;
+    function MeterChange(Index: Integer): TMusicStudioMeterPoint;
+    // 小節頭へ追加/移動し、tempoの小節アンカーと未知属性を保持する。
+    // 全候補を検証後に反映するため、不正/重複/offset超過では状態を変更しない。
+    function AddMeterChange(Measure, Numerator, Denominator: Integer): Integer;
+    procedure SetMeterChange(Index, Measure, Numerator, Denominator: Integer);
+    procedure DeleteMeterChange(Index: Integer);
     function PointCount: Integer;
     function TempoPoint(Index: Integer): TMusicStudioTempoPoint;
     function BeatsPerMeasure: Double;
@@ -336,6 +345,65 @@ begin
   end;
   RebuildSeconds;
 end;
+
+function TMusicStudioTempoMap.MeterChangeCount: Integer;
+begin Result := FMeters.PointCount-1; end;
+function TMusicStudioTempoMap.MeterChange(Index: Integer): TMusicStudioMeterPoint;
+begin
+  if (Index<0) or (Index>=MeterChangeCount) then raise EArgumentOutOfRangeException.Create('途中拍子の行が範囲外です。');
+  Result := FMeters.PointAt(Index+1);
+end;
+
+procedure TMusicStudioTempoMap.MutateMeterChange(Index, Measure, Numerator, Denominator: Integer; Delete: Boolean);
+var Root, Entry, Existing: TJSONObject; Changes, Old: TJSONArray; I: Integer; Added: Boolean;
+begin
+  if (Index < -1) or (Index>=MeterChangeCount) or (Delete and (Index<0)) then
+    raise EArgumentOutOfRangeException.Create('途中拍子の行が範囲外です。');
+  if not Delete then begin
+    if (Measure<2) or (Measure>16000001) then raise EArgumentException.Create('途中拍子の開始小節は2以上で入力してください。');
+    if (Numerator<1) or (Numerator>32) or not (Denominator in [1,2,4,8,16,32,64]) then
+      raise EArgumentException.Create('拍子の分子は1～32、分母は1/2/4/8/16/32/64です。');
+    for I := 0 to MeterChangeCount-1 do
+      if (I<>Index) and (MeterChange(I).Measure=Measure) then
+        raise EArgumentException.Create('同じ小節の拍子変更があります。');
+  end;
+  Root := TJSONObject.ParseJSONValue(TimingJSON) as TJSONObject;
+  Entry := nil; Changes := nil;
+  try
+    Old := nil;
+    if Root.GetValue('meterChanges') is TJSONArray then Old := TJSONArray(Root.GetValue('meterChanges'));
+    if not Delete then begin
+      if Index>=0 then Entry := TJSONObject(Old.Items[Index].Clone) else Entry := TJSONObject.Create;
+      ReplacePair(Entry,'measure',TJSONNumber.Create(Measure));
+      ReplacePair(Entry,'numerator',TJSONNumber.Create(Numerator));
+      ReplacePair(Entry,'denominator',TJSONNumber.Create(Denominator));
+      Entry.RemovePair('beat').Free;
+    end;
+    Changes := TJSONArray.Create; Added := Delete;
+    for I := 0 to MeterChangeCount-1 do begin
+      if I=Index then Continue;
+      Existing := TJSONObject(Old.Items[I]);
+      if not Added and (MeterChange(I).Measure>Measure) then begin
+        Changes.AddElement(Entry); Entry := nil; Added := True;
+      end;
+      Changes.AddElement(TJSONObject(Existing.Clone));
+    end;
+    if not Added then begin Changes.AddElement(Entry); Entry := nil; end;
+    ReplacePair(Root,'meterChanges',Changes); Changes := nil;
+    // LoadJSONは候補mapでtempoの小節内offsetも検証し、成功時だけ全状態を交換する。
+    LoadJSON(Root);
+  finally Changes.Free; Entry.Free; Root.Free; end;
+end;
+
+function TMusicStudioTempoMap.AddMeterChange(Measure, Numerator, Denominator: Integer): Integer;
+begin
+  MutateMeterChange(-1,Measure,Numerator,Denominator,False);
+  Result := 0; while MeterChange(Result).Measure<>Measure do Inc(Result);
+end;
+procedure TMusicStudioTempoMap.SetMeterChange(Index, Measure, Numerator, Denominator: Integer);
+begin MeterChange(Index); MutateMeterChange(Index,Measure,Numerator,Denominator,False); end;
+procedure TMusicStudioTempoMap.DeleteMeterChange(Index: Integer);
+begin MutateMeterChange(Index,0,0,0,True); end;
 
 function TMusicStudioTempoMap.PointCount: Integer;
 begin Result := Length(FPoints); end;
