@@ -19,6 +19,7 @@ uses
   PluginFilterTable,
   SYNC_MusicStudio_ProjectData,
   SYNC_MusicStudio_VideoRenderer,
+  SYNC_MusicStudio_PerformanceTrace,
   SYNC_MusicStudio_HostBackground,
   SYNC_MusicStudio_SettingsForm,
   Vcl.Dialogs;
@@ -43,7 +44,7 @@ type
 var
   SettingsButton: TFILTER_ITEM_BUTTON;
   JSONDataItem: TFILTER_ITEM_STRING;
-  StageXItem,StageYItem,StageScaleItem: TFILTER_ITEM_TRACK;
+  StageXItem,StageYItem,StageScaleItem,VideoOffsetItem: TFILTER_ITEM_TRACK;
   PluginTableInitialized: Boolean;
   HostVersion: Cardinal;
 
@@ -156,8 +157,17 @@ var Session: TMusicStudioVideoSession; Overlay,Background,PreviewBackground: TMu
     JSON,Error,CaptureStatus,IdentityStatus: string;
     Width,Height,PreviewWidth,PreviewHeight,I,Inv,Layer,Frame,SceneID,Cursor: Integer;
     Owner: OBJECT_HANDLE; RawJSON: PAnsiChar;
+    RenderSeconds: Double;
+{$IFDEF DEBUG}
+    CallbackTick, CaptureTick, RenderTick: Int64;
+    FrameSeconds, DeltaSeconds: Double;
+{$ENDIF}
 begin
   Result := 1;
+{$IFDEF DEBUG}
+  CallbackTick := MusicStudioPerfStamp;
+  try
+{$ENDIF}
   try
     if (Video=nil) or (Video^.Object_=nil) or (Video^.Scene=nil) or
       (Video^.UserData=nil) or not Assigned(Video^.SetImageData) then Exit;
@@ -172,12 +182,8 @@ begin
     if Assigned(Video^.GetImageData) then begin
       SetLength(Background,NativeInt(Width)*Height); Video^.GetImageData(@Background[0]);
     end;
-    if not Session.Background.CaptureFramebuffer(Video^.GetFramebufferTexture2D,
-      PreviewBackground,PreviewWidth,PreviewHeight,CaptureStatus) then begin
-      PreviewBackground := Background; PreviewWidth := Width; PreviewHeight := Height;
-      CaptureStatus := CaptureStatus+' / オブジェクト画像へfallback';
-    end;
-    if Length(PreviewBackground)>0 then begin
+    // Resolve identity before GPU readback. Unmatched frames cannot be used by the editor.
+    if Length(Background)>0 then begin
       Owner := nil; SceneID := -1;
       IdentityStatus := '描画時の編集API不足';
       Frame := Video^.Object_^.FrameS+Video^.Object_^.Frame;
@@ -206,18 +212,54 @@ begin
         if Video^.Edit^.Info<>nil then SceneID := PEDIT_INFO(Video^.Edit^.Info)^.SceneID;
       end;
       Cursor := -1; if (Video^.Edit<>nil) and (Video^.Edit^.Info<>nil) then Cursor := PEDIT_INFO(Video^.Edit^.Info)^.Frame;
-      if Owner<>nil then IdentityStatus := '対象照合済み';
-      CaptureStatus := CaptureStatus+sLineBreak+Format(
-        '%s / host=%d / object=%d / effect=%d / scene=%d / frame=%d / cursor=%d / alpha(隅/中央)=%d/%d',
-        [IdentityStatus,HostVersion,Video^.Object_^.ID,Video^.Object_^.EffectID,SceneID,Frame,Cursor,PreviewBackground[0].A,
-         PreviewBackground[Length(PreviewBackground) div 2].A]);
-      Session.Background.Publish(Owner,SceneID,Frame,PreviewWidth,PreviewHeight,
-        Video^.Object_^.Time,PreviewBackground,CaptureStatus);
-    end else Session.Background.Clear(CaptureStatus);
+      if Owner=nil then Session.Background.Clear(IdentityStatus)
+      else begin
+{$IFDEF DEBUG}
+        CaptureTick := MusicStudioPerfStamp;
+{$ENDIF}
+        if not Session.Background.CaptureFramebuffer(Video^.GetFramebufferTexture2D,
+          PreviewBackground,PreviewWidth,PreviewHeight,CaptureStatus) then begin
+          PreviewBackground := Background; PreviewWidth := Width; PreviewHeight := Height;
+          CaptureStatus := CaptureStatus+' / オブジェクト画像へfallback';
+        end;
+{$IFDEF DEBUG}
+        MusicStudioPerfAdd('host.background',MusicStudioPerfElapsed(CaptureTick));
+{$ENDIF}
+        IdentityStatus := '対象照合済み';
+        CaptureStatus := CaptureStatus+sLineBreak+Format(
+          '%s / host=%d / object=%d / effect=%d / scene=%d / frame=%d / cursor=%d / alpha(隅/中央)=%d/%d',
+          [IdentityStatus,HostVersion,Video^.Object_^.ID,Video^.Object_^.EffectID,SceneID,Frame,Cursor,PreviewBackground[0].A,
+           PreviewBackground[Length(PreviewBackground) div 2].A]);
+        Session.Background.Publish(Owner,SceneID,Frame,PreviewWidth,PreviewHeight,
+          Video^.Object_^.Time,PreviewBackground,CaptureStatus);
+      end;
+    end else Session.Background.Clear;
+{$IFDEF DEBUG}
+    if CallbackTick<>0 then begin
+      Session.ProfileHostFrame(Video^.Object_^.Frame,Video^.Object_^.FrameS);
+      FrameSeconds := Video^.Object_^.Time;
+      if (Video^.Scene^.Rate>0) and (Video^.Scene^.Scale>0) then
+        FrameSeconds := Video^.Object_^.Frame*Double(Video^.Scene^.Scale)/Video^.Scene^.Rate;
+      DeltaSeconds := Video^.Object_^.Time-FrameSeconds;
+      MusicStudioPerfAdd('host.objectClock',Abs(DeltaSeconds)*1000,Format(
+        'effect=%d frame=%d start=%d rate=%d/%d sdk=%.6f frameSeconds=%.6f',
+        [Video^.Object_^.EffectID,Video^.Object_^.Frame,Video^.Object_^.FrameS,
+         Video^.Scene^.Rate,Video^.Scene^.Scale,Video^.Object_^.Time,FrameSeconds],TFormatSettings.Invariant));
+    end;
+    RenderTick := MusicStudioPerfStamp;
+{$ENDIF}
     // Invalid JSON/PSD cannot prevent a valid input background being captured.
-    if not Session.Render(JSON,Video^.Object_^.Time,Width,Height,Overlay,Error,StageXItem.Value,StageYItem.Value,StageScaleItem.Value/100) then Exit;
+    // Positive offset delays the overlay. Before its start, leave the host image alone.
+    RenderSeconds := Video^.Object_^.Time-VideoOffsetItem.Value;
+    if RenderSeconds<0 then Exit;
+    if not Session.Render(JSON,RenderSeconds,Width,Height,Overlay,Error,StageXItem.Value,StageYItem.Value,StageScaleItem.Value/100) then Exit;
+{$IFDEF DEBUG}
+    MusicStudioPerfAdd('host.render',MusicStudioPerfElapsed(RenderTick));
+{$ENDIF}
     if Length(Background)=Length(Overlay) then begin
       for I := 0 to High(Overlay) do begin
+        if Overlay[I].A=0 then begin Overlay[I] := Background[I]; Continue; end;
+        if Overlay[I].A=255 then Continue;
         Inv := 255-Overlay[I].A;
         Overlay[I].R := Overlay[I].R+(Integer(Background[I].R)*Inv+127) div 255;
         Overlay[I].G := Overlay[I].G+(Integer(Background[I].G)*Inv+127) div 255;
@@ -231,6 +273,14 @@ begin
       try TMusicStudioVideoSession(Video^.UserData).Background.Clear; except end;
     // Broken references/SDK errors must not escape or terminate host output.
   end;
+{$IFDEF DEBUG}
+  finally
+    if CallbackTick<>0 then begin
+      MusicStudioPerfAdd('host.callback',MusicStudioPerfElapsed(CallbackTick));
+      MusicStudioPerfFlush;
+    end;
+  end;
+{$ENDIF}
 end;
 
 function MusicStudioCreate(EffectID: Int64): Pointer; cdecl;
@@ -254,6 +304,7 @@ begin
     AddString(JSONDataItem, MUSIC_STUDIO_JSON_ITEM_NAME, MUSIC_STUDIO_DEFAULT_JSON);
     AddTrack(StageXItem,'X',0,-30720,30720,0.1); AddTrack(StageYItem,'Y',0,-17280,17280,0.1);
     AddTrack(StageScaleItem,'拡大率',100,0.1,10000,0.1);
+    AddTrack(VideoOffsetItem,'映像オフセット（秒）',0,-1,1,0.01);
     GetPluginTable^.Func_Create := MusicStudioCreate;
     GetPluginTable^.Func_Destroy := MusicStudioDestroy;
     PluginTableInitialized := True;

@@ -8,7 +8,7 @@ uses Winapi.Windows, System.Types, System.Classes, System.JSON, System.Generics.
   Vcl.Graphics, SYNC_MusicStudio_PatternData, SYNC_MusicStudio_SharedPsdLibrary,
   SYNC_MusicStudio_VisualCache, SYNC_MusicStudio_MotionData,
   SYNC_MusicStudio_PsdLayers, SYNC_MusicStudio_PsdLayerJobs, SYNC_MusicStudio_BeatData, SYNC_MusicStudio_LayerStepData,
-  SYNC_MusicStudio_InstrumentData, SYNC_MusicStudio_InstrumentRules, SYNC_MusicStudio_AnimationSync;
+  SYNC_MusicStudio_InstrumentData, SYNC_MusicStudio_InstrumentRules, SYNC_MusicStudio_AnimationSync, SYNC_MusicStudio_BitmapCache;
 
 type
   TMusicStudioSceneBeatResolver = function(Seconds: Double): Double of object;
@@ -50,7 +50,7 @@ type
     Document: TMusicStudioLayerDocument;
     Config: TJSONObject;
     LoadJob: TMusicStudioPsdLayerLoadJob; // Job listが所有する。
-    BaseImages: TObjectDictionary<string,TBitmap>;
+    BaseImages: TMusicStudioBitmapCache;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -137,6 +137,8 @@ type
     function StatusForTrack(TrackIndex: Integer): string;
     function ActiveLoadJobs: Integer;
     function ActiveRenderJobs: Integer;
+    // 映像worker専用。合成または読込の完了を待つ。ジョブなしならFalse。
+    function WaitForJob(TimeoutMS: Cardinal): Boolean;
     procedure Clear;
     property BeatResolver: TMusicStudioSceneBeatResolver read FBeatResolver write FBeatResolver;
     property Serial: Integer read FSerial;
@@ -154,7 +156,7 @@ type
 implementation
 
 uses System.SysUtils, System.Math, SYNC_MusicStudio_ArrangementData,
-  SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_BitmapCache, SYNC_MusicStudio_InstrumentPlayback, SYNC_MusicStudio_PerformanceTrace;
+  SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_InstrumentPlayback, SYNC_MusicStudio_PerformanceTrace;
 
 constructor TMusicStudioSceneRenderJob.Create(Document: TMusicStudioLayerDocument;
   Overrides: TJSONObject; CachedBase: TBitmap; const Transforms: TMusicStudioSceneTransforms;
@@ -218,7 +220,7 @@ function TMusicStudioSceneRenderJob.TakeImage: TBitmap;
 begin Result := FImage; FImage := nil; end;
 
 constructor TMusicStudioSceneSource.Create;
-begin inherited; BaseImages := TObjectDictionary<string,TBitmap>.Create([doOwnsValues]); end;
+begin inherited; BaseImages := TMusicStudioBitmapCache.Create(8); end;
 destructor TMusicStudioSceneSource.Destroy;
 begin Document.Free; Config.Free; BaseImages.Free; inherited; end;
 destructor TMusicStudioScenePlacement.Destroy;
@@ -509,7 +511,7 @@ begin
       if FMaximumImageDimension>0 then
         Factor := Min(1.0,FMaximumImageDimension/Max(Track.Source.Document.Width,Track.Source.Document.Height));
       for Entry in Track.Placements do begin
-        if (Entry.Instrument<>nil) and (Entry.ErrorText='') and (FBeatPosition>=Entry.StartBeat) then begin
+        if (Entry.Instrument<>nil) and (Entry.ErrorText='') then begin
           ActionRanges[RangeCount].Blocks := Entry.PlaybackBlocks;
           ActionRanges[RangeCount].StartBeat := Entry.StartBeat;
           ActionRanges[RangeCount].EndBeat := Min(Entry.StartBeat+Entry.Instrument.LengthBeats,StartBeat(Entry.StartSeconds+Entry.LengthSeconds));
@@ -612,7 +614,7 @@ end;
 
 procedure TMusicStudioPsdSceneCache.StartJobs;
 var Source: TMusicStudioSceneSource; Track: TMusicStudioSceneTrack;
-    Load: TMusicStudioPsdLayerLoadJob; Render: TMusicStudioSceneRenderJob; Base: TBitmap; I,Index: Integer;
+    Load: TMusicStudioPsdLayerLoadJob; Render: TMusicStudioSceneRenderJob; Base,Image: TBitmap; I,Index: Integer;
 begin
   for Source in FSources do begin
     if FLoads.Count>=2 then Break;
@@ -623,10 +625,22 @@ begin
   end;
   if FTracks.Count=0 then Exit;
   for I := 0 to FTracks.Count-1 do begin
-    if FRenders.Count>=2 then Break;
     Index := (FNextTrack+I) mod FTracks.Count; Track := FTracks[Index];
-    if not Track.Enabled or not Track.NeedRender or (Track.RenderJob<>nil) or (Track.Source.Document=nil) then Continue;
-    Base := nil; Track.Source.BaseImages.TryGetValue(Track.BaseKey,Base);
+    if not Track.Enabled or not Track.NeedRender or (Track.Source.Document=nil) then Continue;
+    Base := Track.Source.BaseImages.Find(Track.BaseKey);
+    // 変形のない既出の打撃姿勢は、合成workerを経由せず現在の要求に使う。
+    if (Base<>nil) and (Length(Track.Transforms)=0) then begin
+      Image := TBitmap.Create;
+      try
+        Image.Assign(Base);
+        Track.Image.Free; Track.Image := Image; Image := nil;
+        Track.ImageKey := Track.DesiredKey; Track.ImageSeconds := FSeconds;
+        Track.PublishedGeneration := Track.RequestGeneration;
+        Track.NeedRender := False; Inc(FSerial);
+      finally Image.Free; end;
+      Continue;
+    end;
+    if (FRenders.Count>=2) or (Track.RenderJob<>nil) then Continue;
     Render := TMusicStudioSceneRenderJob.Create(Track.Source.Document,Track.Overrides,Base,Track.Transforms,FMaximumImageDimension,Track.MouthKey,Track.MouthScale);
     Render.PlaybackEpoch := FPlaybackEpoch; Render.PositionSeconds := FSeconds;
     Render.BindGeneration := FGeneration; Render.SourceGeneration := Track.Source.Generation;
@@ -658,7 +672,7 @@ end;
 function TMusicStudioPsdSceneCache.PollResults(CheckFiles: Boolean): Boolean;
 var I: Integer; Source: TMusicStudioSceneSource; Track: TMusicStudioSceneTrack;
     L: TMusicStudioPsdLayerLoadJob; R: TMusicStudioSceneRenderJob; Base,Image,OldImage: TBitmap;
-    Stamp: string; Resolved: TJSONObject; Before: Integer; Now: UInt64; CheckNow: Boolean;
+    Stamp: string; Resolved: TJSONObject; Before, CacheItems: Integer; Scale: Double; Now: UInt64; CheckNow: Boolean;
 begin
   Before := FSerial; Now := GetTickCount64;
   CheckNow := not FFrozenSources and (CheckFiles or (Now-FLastFileCheck>=1000));
@@ -678,6 +692,12 @@ begin
       else begin
         Source.Document := L.TakeDocument; Source.ErrorText := L.ErrorMessage;
         if (Source.Document<>nil) and (Source.Config<>nil) then begin
+          // LRU keeps recurring drum poses without flushing all other frames at once.
+          Scale := 1;
+          if FMaximumImageDimension>0 then
+            Scale := Min(1.0,FMaximumImageDimension/Max(Source.Document.Width,Source.Document.Height));
+          CacheItems := EnsureRange(Trunc((224*1024*1024)/(4.0*Ceil(Source.Document.Width*Scale)*Ceil(Source.Document.Height*Scale)*Max(1,FSources.Count))),1,40);
+          FreeAndNil(Source.BaseImages); Source.BaseImages := TMusicStudioBitmapCache.Create(CacheItems);
           Resolved := ResolveMusicStudioMouthConfig(Source.Document,Source.Config); Source.Config.Free; Source.Config := Resolved;
         end;
         Inc(FSerial);
@@ -699,8 +719,7 @@ begin
         if R.ErrorText='' then begin
           Base := R.TakeBase;
           if Base<>nil then begin
-            if Source.BaseImages.Count>=8 then Source.BaseImages.Clear;
-            Source.BaseImages.AddOrSetValue(R.BaseKey,Base);
+            Source.BaseImages.Add(R.BaseKey,Base);
           end;
           if R.Composed then Inc(FCompositionCount);
         end;
@@ -785,5 +804,15 @@ function TMusicStudioPsdSceneCache.ActiveLoadJobs: Integer;
 begin Result := FLoads.Count; end;
 function TMusicStudioPsdSceneCache.ActiveRenderJobs: Integer;
 begin Result := FRenders.Count; end;
+
+function TMusicStudioPsdSceneCache.WaitForJob(TimeoutMS: Cardinal): Boolean;
+var Job: TThread;
+begin
+  if FRenders.Count>0 then Job := FRenders[0]
+  else if FLoads.Count>0 then Job := FLoads[0]
+  else Exit(False);
+  WaitForSingleObject(Job.Handle,TimeoutMS);
+  Result := True;
+end;
 
 end.

@@ -424,7 +424,7 @@ begin
     FMode := 1;
   end;
   FGrid.MouseCapture := True;
-  FStatus.Caption := FCandidate.Row+' / '+FCandidate.Choice+' / 準備 25% → 打撃 50% → 余韻 25%（終了後も保持）';
+  FStatus.Caption := FCandidate.Row+' / '+FCandidate.Choice+' / 打点前に準備 → 区間先頭で打撃 → 後半は余韻';
   if FMode=1 then FGrid.Cursor := crCross else if FMode=2 then FGrid.Cursor := crSizeAll else FGrid.Cursor := crSizeWE;
   PreviewDrag(X);
 end;

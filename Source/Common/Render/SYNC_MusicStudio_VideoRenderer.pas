@@ -15,12 +15,20 @@ type
     FWorker: TThread;
     FLibraryRoot: string;
     FBackground: TMusicStudioHostBackground;
+{$IFDEF DEBUG}
+    FPreviousHostFrame, FPreviousHostStart: Integer;
+    FHasPreviousHostFrame: Boolean;
+{$ENDIF}
   public
     constructor Create(const LibraryRoot: string = '');
     destructor Destroy; override;
     function Render(const JSON: string; Seconds: Double; Width,Height: Integer;
       out Pixels: TMusicStudioVideoPixels; out ErrorText: string;
       ViewX: Double = 0; ViewY: Double = 0; ViewScale: Double = 1): Boolean;
+{$IFDEF DEBUG}
+    // Records nonconsecutive SDK requests. Seeks and preview frame gaps both appear here.
+    procedure ProfileHostFrame(Frame, StartFrame: Integer);
+{$ENDIF}
     property Background: TMusicStudioHostBackground read FBackground;
   end;
 
@@ -32,7 +40,11 @@ implementation
 uses Winapi.Windows, System.SysUtils, System.Types, System.Math, Vcl.Graphics,
   SYNC_MusicStudio_ProjectData, SYNC_MusicStudio_PatternData,
   SYNC_MusicStudio_SharedPsdLibrary, SYNC_MusicStudio_VisualCache,
-  SYNC_MusicStudio_PsdSceneCache;
+  SYNC_MusicStudio_PsdSceneCache
+{$IFDEF DEBUG}
+  , SYNC_MusicStudio_PerformanceTrace
+{$ENDIF}
+  ;
 
 type
   TMusicStudioVideoWorker = class(TThread)
@@ -46,6 +58,10 @@ type
     FLastJSON, FLibraryRoot, FSnapshotError: string;
     FPreparedGeneration: Integer;
     FHasSnapshot: Boolean;
+    FCachedPixels: TMusicStudioVideoPixels;
+    FCachedSerial, FCachedWidth, FCachedHeight: Integer;
+    FCachedX, FCachedY, FCachedScale: Double;
+    FCachedError: string;
     procedure PrepareSnapshot;
     procedure AwaitScene;
     procedure Compose;
@@ -74,6 +90,24 @@ end;
 
 destructor TMusicStudioVideoSession.Destroy;
 begin FBackground.Free; FWorker.Free; FLock.Free; inherited; end;
+
+{$IFDEF DEBUG}
+procedure TMusicStudioVideoSession.ProfileHostFrame(Frame, StartFrame: Integer);
+var Previous, Gap: Integer;
+begin
+  Gap := 0; Previous := 0;
+  FLock.Acquire;
+  try
+    if FHasPreviousHostFrame and (StartFrame=FPreviousHostStart) then begin
+      Previous := FPreviousHostFrame;
+      if Frame<>Previous then Gap := Frame-Previous;
+    end;
+    FHasPreviousHostFrame := True; FPreviousHostFrame := Frame; FPreviousHostStart := StartFrame;
+  finally FLock.Release; end;
+  if (Gap<>0) and (Gap<>1) then MusicStudioPerfAdd('host.requestJump',0,
+    Format('start=%d previous=%d next=%d',[StartFrame,Previous,Frame]));
+end;
+{$ENDIF}
 
 function TMusicStudioVideoSession.Render(const JSON: string; Seconds: Double;
   Width,Height: Integer; out Pixels: TMusicStudioVideoPixels; out ErrorText: string;
@@ -132,7 +166,7 @@ begin
     if (FMidi.ActiveJobs=0) and (FScene.ActiveLoadJobs=0) and
       (FScene.ActiveRenderJobs=0) then Break;
     if GetTickCount64>=Deadline then raise Exception.Create('PSD映像の準備がタイムアウトしました。');
-    Sleep(1);
+    if not FScene.WaitForJob(10) then Sleep(1); // MIDI索引だけが残る場合。
   until False;
 end;
 
@@ -141,7 +175,7 @@ var I,N: Integer; Error: string; Pattern: TMusicStudioPattern;
     Requests: TArray<TMusicStudioVisualRequest>;
 begin
   // Clear before parsing, so malformed/replaced JSON can never show old images.
-  FScene.Clear; FMidi.Clear; FTrackIndexes := nil; FHasSnapshot := False;
+  FCachedPixels := nil; FScene.Clear; FMidi.Clear; FTrackIndexes := nil; FHasSnapshot := False;
   FLastJSON := JSON; FPreparedGeneration := Generation;
   if Length(JSON)>MUSIC_STUDIO_MAX_JSON_LENGTH then
     raise Exception.Create('JSONデータが保存上限を超えています。');
@@ -174,10 +208,14 @@ begin
 end;
 
 procedure TMusicStudioVideoWorker.Compose;
-var I,N,X,Y,SX,SY,L,T,W,H: Integer; Image: TBitmap; Row: PByte;
+var I,N,X,Y,SX,SY,L,T,W,H,FirstX,LastX: Integer; Image: TBitmap; Row: PByte; Columns: TArray<Integer>;
     Bounds: System.Types.TRect; Transform: TMusicStudioPsdTransform;
 begin
   N := Length(FTrackIndexes); if N=0 then Exit;
+  if (FCachedPixels<>nil) and (FCachedSerial=FScene.Serial) and (FCachedWidth=Width) and (FCachedHeight=Height)
+    and (FCachedX=ViewX) and (FCachedY=ViewY) and (FCachedScale=ViewScale) then begin
+    Pixels := Copy(FCachedPixels); ErrorText := FCachedError; Exit;
+  end;
   SetLength(Pixels,NativeInt(Width)*Height);
   // A transparent scene, equal-width lanes, centered and bottom aligned.
   // No editor chrome/lyrics/background is included in the output image.
@@ -191,17 +229,27 @@ begin
     Transform := FDocument.TrackAt(FTrackIndexes[I]).PsdTransform;
     Bounds := MusicStudioStageRect(Transform,Image.Width,Image.Height,Width,Height,Bounds,ViewX,ViewY,ViewScale);
     W := Bounds.Width; H := Bounds.Height; L := Bounds.Left; T := Bounds.Top;
+    FirstX := Max(0,-L); LastX := Min(W-1,Width-L-1);
+    if FirstX>LastX then Continue;
+    SetLength(Columns,LastX-FirstX+1);
+    for X := FirstX to LastX do begin
+      SX := Int64(X)*Image.Width div W;
+      if Transform.FlipX then SX := Image.Width-1-SX;
+      Columns[X-FirstX] := SX*4;
+    end;
     for Y := Max(0,-T) to Min(H-1,Height-T-1) do begin
       SY := Int64(Y)*Image.Height div H;
       if Transform.FlipY then SY := Image.Height-1-SY;
       Row := Image.ScanLine[SY];
-      for X := Max(0,-L) to Min(W-1,Width-L-1) do begin
-        SX := Int64(X)*Image.Width div W;
-        if Transform.FlipX then SX := Image.Width-1-SX;
-        BlendPixel(Pixels[(T+Y)*Width+L+X],Row[SX*4+2],Row[SX*4+1],Row[SX*4],Row[SX*4+3]);
+      for X := FirstX to LastX do begin
+        SX := Columns[X-FirstX];
+        if Row[SX+3]<>0 then BlendPixel(Pixels[(T+Y)*Width+L+X],Row[SX+2],Row[SX+1],Row[SX],Row[SX+3]);
       end;
     end;
   end;
+  FCachedPixels := Copy(Pixels); FCachedError := ErrorText;
+  FCachedSerial := FScene.Serial; FCachedWidth := Width; FCachedHeight := Height;
+  FCachedX := ViewX; FCachedY := ViewY; FCachedScale := ViewScale;
 end;
 
 procedure TMusicStudioVideoWorker.Execute;

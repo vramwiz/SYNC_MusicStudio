@@ -91,6 +91,7 @@ uses
   SYNC_MusicStudio_PsdLayerFrameUI in '..\Source\Plugin\Filter\Patterns\Psd\SYNC_MusicStudio_PsdLayerFrameUI.pas',
   SYNC_MusicStudio_PsdLayerJobs in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerJobs.pas',
   SYNC_MusicStudio_SettingsForm in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsForm.pas',
+  SYNC_MusicStudio_AutoDrums in '..\Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas',
   SYNC_MusicStudio_SettingsDialogs in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsDialogs.pas',
   SYNC_MusicStudio_SettingsSlotMenus in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsSlotMenus.pas';
 

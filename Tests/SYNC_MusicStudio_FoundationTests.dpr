@@ -93,6 +93,7 @@ uses
   SYNC_MusicStudio_PsdLayerFrameUI in '..\Source\Plugin\Filter\Patterns\Psd\SYNC_MusicStudio_PsdLayerFrameUI.pas',
   SYNC_MusicStudio_PsdLayerJobs in '..\Source\Common\Render\Layers\SYNC_MusicStudio_PsdLayerJobs.pas',
   SYNC_MusicStudio_SettingsForm in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsForm.pas',
+  SYNC_MusicStudio_AutoDrums in '..\Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas',
   SYNC_MusicStudio_SettingsDialogs in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsDialogs.pas',
   SYNC_MusicStudio_SettingsSlotMenus in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsSlotMenus.pas';
 
@@ -106,7 +107,7 @@ type
   TInitializePlugin = function(Version: Cardinal): Byte; cdecl;
   TUninitializePlugin = procedure; cdecl;
   TGetFilterPluginTable = function: PFILTER_PLUGIN_TABLE; cdecl;
-  TFilterItems = array[0..5] of Pointer;
+  TFilterItems = array[0..6] of Pointer;
   PFilterItems = ^TFilterItems;
 
 procedure Check(Condition: Boolean; const MessageText: string);
@@ -258,7 +259,7 @@ begin
       Check(Table^.Flag = FILTER_FLAG_VIDEO or FILTER_FLAG_FILTER or FILTER_FLAG_USERDATA, 'Wrong filter flags');
       Check(Assigned(Table^.Func_Create) and Assigned(Table^.Func_Destroy), 'Video instance lifecycle missing');
       Items := PFilterItems(Table^.Items);
-      Check((Items^[0] <> nil) and (Items^[1] <> nil) and (Items^[2] <> nil) and (Items^[3] <> nil) and (Items^[4] <> nil) and (Items^[5] = nil), 'Expected settings, JSON and three stage controls');
+      Check((Items^[0] <> nil) and (Items^[1] <> nil) and (Items^[2] <> nil) and (Items^[3] <> nil) and (Items^[4] <> nil) and (Items^[5] <> nil) and (Items^[6] = nil), 'Expected settings, JSON, stage controls and video offset');
       Check(string(PFILTER_ITEM_BUTTON(Items^[0])^.ItemType) = 'button', 'Setting opener is not a button');
       Check(string(PFILTER_ITEM_BUTTON(Items^[0])^.Name) = '設定', 'Wrong setting button label');
       Check(Assigned(PFILTER_ITEM_BUTTON(Items^[0])^.Callback), 'Setting button callback missing');
@@ -267,6 +268,9 @@ begin
       Check((string(PFILTER_ITEM_TRACK(Items^[2])^.ItemType)='track') and (string(PFILTER_ITEM_TRACK(Items^[2])^.Name)='X') and (PFILTER_ITEM_TRACK(Items^[2])^.Value=0),'stage X');
       Check((string(PFILTER_ITEM_TRACK(Items^[3])^.Name)='Y') and (PFILTER_ITEM_TRACK(Items^[3])^.Value=0),'stage Y');
       Check((string(PFILTER_ITEM_TRACK(Items^[4])^.Name)='拡大率') and (PFILTER_ITEM_TRACK(Items^[4])^.Value=100),'stage scale');
+      Check((string(PFILTER_ITEM_TRACK(Items^[5])^.Name)='映像オフセット（秒）') and
+        (PFILTER_ITEM_TRACK(Items^[5])^.Value=0) and (PFILTER_ITEM_TRACK(Items^[5])^.S=-1) and
+        (PFILTER_ITEM_TRACK(Items^[5])^.E=1) and (Abs(PFILTER_ITEM_TRACK(Items^[5])^.Step-0.01)<1E-9),'video offset seconds');
       Check(Table = GetTable, 'Plugin table is not stable across calls');
       Check(Table^.Func_Proc_Video(nil) = 1, 'Pass-through callback failed');
       Check(not Assigned(Table^.Func_Proc_Audio), 'Preview WAV must not become output audio');

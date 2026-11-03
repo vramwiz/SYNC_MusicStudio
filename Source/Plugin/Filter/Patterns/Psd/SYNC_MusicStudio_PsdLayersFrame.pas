@@ -23,6 +23,7 @@ type
     FRenderJobs: TObjectList<TMusicStudioPsdLayerRenderJob>;
     FPoll: TTimer;
     FGeneration, FRenderGeneration, FPreviewRenderCount: Integer;
+    FSourceBrowseButton: TButton;
     FNeedLoad, FNeedRender, FExpressionMode, FUpdating: Boolean;
     FCompactLayout: Boolean;
     FOnChange: TNotifyEvent;
@@ -54,6 +55,7 @@ type
     procedure PollTimer(Sender: TObject);
     procedure MouthChanged(Sender: TObject);
     procedure AnimateMouthSizeChanged(Sender: TObject);
+    procedure AnimateMouthLabelClick(Sender: TObject);
     procedure LayerChecked(Sender: TObject);
     procedure LayerClicked(Sender: TObject);
     procedure LayerContextPopup(Sender: TObject; MousePos: TPoint; var Handled: Boolean);
@@ -86,6 +88,7 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    procedure PlaceSourceBrowseButton(Button: TButton);
     procedure LoadPSD(const Path, ConfigJSON: string; ExpressionMode: Boolean = False);
     // 同一PSDのstep切替は基本設定だけを差し替え、読込済みレイヤーを再利用する。
     procedure LoadExpressionConfig(const ConfigJSON: string);
@@ -157,6 +160,7 @@ begin
   if FUI.Toolbar=nil then begin
     BuildMusicStudioPsdLayerControls(Self,FUI);
     FUI.AnimateMouthSize.OnClick := AnimateMouthSizeChanged;
+    FUI.AnimateMouthLabel.OnClick := AnimateMouthLabelClick;
     FUI.MouthCombo.OnChange := MouthChanged; FUI.LayerList.OnClickCheck := LayerChecked;
     FUI.LayerList.OnClick := LayerClicked; FUI.AssignButton.OnClick := AssignClick;
     FUI.ClearButton.OnClick := ClearClick; FUI.ReloadButton.OnClick := ReloadClick;
@@ -200,6 +204,14 @@ begin
   Resize;
 end;
 
+procedure TMusicStudioPsdLayersFrame.PlaceSourceBrowseButton(Button: TButton);
+begin
+  FSourceBrowseButton := Button;
+  Button.Parent := FUI.Header;
+  FUI.PathLabel.ShowHint := True;
+  Resize;
+end;
+
 procedure TMusicStudioPsdLayersFrame.Resize;
 var PPI, Offset, Margin, LineHeight, Gap: Integer; Form: TCustomForm;
 begin
@@ -213,12 +225,19 @@ begin
   Margin := MulDiv(12,PPI,96); Gap := MulDiv(5,PPI,96);
   LineHeight := Max(MulDiv(20,PPI,96),Abs(Font.Height)+MulDiv(6,PPI,96));
   FUI.PathLabel.SetBounds(Margin,MulDiv(6,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight);
+  if FSourceBrowseButton<>nil then begin
+    FSourceBrowseButton.SetBounds(Margin,FUI.PathLabel.Top,MulDiv(170,PPI,96),LineHeight);
+    Offset := FSourceBrowseButton.Left+FSourceBrowseButton.Width+Gap;
+    FUI.PathLabel.SetBounds(Offset,FUI.PathLabel.Top,Max(1,ClientWidth-Margin-Offset),LineHeight);
+  end;
   if FCompactLayout then FUI.StateLabel.SetBounds(Margin,MulDiv(6,PPI,96),Max(1,ClientWidth-Margin*2),LineHeight*2)
   else FUI.StateLabel.SetBounds(Margin,FUI.PathLabel.Top+LineHeight+Gap,Max(1,ClientWidth-Margin*2),LineHeight*2);
   FUI.StateLabel.Visible := not FCompactLayout or NeedsCompactStatus;
   if FUI.StateLabel.Visible then Offset := FUI.StateLabel.Top+FUI.StateLabel.Height+Gap
   else Offset := MulDiv(6,PPI,96);
-  FUI.AnimateMouthSize.SetBounds(Margin,Offset,Max(1,ClientWidth-Margin*2),LineHeight);
+  FUI.AnimateMouthSize.SetBounds(Margin,Offset,MulDiv(18,PPI,96),LineHeight);
+  FUI.AnimateMouthLabel.SetBounds(FUI.AnimateMouthSize.Left+FUI.AnimateMouthSize.Width+Gap,Offset,
+    Max(1,ClientWidth-2*Margin-FUI.AnimateMouthSize.Width-Gap),LineHeight);
   if FExpressionMode then FUI.Header.Height := FUI.StateLabel.Top+FUI.StateLabel.Height+Gap
   else FUI.Header.Height := FUI.AnimateMouthSize.Top+LineHeight+Gap;
   if not FExpressionMode and (ClientWidth<MulDiv(658,PPI,96)) then Offset := 34 else Offset := 0;
@@ -566,6 +585,11 @@ procedure TMusicStudioPsdLayersFrame.PollTimer(Sender: TObject);
 begin PollResults; end;
 procedure TMusicStudioPsdLayersFrame.MouthChanged(Sender: TObject);
 begin if not FUpdating then SelectMouth(FUI.MouthCombo.ItemIndex); end;
+procedure TMusicStudioPsdLayersFrame.AnimateMouthLabelClick(Sender: TObject);
+begin
+  FUI.AnimateMouthSize.Checked := not FUI.AnimateMouthSize.Checked;
+end;
+
 procedure TMusicStudioPsdLayersFrame.AnimateMouthSizeChanged(Sender: TObject);
 begin
   if FUpdating or FExpressionMode then Exit;

@@ -20,7 +20,7 @@ uses System.SysUtils, System.Classes, System.IOUtils, System.Types, System.JSON,
 procedure Check(Value: Boolean; const Text: string);
 begin if not Value then raise Exception.Create('INSTRUMENT_PHASE: '+Text); end;
 procedure RunInstrumentEffectChecks(const Root,PSD: string);
-const Beats: array[0..6] of Double = (0.1,0.249999,0.25,0.5,0.999999,1.0,100.0);
+const Beats: array[0..6] of Double = (-0.3,-0.000001,0,0.5,0.999999,1.0,100.0);
 var D: TMusicStudioLayerDocument; Model: TMusicStudioInstrumentData; Block,Next: TInstrumentBlock;
   States: TArray<TInstrumentState>; Row: TInstrumentRow; Choice: string;
   V: TJSONObject; I,J,Cases: Integer; L: TMusicStudioLayerInfo; A,B: Vcl.Graphics.TBitmap;
@@ -84,7 +84,7 @@ begin
               for L in D.Layers do if not L.IsGroup and L.Path.StartsWith('/演奏エフェクト/') then MusicStudioSetJsonBoolean(V,L.Key,False);
               Check(D.Render(A,V,512),D.LastError);
             end;
-            if J=5 then begin Check(D.Render(B,V,512),D.LastError); Check(Same(A,B),'limb changed at effect end '+Choice); end;
+            if J=5 then begin Check(D.Render(B,V,512),D.LastError); if not D.InstrumentRules.HasResonanceChoice(Row.Name,Choice) then Check(Same(A,B),'limb changed at effect end '+Choice); end;
           finally V.Free; end;
         end;
         SetLength(Ranges,1); Ranges[0].Blocks := [Block]; Ranges[0].StartBeat := 0; Ranges[0].EndBeat := 0.2;
@@ -111,11 +111,11 @@ begin
     Parent := AddMeta('演奏エフェクト',''); Channel := AddMeta('右手効果',Parent); PatternKey := AddMeta('*A',Channel);
     for I := 0 to 4 do AddMeta('*'+IntToStr(I),PatternKey); Rules.Build(Meta);
     Block := Default(TInstrumentBlock); Block.Row := '右手'; Block.Choice := 'A'; Block.EndBeat := 1;
-    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.1))=0,'optional effect preparation');
-    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.25))=1,'effect strike boundary');
-    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.749999))=1,'double strike ended early');
-    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.75))=2,'effect tail boundary');
-    States := MusicStudioInstrumentPlaybackStates([Block],Rules,0.85);
+    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,-0.1))=0,'optional effect preparation');
+    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0))=1,'effect strike boundary');
+    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.499999))=1,'double strike ended early');
+    Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.5))=2,'effect tail boundary');
+    States := MusicStudioInstrumentPlaybackStates([Block],Rules,0.7);
     Check((States[0].Stage=2) and (EffectStage(States)=3),'effect/limb stages remain coupled');
     Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,0.96))=4,'final effect frame');
     Check(EffectStage(MusicStudioInstrumentPlaybackStates([Block],Rules,1))=-1,'effect end boundary');
@@ -381,7 +381,7 @@ begin
     repeat Application.ProcessMessages; Sleep(2); Check(GetTickCount64<Deadline,'repeat editor timeout');
     until (Dialog.InstrumentPreview<>nil) and not Dialog.InstrumentPreview.Busy;
     for Phase := 0 to 2 do begin
-      if Phase=2 then Dialog.InstrumentFrame.Seek(0.4375) else Dialog.InstrumentFrame.Seek(0.0625+Phase*0.125);
+      case Phase of 0: Dialog.InstrumentFrame.Seek(0.9375); 1: Dialog.InstrumentFrame.Seek(0); 2: Dialog.InstrumentFrame.Seek(0.4375); end;
       Deadline := GetTickCount64+10000;
       repeat Application.ProcessMessages; Dialog.InstrumentPreview.Poll; Sleep(2); Check(GetTickCount64<Deadline,'reference image timeout'); until not Dialog.InstrumentPreview.Busy;
       Expected[Phase] := Vcl.Graphics.TBitmap.Create; Expected[Phase].Assign(Dialog.InstrumentPreview.PreviewBitmap);
@@ -389,6 +389,9 @@ begin
     FillChar(Seen,SizeOf(Seen),0); Dialog.InstrumentFrame.Seek(0);
     Deadline := GetTickCount64+10000;
     repeat Application.ProcessMessages; Sleep(2); Check(GetTickCount64<Deadline,'initial reference timeout'); until not Dialog.InstrumentPreview.Busy;
+    Seen[0,1] := True;
+    for Y := 0 to Expected[1].Height-1 do
+      if not CompareMem(Expected[1].ScanLine[Y],Dialog.InstrumentPreview.PreviewBitmap.ScanLine[Y],Expected[1].Width*4) then Seen[0,1] := False;
     Previous := Dialog.InstrumentPreview.RenderCount; Changes := 0; CacheBefore := Dialog.InstrumentPreview.CacheHits;
     Start := GetTickCount64; Dialog.InstrumentFrame.PlayButton.Click;
     repeat
@@ -427,7 +430,7 @@ begin
   try
     Check(D.LoadFile(PSD),D.LastError); Model.Load('{"lengthBeats":8,"notes":[]}');
     for R in INSTRUMENT_ACTION_ROWS do begin
-      B := Default(TInstrumentBlock); B.Row := R; B.StartBeat := 0; B.EndBeat := 4; B.Stage := 1;
+      B := Default(TInstrumentBlock); B.Row := R; B.StartBeat := 1; B.EndBeat := 5; B.Stage := 1;
       if R='右手' then B.Choice := 'スネア右側' else if R='左手' then B.Choice := 'スネア中央'
       else if R='右足' then B.Choice := 'バスドラム' else B.Choice := 'ハイハット';
       Check(D.InstrumentRules.HasChoice(R,B.Choice),'actual PSD missing '+R+'/'+B.Choice); Check(Model.PutBlock(-1,B),'actual blocks');
@@ -528,8 +531,8 @@ begin
     for I := 0 to 3 do begin Block := Default(TInstrumentBlock); Block.Row := INSTRUMENT_ACTION_ROWS[I];
       Block.Choice := 'A'; Block.Stage := 1; Block.StartBeat := 1; Block.EndBeat := 5; Check(Model.PutBlock(-1,Block),'block'); end;
     Before := Model.JSON;
-    Check(Length(MusicStudioInstrumentPlaybackStates(Model.Blocks.ToArray,D.InstrumentRules,0.9))=0,'state before first action');
-    StagesAt(1,0); StagesAt(2-0.00001,0); StagesAt(2,1); StagesAt(4-0.00001,1); StagesAt(4,2); StagesAt(5,2); StagesAt(100,2); StagesAt(2.5,1);
+    Check(Length(MusicStudioInstrumentPlaybackStates(Model.Blocks.ToArray,D.InstrumentRules,-0.1))=0,'state before first action');
+    StagesAt(0,0); StagesAt(1-0.00001,0); StagesAt(1,1); StagesAt(3-0.00001,1); StagesAt(3,2); StagesAt(5,2); StagesAt(100,2); StagesAt(2.5,1);
     Check(Model.JSON=Before,'playback changed saved intervals');
     Block := Default(TInstrumentBlock); Block.Row := '左手'; Block.Choice := 'B'; Block.StartBeat := 6; Block.EndBeat := 7; Block.Stage := 1;
     Check(Model.PutBlock(-1,Block),'alternate'); Values := MusicStudioInstrumentPlaybackStates(Model.Blocks.ToArray,D.InstrumentRules,100);
@@ -548,10 +551,10 @@ begin
       Block.StartBeat := 0; Block.EndBeat := 2; Block.Stage := 1; Check(Next.PutBlock(-1,Block),'next block');
       Index := Doc.AddPerformance; P := Doc.PatternAt(Index); P.ConfigJSON := Next.JSON; Doc.UpdatePattern(P);
       Check(Doc.AddBeatPlacement(Track,Slot,P.ID,16,4,Error),Error); Scene.Bind(Doc,Store,Cache);
-      SceneAt(0.5,10,10,10,10); SceneAt(1.5,50,50,50,50); SceneAt(2.5,150,150,150,150);
+      SceneAt(0.5,50,50,50,50); SceneAt(1,150,150,150,150); SceneAt(2.5,150,150,150,150);
       SceneAt(4.5,210,50,210,210); Check(PByte(Scene.ImageForTrack(Track).ScanLine[0])[18]=80,'body without decay vanished when other branch has stage2');
       SceneAt(7.5,210,70,210,210); SceneAt(10,210,70,210,210);
-      SceneAt(16.2,70,70,210,210); SceneAt(16.75,170,70,210,210); SceneAt(19,230,70,210,210); SceneAt(100,230,70,210,210);
+      SceneAt(15.75,70,70,210,210); SceneAt(16,170,70,210,210); SceneAt(16.75,170,70,210,210); SceneAt(19,230,70,210,210); SceneAt(100,230,70,210,210);
       SceneAt(2.5,150,150,150,150);
       Dialog := TMusicStudioPatternSettings.Create(nil);
       try
@@ -570,7 +573,7 @@ begin
       finally Dialog.Free; end;
       Check(Doc.TrySave(After,Error),Error); TFile.WriteAllText(TPath.Combine(Root,'phase-project.json'),After);
     finally Scene.Free; Cache.Free; Doc.Free; Store.Free; end;
-    Writeln('FOUR_LIMBS_25_50_25_DOUBLE_STRIKE_DECAY_LAST_PATTERN_HOLD_CLIP_GAPS_SEEK_EDITOR_SCENE_NO_AUDIO_OK');
+    Writeln('FOUR_LIMBS_PREP_BEFORE_ONSET_HALF_STRIKE_DECAY_LAST_PATTERN_HOLD_CLIP_GAPS_SEEK_EDITOR_SCENE_NO_AUDIO_OK');
   finally Next.Free; Model.Free; D.Free; end;
   ActualPhases(Root,RealPSD);
 end;
@@ -643,18 +646,18 @@ begin
     Block := Default(TInstrumentBlock); Block.Row := '左足'; Block.Choice := 'ハイハット';
     Block.StartBeat := 2; Block.EndBeat := 2.4; Block.Stage := 1; Check(Model.PutBlock(-1,Block),'later limb extends loop beyond cymbal decay');
     Before := Model.JSON;
-    Check(ResonanceAt(0.09,Model.Blocks.ToArray).Stage=-1,'vibration started before strike');
-    Check(ResonanceAt(0.10,Model.Blocks.ToArray).Stage=1,'strike onset');
-    Check(ResonanceAt(0.299999,Model.Blocks.ToArray).Stage=1,'strike duration');
+    Check(ResonanceAt(-0.01,Model.Blocks.ToArray).Stage=-1,'vibration started before strike');
+    Check(ResonanceAt(0,Model.Blocks.ToArray).Stage=1,'strike onset');
+    Check(ResonanceAt(0.199999,Model.Blocks.ToArray).Stage=1,'strike duration');
     for I := 2 to 9 do begin
-      State := ResonanceAt(0.30+(I-2)*0.20,Model.Blocks.ToArray);
+      State := ResonanceAt(0.20+(I-2)*0.20,Model.Blocks.ToArray);
       Check(State.Stage=I,'decay boundary '+IntToStr(I));
     end;
     Check(ResonanceAt(10000000,Model.Blocks.ToArray).Stage=9,'settled/long seek');
     States := MusicStudioInstrumentPlaybackStates(Model.Blocks.ToArray,D.InstrumentRules,0.85);
     Check((States[0].Choice='スネア中央') and (States[0].LayerScope='body'),'arm did not change independently');
     Check(ResonanceAt(0.85,Model.Blocks.ToArray).Choice='クラッシュ','snare cancelled cymbal vibration');
-    SetLength(Ranges,1); Ranges[0].Blocks := Model.Blocks.ToArray; Ranges[0].StartBeat := 0; Ranges[0].EndBeat := 0.08;
+    SetLength(Ranges,1); Ranges[0].Blocks := Model.Blocks.ToArray; Ranges[0].StartBeat := 0; Ranges[0].EndBeat := 0;
     States := MusicStudioInstrumentActionStates(Ranges,D.InstrumentRules,1);
     for State in States do Check(State.LayerScope<>'resonance','clipped pre-strike interval resonated');
     Ranges[0].EndBeat := 0.2; States := MusicStudioInstrumentActionStates(Ranges,D.InstrumentRules,0.65);
@@ -663,11 +666,11 @@ begin
       if State.LayerScope='resonance' then Stage := State.Stage;
       if State.LayerScope='effect' then Check(State.Stage=-1,'effect outlived clipped interval');
     end;
-    Check(Stage=3,'clip end cancelled decay');
+    Check(Stage=4,'clip end cancelled decay');
     Retrigger.Load(Model.JSON); Block := Default(TInstrumentBlock); Block.Row := '右手'; Block.Choice := 'クラッシュ（エフェクト付き）';
     Block.StartBeat := 1.2; Block.EndBeat := 1.6; Block.Stage := 1; Check(Retrigger.PutBlock(-1,Block),'repeat strike');
-    Check(ResonanceAt(1.25,Retrigger.Blocks.ToArray).Choice='クラッシュ','preparation cancelled prior hit');
-    State := ResonanceAt(1.3,Retrigger.Blocks.ToArray);
+    Check(ResonanceAt(1.15,Retrigger.Blocks.ToArray).Choice='クラッシュ','preparation cancelled prior hit');
+    State := ResonanceAt(1.2,Retrigger.Blocks.ToArray);
     Check((State.Choice=Block.Choice) and (State.Stage=1),'repeat strike did not restart decay');
     Check(Model.JSON=Before,'evaluation changed saved intervals');
     Store := TMusicStudioSharedPsdLibrary.Create(TPath.Combine(Root,'PSDAssets')); Doc := TMusicStudioDocument.Create;
@@ -705,6 +708,9 @@ begin
         end;
         FillChar(Seen,SizeOf(Seen),0); Changes := 0; Dialog.InstrumentFrame.Seek(0); Deadline := GetTickCount64+10000;
         repeat Application.ProcessMessages; Dialog.InstrumentPreview.Poll; Sleep(2); Check(GetTickCount64<Deadline,'resonance initial timeout'); until not Dialog.InstrumentPreview.Busy;
+        States := Dialog.InstrumentFrame.PreviewStates;
+        Seen[1] := (ResonanceAt(0,Model.Blocks.ToArray).Stage=1) and
+          ExpectedFrames.TryGetValue(StateKey(States),ExpectedFrame) and SamePixels(ExpectedFrame,Dialog.InstrumentPreview.PreviewBitmap);
         PreviousRender := Dialog.InstrumentPreview.RenderCount; Started := GetTickCount64; Dialog.InstrumentFrame.PlayButton.Click;
         repeat
           Application.ProcessMessages; Dialog.InstrumentPreview.Poll;

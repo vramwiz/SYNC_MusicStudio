@@ -932,6 +932,7 @@ procedure TMusicStudioArrangementView.MouseDown(Button: TMouseButton; Shift: TSh
 var T: TMusicStudioTrack; TrackIndex,SlotIndex,ClipIndex,Edge: Integer;
 begin
   inherited;
+  if (Button=mbLeft) and Showing and CanFocus then SetFocus;
   CancelInteraction;
   if (Button=mbRight) and (Y<RulerHeight) and (X>=HeaderWidth) then Exit;
   if (Button=mbLeft) and (Y<RulerHeight) and (X>=HeaderWidth) then begin

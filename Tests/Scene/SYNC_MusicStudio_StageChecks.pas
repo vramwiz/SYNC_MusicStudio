@@ -4,10 +4,11 @@ interface
 procedure RunStageChecks(const Root: string; const PluginPath: string = ''; MouthOnly: Boolean = False);
 // Rootに隔離素材を生成し、直接操作/同期/映像を無音検証する。native popupはPrepareへ差し替える。
 procedure RunAnimationSlotChecks(const Root: string);
+procedure RunAutoDrumChecks(const Root,PSD: string);
 implementation
 uses System.SysUtils, System.Classes, System.Types, System.JSON, System.IOUtils, System.Math,
   Winapi.Windows, Winapi.Messages, Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.ExtCtrls,
-  Vcl.Graphics, Vcl.Imaging.pngimage, Vcl.Menus,
+  Vcl.Graphics, Vcl.Imaging.pngimage, Vcl.Menus, SYNC_MusicStudio_WaveCache, SYNC_MusicStudio_InstrumentData,
   AviUtl2FilterTypes, SYNC_MusicStudio_ArtDocument, SYNC_MusicStudio_ArtPsd, SYNC_MusicStudio_PsdLayers,
   SYNC_MusicStudio_PsdLayerConfig, SYNC_MusicStudio_PerformerPsd, SYNC_MusicStudio_PatternData,
   SYNC_MusicStudio_SettingsForm, SYNC_MusicStudio_ArrangementView, SYNC_MusicStudio_ArrangementData,
@@ -98,7 +99,7 @@ procedure SDKSetImage(Buffer: PPIXEL_RGBA; Width,Height: Integer); cdecl;
 begin SetLength(SDKPixels,Width*Height); Move(Buffer^,SDKPixels[0],Length(SDKPixels)*SizeOf(TPIXEL_RGBA)); end;
 procedure SDKStage(const PluginPath,PSD: string);
 type TGetTable = function: PFILTER_PLUGIN_TABLE; cdecl;
-     TItems = array[0..5] of Pointer; PItems = ^TItems;
+     TItems = array[0..6] of Pointer; PItems = ^TItems;
 var Module: HMODULE; GetTable: TGetTable; Table: PFILTER_PLUGIN_TABLE; Items: PItems;
   Doc: TMusicStudioDocument; Text,Error: string; Obj: TOBJECT_INFO; Scene: TSCENE_INFO;
   Video: TFILTER_PROC_VIDEO; Data: Pointer; SavedJSON: PWideChar; OldX,OldY,OldScale: Double; T: TMusicStudioPsdTransform;
@@ -107,7 +108,7 @@ begin
   Doc := TMusicStudioDocument.Create;
   try
     GetTable := TGetTable(GetProcAddress(Module,'GetFilterPluginTable')); Check(Assigned(GetTable),'SDK entry'); Table := GetTable(); Items := PItems(Table.Items);
-    Check(Items^[5]=nil,'SDK item terminator'); SavedJSON := PFILTER_ITEM_STRING(Items^[1]).Value;
+    Check((Items^[5]<>nil) and (Items^[6]=nil),'SDK item terminator'); SavedJSON := PFILTER_ITEM_STRING(Items^[1]).Value;
     OldX := PFILTER_ITEM_TRACK(Items^[2]).Value; OldY := PFILTER_ITEM_TRACK(Items^[3]).Value; OldScale := PFILTER_ITEM_TRACK(Items^[4]).Value;
     Check(Doc.TryLoad('',Error),Error); Doc.AddTrack('performer'); Doc.UpdateTrack(0,'SDK','#90C4E0',PSD);
     T := Default(TMusicStudioPsdTransform); T.HasStage := True; T.Scale := 1; Doc.UpdatePsdTransform(0,T); Check(Doc.TrySave(Text,Error),Error);
@@ -120,7 +121,12 @@ begin
     PFILTER_ITEM_TRACK(Items^[2]).Value := 0; PFILTER_ITEM_TRACK(Items^[3]).Value := 16; Table.Func_Proc_Video(@Video); Check(SDKPixels[48*64+32].R=220,'SDK Y trackbar');
     PFILTER_ITEM_TRACK(Items^[3]).Value := 0; PFILTER_ITEM_TRACK(Items^[4]).Value := 50; Table.Func_Proc_Video(@Video); Check(SDKPixels[32*64+32].R=220,'SDK scale trackbar');
     PFILTER_ITEM_TRACK(Items^[2]).Value := 16; Table.Func_Proc_Video(@Video); Check(SDKPixels[32*64+48].R=220,'SDK X must remain output pixels after scaling');
-    Writeln('STAGE_SDK_X_Y_SCALE_NO_AUDIO_OK');
+    PFILTER_ITEM_TRACK(Items^[5]).Value := 1; SDKPixels := nil; Table.Func_Proc_Video(@Video);
+    Check(Length(SDKPixels)=0,'positive offset must pass through before overlay start');
+    PFILTER_ITEM_TRACK(Items^[5]).Value := -1; Table.Func_Proc_Video(@Video);
+    Check(Length(SDKPixels)=4096,'negative offset should advance the overlay');
+    PFILTER_ITEM_TRACK(Items^[5]).Value := 0;
+    Writeln('STAGE_SDK_X_Y_SCALE_AND_VIDEO_OFFSET_NO_AUDIO_OK');
   finally
     if Data<>nil then Table.Func_Destroy(1,Data);
     if SavedJSON<>nil then begin PFILTER_ITEM_STRING(Items^[1]).Value := SavedJSON; PFILTER_ITEM_TRACK(Items^[2]).Value := OldX; PFILTER_ITEM_TRACK(Items^[3]).Value := OldY; PFILTER_ITEM_TRACK(Items^[4]).Value := OldScale; end;
@@ -538,9 +544,15 @@ begin
     Before := JSON; Reload; Check(JSON=Before,'local animation roundtrip');
     UI.TimelineBox.SelectSlot(0,Sing); Check(UI.PatternList.Visible and UI.AddButton.Visible,'pattern list not restored');
     TFile.WriteAllText(TPath.Combine(Root,'animation-demo.json'),JSON,TEncoding.UTF8);
-    Check(UI.SmallSlotEditor.Prepare(0,APerf,0,Start),'prepare deletion');
-    UI.SmallSlotEditor.Menu.Items[UI.SmallSlotEditor.Menu.Items.Count-1].Click; Await;
+    UI.Position := poDesigned; UI.Left := -UI.Width-100; UI.Top := 0;
+    UI.Show; ShowWindow(UI.Handle,SW_SHOWNOACTIVATE);
+    UI.TimelineBox.SelectClip(0,APerf,0); Before := JSON;
+    UI.ActiveControl := UI.Preview.PlayButton;
+    UI.Preview.PlayButton.Perform(WM_KEYDOWN,VK_DELETE,0);
+    UI.Preview.PlayButton.Perform(WM_KEYUP,VK_DELETE,0); Await;
     Check((Length(UI.Document.TrackAt(0).Slots[APerf].Clips)=0) and (UI.Document.PatternCount=BasePatterns),'delete left orphan animation');
+    After := JSON; UI.UndoEdit; Check(JSON=Before,'Delete must be undoable');
+    UI.RedoEdit; Check(JSON=After,'Delete redo'); Await;
     UI.TimelineBox.OnSmallMenu := SavedMenu;
     // Fresh rhythm interval moves every beat without any singing or performance placement.
     UI.Document.RemovePlacement(0,Perf,0); UI.Document.RemovePlacement(0,Sing,0);
@@ -561,7 +573,12 @@ begin
     Check(SawIntermediate,'live clock discarded every completed intermediate frame');
     UI.Preview.SceneCache.RealtimePlayback := False; AtTime(0.75*60/154,0.75);
     // Exercise the actual silent transport clock, rather than waiting after each seek.
-    UI.Preview.Seek(0); Await; UI.Preview.StartSilentVisualPreview;
+    UI.Preview.Seek(0); Await; UI.ActiveControl := UI.Preview.PlayButton;
+    UI.Preview.PlayButton.Perform(WM_KEYDOWN,VK_SPACE,0);
+    Check(UI.Preview.IsPlaying,'Space must start playback with button focus');
+    UI.Preview.PlayButton.Perform(WM_KEYDOWN,VK_SPACE,0);
+    Check(UI.Preview.IsPlaying,'held Space toggled more than once');
+    UI.Preview.PlayButton.Perform(WM_KEYUP,VK_SPACE,0);
     Deadline := GetTickCount64+1300; PreviousPublished := -1; PublishedCount := 0; ChangedFrames := 0; LastPixels := nil;
     repeat
       Application.ProcessMessages; UI.Preview.SceneCache.PollResults;
@@ -577,7 +594,9 @@ begin
       end;
       Sleep(2);
     until GetTickCount64>=Deadline;
-    UI.Preview.Pause; Await;
+    UI.Preview.PlayButton.Perform(WM_KEYDOWN,VK_SPACE,0);
+    UI.Preview.PlayButton.Perform(WM_KEYUP,VK_SPACE,0); Await;
+    Check(not UI.Preview.IsPlaying,'Space must pause playback with button focus');
     Check((PublishedCount>=6) and (ChangedFrames>=3),'rhythm transport did not publish moving frames');
     Check(not UI.Preview.SceneCache.RealtimePlayback,'pause kept live publication mode');
     CaptureTimeline;
@@ -588,4 +607,85 @@ begin
   finally Probe.Free; Video.Free; Motion.Free; UI.Free; end;
 end;
 
+procedure RunAutoDrumChecks(const Root,PSD: string);
+var UI: TFormMusicStudioSettings; Asset: TMusicStudioPsdAsset; P: TMusicStudioPattern;
+  Source: TMusicStudioWaveSource; Data,Reloaded: TMusicStudioInstrumentData; B: TInstrumentBlock;
+  Slot,Track,AudioTrack,I,J,N: Integer; Dup: Boolean; Path,Error,Text,Before,After,ID: string;
+  Item,Generate: TMenuItem; Clip: TMusicStudioPlacement;
+  Video: TMusicStudioVideoSession; Prep,Strike: TMusicStudioVideoPixels; Beat: Double;
+  procedure SetEnvelope;
+  var I: Integer;
+  begin
+    UI.TimelineBox.WaveCache.SetSources([Path],[]);
+    Source := UI.TimelineBox.WaveCache.Find(Path); Check(Source<>nil,'envelope injection');
+    Source.Status := wsReady; Source.Info.Duration := 228; SetLength(Source.Wave,4096);
+    for I := 0 to High(Source.Wave) do begin
+      Source.Wave[I].Maximum := 0.25+0.2*Sqr(Sin(I*0.31));
+      if (I>950) and (I<1050) then Source.Wave[I].Maximum := 0;
+      Source.Wave[I].Minimum := -Source.Wave[I].Maximum;
+    end;
+  end;
+begin
+  ForceDirectories(Root);
+  UI := TFormMusicStudioSettings.Create(nil); Data := TMusicStudioInstrumentData.Create; Reloaded := TMusicStudioInstrumentData.Create;
+  try
+    UI.SilentVisualMode := True; UI.LibraryRoot := TPath.Combine(Root,'PSDAssets'); UI.LoadDocument('');
+    Check(UI.SharedLibrary.TryImport(PSD,'ドラム','#90C4E0',Asset,Dup,Error),Error);
+    AudioTrack := UI.Document.AddTrack('audio'); Track := UI.Document.AddTrack('performer');
+    UI.Document.AssignPsd(Track,Asset.ID); UI.Document.SetPerformer(Track,'drums',['performance']);
+    Slot := -1;
+    for I := 0 to High(UI.Document.TrackAt(Track).Slots) do
+      if UI.Document.TrackAt(Track).Slots[I].Kind='performance' then Slot := I;
+    Check(Slot>=0,'drum slot missing');
+    Path := TPath.Combine(Root,'synthetic-envelope.mp3');
+    P := UI.Document.PatternAt(UI.Document.AddAudio);
+    P.FilePath := Path; P.Name := '合成波形'; UI.Document.UpdatePattern(P);
+    Check(UI.Document.AddPlacement(AudioTrack,0,P.ID,2,224,Error),Error);
+    Check(UI.Document.SetTiming('{"tempoPoints":[{"beat":0,"bpm":154}],"meter":{"numerator":4,"denominator":4}}',Error),Error);
+    Check(UI.Document.TrySave(Text,Error),Error); UI.LoadDocument(Text);
+    UI.TimelineBox.SelectSlot(Track,Slot); UI.ArrangementMenu.OnPopup(UI.ArrangementMenu);
+    Generate := nil;
+    for I := 0 to UI.ArrangementMenu.Items.Count-1 do begin
+      Item := UI.ArrangementMenu.Items[I];
+      if Item.Caption='曲からおまかせドラムを作成' then Generate := Item;
+    end;
+    Check((Generate<>nil) and Generate.Visible,'drum menu missing');
+    Check(UI.Document.TrySave(Before,Error),Error);
+    SetEnvelope; Generate.Click;
+    Check(Length(UI.Document.TrackAt(Track).Slots[Slot].Clips)=1,UI.StatusLabel.Caption);
+    Clip := UI.Document.TrackAt(Track).Slots[Slot].Clips[0];
+    Check(SameValue(Clip.StartSeconds,2) and SameValue(Clip.LengthSeconds,224),'generated placement range');
+    ID := Clip.PatternID; P := Default(TMusicStudioPattern);
+    for I := 0 to UI.Document.PatternCount-1 do if UI.Document.PatternAt(I).ID=ID then P := UI.Document.PatternAt(I);
+    Check(P.ID=ID,'local generated pattern missing'); Data.Load(P.ConfigJSON);
+    Check(Data.PackedBlocks and (Data.Blocks.Count>1000),'whole-song compact blocks missing');
+    N := 0;
+    for B in Data.Blocks do begin
+      J := Floor(UI.Document.BeatToSeconds(Clip.StartBeat+B.StartBeat)-Clip.StartSeconds);
+      if (J>=54) and (J<=57) then Inc(N);
+    end;
+    Check(N=0,'quiet region contains generated hits');
+    B := Data.Blocks[0]; B.Stage := 2;
+    Check(Data.PutBlock(0,B),'generated block cannot be edited');
+    Reloaded.Load(Data.JSON); Check((Reloaded.Blocks.Count=Data.Blocks.Count) and (Reloaded.Blocks[0].Stage=2),'packed block edit round-trip');
+    Check(UI.Document.TrySave(After,Error),Error);
+    UI.TimelineBox.SelectSlot(Track,Slot); SetEnvelope; Generate.Click;
+    Check(UI.Document.TrySave(Text,Error) and (Text=After),'existing performance was overwritten or duplicate added');
+    UI.UndoEdit; Check(UI.Document.TrySave(Text,Error) and (Text=Before),'generation undo');
+    UI.RedoEdit; Check(UI.Document.TrySave(Text,Error) and (Text=After),'generation redo');
+    UI.LoadDocument(After); Check(UI.Document.TrySave(Text,Error) and (Text=After),'whole-song save/reload');
+    Beat := -1;
+    for B in Data.Blocks do if B.Row='右足' then begin Beat := Clip.StartBeat+B.StartBeat; Break; end;
+    Check(Beat>0.05,'kick missing');
+    Video := TMusicStudioVideoSession.Create(UI.LibraryRoot);
+    try
+      Check(Video.Render(After,UI.Document.BeatToSeconds(Beat-0.05),320,180,Prep,Error),Error);
+      Check(Video.Render(After,UI.Document.BeatToSeconds(Beat),320,180,Strike,Error),Error);
+      Check((Length(Prep)=Length(Strike)) and not CompareMem(@Prep[0],@Strike[0],
+        Length(Strike)*SizeOf(TPIXEL_RGBA)),'auto drums video hit did not change pixels');
+    finally Video.Free; end;
+    Check(not UI.Preview.AudioEngineAllocated and (UI.TimelineBox.WaveCache.DecodeCount=0),'audio processing was started');
+    Writeln('AUTO_DRUM_WHOLE_SONG_MENU_EDIT_UNDO_RELOAD_NO_AUDIO_OK blocks=',Data.Blocks.Count,' json=',Length(After));
+  finally Reloaded.Free; Data.Free; UI.Free; end;
+end;
 end.

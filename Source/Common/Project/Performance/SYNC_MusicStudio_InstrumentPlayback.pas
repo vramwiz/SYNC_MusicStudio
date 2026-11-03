@@ -21,22 +21,29 @@ var Row: string;
 begin for Row in INSTRUMENT_ACTION_ROWS do if Name=Row then Exit(True); Result := False; end;
 function MusicStudioInstrumentActionStates(const Ranges: TArray<TInstrumentPlaybackRange>;
   Rules: TMusicStudioInstrumentRules; Beat: Double): TArray<TInstrumentState>;
-var Last,LastResonance: array[0..3] of TInstrumentBlock; Starts,Ends,Hits: array[0..3] of Double;
-  Found,Resonating: array[0..3] of Boolean; Range: TInstrumentPlaybackRange; B: TInstrumentBlock;
-  I,J,Value,Prepare,Strike,Rest,Stage: Integer; Start,Finish,Progress,Hit,Elapsed: Double;
+var Last,Upcoming,LastResonance: array[0..3] of TInstrumentBlock; Starts,Ends,NextStarts,Hits: array[0..3] of Double;
+  Found,Preparing,Resonating: array[0..3] of Boolean; Range: TInstrumentPlaybackRange; B: TInstrumentBlock;
+  I,J,Value,Prepare,Strike,Rest,Stage: Integer; Start,Finish,Progress,Hit,Elapsed,StrikeEnd: Double; HasPreparation: Boolean;
   Values,Decay: TArray<Integer>; S: TInstrumentState;
 begin
   Result := nil; if Rules=nil then Exit;
-  for I := 0 to 3 do begin Found[I] := False; Resonating[I] := False; end;
+  for I := 0 to 3 do begin Found[I] := False; Preparing[I] := False; Resonating[I] := False; end;
   for Range in Ranges do for B in Range.Blocks do begin
     Start := Range.StartBeat+B.StartBeat; Finish := Min(Range.EndBeat,Range.StartBeat+B.EndBeat);
-    if (MusicStudioComparePositions(Beat,Start)<0) or (Finish<=Start) or not Rules.HasChoice(B.Row,B.Choice) then Continue;
+    if (Finish<=Start) or (Beat<Start-(B.EndBeat-B.StartBeat)*0.25) or not Rules.HasChoice(B.Row,B.Choice) then Continue;
     for I := 0 to 3 do if B.Row=INSTRUMENT_ACTION_ROWS[I] then begin
+      // 先頭は打点。直前の予備は、同じ手足の進行中の打撃より優先しない。
+      if MusicStudioComparePositions(Beat,Start)<0 then begin
+        if not Preparing[I] or (MusicStudioComparePositions(Start,NextStarts[I])<=0) then begin
+          Preparing[I] := True; Upcoming[I] := B; NextStarts[I] := Start;
+        end;
+        Break;
+      end;
       if not Found[I] or (MusicStudioComparePositions(Start,Starts[I])>=0) then begin
         Found[I] := True; Last[I] := B; Starts[I] := Start; Ends[I] := Finish;
       end;
       // 腕の次候補/配置の終端に依存せず、実際に打撃へ到達した最後の機材を評価する。
-      Hit := Start+(B.EndBeat-B.StartBeat)*0.25;
+      Hit := Start;
       if Rules.HasResonanceChoice(B.Row,B.Choice) and
         (MusicStudioComparePositions(Hit,Finish)<0) and (MusicStudioComparePositions(Beat,Hit)>=0) and
         (not Resonating[I] or (MusicStudioComparePositions(Hit,Hits[I])>=0)) then begin
@@ -44,36 +51,36 @@ begin
       end;
     end;
   end;
-  for I := 0 to 3 do if Found[I] then begin
-    B := Last[I]; Values := Rules.Stages(B.Row,B.Choice); if Length(Values)=0 then Continue;
+  for I := 0 to 3 do if Found[I] or Preparing[I] then begin
+    StrikeEnd := 0;
+    if Found[I] then StrikeEnd := Min(Ends[I],Starts[I]+(Last[I].EndBeat-Last[I].StartBeat)*0.5);
+    HasPreparation := Preparing[I] and (not Found[I] or (MusicStudioComparePositions(Beat,StrikeEnd)>=0));
+    if HasPreparation then B := Upcoming[I] else B := Last[I];
+    Values := Rules.Stages(B.Row,B.Choice); if Length(Values)=0 then Continue;
     Prepare := Values[0];
     for Value in Values do if Value=0 then Prepare := 0;
     Strike := Prepare; Rest := Prepare;
     for Value in Values do begin if Value=1 then Strike := 1; if Value=2 then Rest := 2; end;
     Stage := Rest;
-    if MusicStudioComparePositions(Beat,Ends[I])<0 then begin
-      // 先頭25%が準備、次50%が打撃、最後25%が余韻。打撃時間を従来の2倍にする。
-      Progress := B.EndBeat-B.StartBeat;
-      if MusicStudioComparePositions(Beat,Starts[I]+Progress*0.25)<0 then Stage := Prepare
-      else if MusicStudioComparePositions(Beat,Starts[I]+Progress*0.75)<0 then Stage := Strike;
-    end;
+    if HasPreparation then Stage := Prepare
+    else if MusicStudioComparePositions(Beat,StrikeEnd)<0 then Stage := Strike;
     S := Default(TInstrumentState); S.Row := B.Row; S.Choice := B.Choice; S.Stage := Stage;
     if Rules.HasResonanceRow(B.Row) or Rules.HasEffectRow(B.Row) then S.LayerScope := 'body';
     Result := Result+[S];
     if Rules.HasEffectRow(B.Row) then begin
       S.Stage := -1; S.LayerScope := 'effect';
-      if MusicStudioComparePositions(Beat,Ends[I])<0 then begin
+      if HasPreparation or (MusicStudioComparePositions(Beat,Ends[I])<0) then begin
         Values := Rules.EffectStages(B.Row,B.Choice); Progress := B.EndBeat-B.StartBeat;
-        if MusicStudioComparePositions(Beat,Starts[I]+Progress*0.25)<0 then begin
+        if HasPreparation then begin
           for Value in Values do if Value=0 then S.Stage := 0;
-        end else if MusicStudioComparePositions(Beat,Starts[I]+Progress*0.75)<0 then begin
+        end else if MusicStudioComparePositions(Beat,StrikeEnd)<0 then begin
           for Value in Values do if Value=1 then S.Stage := 1;
         end else begin
           Decay := nil; for Value in Values do if Value>=2 then Decay := Decay+[Value];
           if Length(Decay)>0 then begin
             J := 0;
             while (J<Length(Decay)-1) and
-              (MusicStudioComparePositions(Beat,Starts[I]+Progress*(0.75+0.25*(J+1)/Length(Decay)))>=0) do Inc(J);
+              (MusicStudioComparePositions(Beat,Starts[I]+Progress*(0.5+0.5*(J+1)/Length(Decay)))>=0) do Inc(J);
             S.Stage := Decay[J];
           end;
         end;

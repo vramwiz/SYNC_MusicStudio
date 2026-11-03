@@ -14,6 +14,7 @@ type
     FBlocks: TList<TInstrumentBlock>;
     FAssetID: string;
     FLength: Double;
+    FPackedBlocks: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -28,12 +29,54 @@ type
     function PlaybackEndBeat: Double;
     function StatesAt(Beat: Double; OriginBeat: Double = 0): TArray<TInstrumentState>;
     property Blocks: TList<TInstrumentBlock> read FBlocks;
+    // Generated performances can store the same editable blocks in compressed form.
+    property PackedBlocks: Boolean read FPackedBlocks write FPackedBlocks;
     property LengthBeats: Double read FLength;
     property AssetID: string read FAssetID;
   end;
 function MusicStudioHasInstrumentTimeline(const Text: string): Boolean;
 implementation
-uses System.SysUtils, System.Math, SYNC_MusicStudio_BeatData;
+uses System.SysUtils, System.Math, System.Classes, System.ZLib, System.NetEncoding, SYNC_MusicStudio_BeatData;
+
+function UnpackBlocks(const Encoded: string): TJSONArray;
+const MaxBytes = 2*1024*1024;
+var Input: TBytesStream; Output: TMemoryStream; Inflater: TZDecompressionStream;
+  Buffer: array[0..4095] of Byte; Count: Integer; Value: TJSONValue; EncodedBytes: UTF8String;
+begin
+  if Length(Encoded)>MaxBytes then raise Exception.Create('圧縮演奏データが大きすぎます。');
+  Input := TBytesStream.Create(TNetEncoding.Base64.DecodeStringToBytes(Encoded));
+  try
+    Output := TMemoryStream.Create;
+    try
+      Inflater := TZDecompressionStream.Create(Input);
+      try
+        repeat
+          Count := Inflater.Read(Buffer,SizeOf(Buffer));
+          if Output.Size+Count>MaxBytes then raise Exception.Create('展開後の演奏データが大きすぎます。');
+          Output.WriteBuffer(Buffer,Count);
+        until Count=0;
+      finally Inflater.Free; end;
+      SetString(EncodedBytes, PAnsiChar(Output.Memory), Output.Size);
+      Value := TJSONObject.ParseJSONValue(UTF8ToString(EncodedBytes));
+      if not (Value is TJSONArray) then begin Value.Free; raise Exception.Create('圧縮演奏区間が不正です。'); end;
+      Result := TJSONArray(Value);
+    finally Output.Free; end;
+  finally Input.Free; end;
+end;
+
+function PackBlocks(Blocks: TJSONArray): string;
+var Text: TStringStream; Output: TBytesStream; Deflater: TZCompressionStream;
+begin
+  Text := TStringStream.Create(Blocks.ToJSON,TEncoding.UTF8);
+  try
+    Output := TBytesStream.Create;
+    try
+      Deflater := TZCompressionStream.Create(Output,zcMax,15);
+      try Deflater.CopyFrom(Text,0); finally Deflater.Free; end;
+      Result := TNetEncoding.Base64.EncodeBytesToString(Output.Memory,Integer(Output.Size));
+    finally Output.Free; end;
+  finally Text.Free; end;
+end;
 function MusicStudioHasInstrumentTimeline(const Text: string): Boolean;
 var V: TJSONValue;
 begin
@@ -92,7 +135,7 @@ end;
 procedure TMusicStudioInstrumentData.DeleteBlock(Index: Integer);
 begin if (Index>=0) and (Index<FBlocks.Count) then FBlocks.Delete(Index); end;
 procedure TMusicStudioInstrumentData.Load(const Text: string);
-var V,Item: TJSONValue; D,O: TJSONObject; Candidate: TMusicStudioInstrumentData; B: TInstrumentBlock;
+var V,Item: TJSONValue; D,O: TJSONObject; Blocks,Unpacked: TJSONArray; Candidate: TMusicStudioInstrumentData; B: TInstrumentBlock;
   function Num(Obj: TJSONObject; const Key: string): Double;
   begin
     if not (Obj.GetValue(Key) is TJSONNumber) then raise Exception.Create('演奏の数値が不正: '+Key);
@@ -106,7 +149,7 @@ var V,Item: TJSONValue; D,O: TJSONObject; Candidate: TMusicStudioInstrumentData;
   end;
 begin
   V := TJSONObject.ParseJSONValue(Text); if not (V is TJSONObject) then begin V.Free; raise Exception.Create('演奏JSONが不正です。'); end;
-  Candidate := TMusicStudioInstrumentData.Create;
+  Candidate := TMusicStudioInstrumentData.Create; Unpacked := nil;
   try
     Candidate.SetLength(Num(TJSONObject(V),'lengthBeats'));
     if TJSONObject(V).GetValue('instrumentTimeline')<>nil then begin
@@ -114,8 +157,14 @@ begin
       D := TJSONObject(TJSONObject(V).GetValue('instrumentTimeline'));
       if Num(D,'version')<>1 then raise Exception.Create('未対応の共通演奏版です。');
       Candidate.BindAsset(Str(D,'assetId'));
-      if not (D.GetValue('blocks') is TJSONArray) then raise Exception.Create('blocksは配列です。');
-      for Item in TJSONArray(D.GetValue('blocks')) do begin
+      if D.GetValue('blocksZ')<>nil then begin
+        if D.GetValue('blocks')<>nil then raise Exception.Create('演奏区間の保存形式が重複しています。');
+        Unpacked := UnpackBlocks(Str(D,'blocksZ')); Blocks := Unpacked; Candidate.PackedBlocks := True;
+      end else begin
+        if not (D.GetValue('blocks') is TJSONArray) then raise Exception.Create('blocksは配列です。');
+        Blocks := TJSONArray(D.GetValue('blocks'));
+      end;
+      for Item in Blocks do begin
         if not (Item is TJSONObject) then raise Exception.Create('演奏区間が不正です。'); O := TJSONObject(Item);
         B.ID := Str(O,'id'); if B.ID='' then raise Exception.Create('演奏区間IDが空です。');
         B.Row := Str(O,'row'); B.Choice := Str(O,'choice'); B.StartBeat := Num(O,'startBeat'); B.EndBeat := Num(O,'endBeat');
@@ -124,9 +173,9 @@ begin
         if not Candidate.PutBlock(-1,B) then raise Exception.Create('演奏区間の重複/範囲/IDが不正です。');
       end;
     end;
-    FRoot.Free; FRoot := TJSONObject(V); V := nil; FLength := Candidate.FLength; FAssetID := Candidate.FAssetID;
+    FRoot.Free; FRoot := TJSONObject(V); V := nil; FLength := Candidate.FLength; FAssetID := Candidate.FAssetID; FPackedBlocks := Candidate.FPackedBlocks;
     FBlocks.Clear; FBlocks.AddRange(Candidate.FBlocks);
-  finally Candidate.Free; V.Free; end;
+  finally Unpacked.Free; Candidate.Free; V.Free; end;
 end;
 function TMusicStudioInstrumentData.JSON: string;
 var Root,D,O,Original: TJSONObject; A: TJSONArray; B: TInstrumentBlock; V,Notes: TJSONValue;
@@ -141,15 +190,20 @@ begin
     D.RemovePair('version').Free; D.RemovePair('assetId').Free;
     D.AddPair('version',TJSONNumber.Create(1)); D.AddPair('assetId',FAssetID);
     Original := nil; if FRoot.GetValue('instrumentTimeline') is TJSONObject then Original := TJSONObject(FRoot.GetValue('instrumentTimeline'));
-    D.RemovePair('blocks').Free; A := TJSONArray.Create; D.AddPair('blocks',A);
-    for B in FBlocks do begin
-      O := TJSONObject.Create;
-      if (Original<>nil) and (Original.GetValue('blocks') is TJSONArray) then
-        for V in TJSONArray(Original.GetValue('blocks')) do if (V is TJSONObject) and (TJSONObject(V).GetValue<string>('id')=B.ID) then begin O.Free; O := V.Clone as TJSONObject; Break; end;
-      O.RemovePair('id').Free; O.RemovePair('row').Free; O.RemovePair('choice').Free; O.RemovePair('startBeat').Free; O.RemovePair('endBeat').Free; O.RemovePair('stage').Free;
-      O.AddPair('id',B.ID); O.AddPair('row',B.Row); O.AddPair('choice',B.Choice);
-      O.AddPair('startBeat',TJSONNumber.Create(B.StartBeat)); O.AddPair('endBeat',TJSONNumber.Create(B.EndBeat)); O.AddPair('stage',TJSONNumber.Create(B.Stage)); A.AddElement(O);
-    end;
+    D.RemovePair('blocks').Free; D.RemovePair('blocksZ').Free;
+    A := TJSONArray.Create;
+    try
+      for B in FBlocks do begin
+        O := TJSONObject.Create;
+        if (Original<>nil) and (Original.GetValue('blocks') is TJSONArray) then
+          for V in TJSONArray(Original.GetValue('blocks')) do if (V is TJSONObject) and (TJSONObject(V).GetValue<string>('id')=B.ID) then begin O.Free; O := V.Clone as TJSONObject; Break; end;
+        O.RemovePair('id').Free; O.RemovePair('row').Free; O.RemovePair('choice').Free; O.RemovePair('startBeat').Free; O.RemovePair('endBeat').Free; O.RemovePair('stage').Free;
+        O.AddPair('id',B.ID); O.AddPair('row',B.Row); O.AddPair('choice',B.Choice);
+        O.AddPair('startBeat',TJSONNumber.Create(B.StartBeat)); O.AddPair('endBeat',TJSONNumber.Create(B.EndBeat)); O.AddPair('stage',TJSONNumber.Create(B.Stage)); A.AddElement(O);
+      end;
+      if FPackedBlocks then D.AddPair('blocksZ',PackBlocks(A))
+      else begin D.AddPair('blocks',A); A := nil; end;
+    finally A.Free; end;
     Result := Root.ToJSON;
   finally Root.Free; end;
 end;

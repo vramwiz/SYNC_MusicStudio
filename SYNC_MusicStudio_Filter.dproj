@@ -124,6 +124,7 @@
     <DCCReference Include="Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas" />
     <DCCReference Include="Source\Common\Render\Layers\Rules\SYNC_MusicStudio_InstrumentRules.pas" />
     <DCCReference Include="Source\Common\Project\Performance\SYNC_MusicStudio_InstrumentData.pas" />
+    <DCCReference Include="Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas" />
     <DCCReference Include="Source\Common\Project\Performance\SYNC_MusicStudio_InstrumentPlayback.pas" />
     <DCCReference Include="Source\Plugin\Filter\Patterns\Performance\SYNC_MusicStudio_InstrumentFrame.pas">
       <Form>MusicStudioInstrumentFrame</Form><FormType>dfm</FormType><DesignClass>TFrame</DesignClass>

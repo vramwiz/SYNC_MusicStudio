@@ -2,11 +2,12 @@
 
 // Explorerと同じHDROP通知で外部登録、一覧削除/復帰、既存作品参照を隔離検証する。
 interface
-procedure RunPsdListChecks(const Root: string; const ActualPSD: string = '');
+procedure CheckPsdReplacementButton;
+procedure RunPsdListChecks(const Root: string; const ActualPSD: string = '''');
 procedure RunAudioLibraryChecks(const Root,ExistingWav: string);
 implementation
 uses System.SysUtils, System.Classes, System.UITypes, System.IOUtils, System.Hash, System.Types,
-  Winapi.Windows, Winapi.Messages, Winapi.ShlObj, Vcl.Forms, Vcl.ExtCtrls, Vcl.StdCtrls,
+  Winapi.Windows, Winapi.Messages, Winapi.ShlObj, Vcl.Forms, Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Controls, Vcl.Graphics,
   SYNC_MusicStudio_PatternSettingsForm,
   SYNC_MusicStudio_SettingsForm, SYNC_MusicStudio_FileDropList,
   SYNC_MusicStudio_SharedPsdLibrary, SYNC_MusicStudio_PatternData,
@@ -19,6 +20,48 @@ procedure TDropAccess.Rebuild;
 begin RecreateWnd; end;
 procedure Check(Value: Boolean; const Message: string);
 begin if not Value then raise Exception.Create('PSD_LIST: '+Message); end;
+procedure CheckPsdReplacementButton;
+var D: TMusicStudioPatternSettings; P: TMusicStudioPattern; Browse: TButton; PathLabel,MouthLabel: TLabel; MouthCheck: TCheckBox; I: Integer;
+  procedure CheckLayout;
+  var Header: TWinControl; Control: TControl; J: Integer;
+  begin
+    Check(Browse.Visible and (Browse.Parent=PathLabel.Parent) and (Browse.Top=PathLabel.Top),'browse button must share the PSD path row');
+    Check((Browse.Left>=0) and (Browse.Top>=0) and (Browse.Top+Browse.Height<=Browse.Parent.ClientHeight)
+      and (Browse.Left+Browse.Width<PathLabel.Left),'browse button clipped or overlaps the PSD path');
+    Header := D.NameEdit.Parent;
+    for J := 0 to Header.ControlCount-1 do begin
+      Control := Header.Controls[J];
+      if Control.Visible then
+        Check((Control.Top>=0) and (Control.Top+Control.Height<=Header.ClientHeight),'PSD settings header clipped');
+    end;
+    Check(D.NameEdit.Left+D.NameEdit.Width<D.ColorEdit.Left,'name and color overlap');
+    Check(MouthLabel.Visible and (MouthLabel.Font.Color<>clBlack) and (MouthLabel.FocusControl=MouthCheck) and
+      (MouthLabel.Left>MouthCheck.Left+MouthCheck.Width),'dark mouth checkbox caption missing or overlaps');
+  end;
+begin
+  D := TMusicStudioPatternSettings.Create(nil);
+  try
+    P := Default(TMusicStudioPattern); P.Kind := 'psd'; P.Name := '差し替えテスト'; P.Color := '#CC8CE0';
+    D.LoadSharedPattern(P,'',''); D.EnablePsdReplacement('');
+    Browse := D.LayersFrame.FindComponent('PsdBrowseButton') as TButton;
+    Check(Browse<>nil,'replacement dialog button not created');
+    PathLabel := nil;
+    for I := 0 to Browse.Parent.ControlCount-1 do
+      if (Browse.Parent.Controls[I] is TLabel) and (Browse.Parent.Controls[I].Top=Browse.Top) then
+        PathLabel := TLabel(Browse.Parent.Controls[I]);
+    Check(PathLabel<>nil,'PSD path label not found');
+    MouthLabel := D.LayersFrame.FindComponent('PsdAnimateMouthLabel') as TLabel;
+    MouthCheck := D.LayersFrame.FindComponent('PsdAnimateMouthSize') as TCheckBox;
+    Check((MouthLabel<>nil) and (MouthCheck<>nil),'mouth checkbox controls missing');
+    MouthLabel.OnClick(MouthLabel);
+    Check(MouthCheck.Checked and D.LayersFrame.ConfigJSON.Contains('"animateMouthSize":true'),'mouth label did not toggle and save the option');
+    CheckLayout;
+    D.ClientWidth := D.ClientWidth+160;
+    CheckLayout;
+    Writeln('PSD_ASSIGNMENT_HEADER_PATH_AND_DARK_MOUTH_CHECK_OK');
+  finally D.Free; end;
+end;
+
 procedure Fixture(const Path: string; Color: Byte);
 var D: TArtDocument; Row,Action,L: TArtLayer;
 begin

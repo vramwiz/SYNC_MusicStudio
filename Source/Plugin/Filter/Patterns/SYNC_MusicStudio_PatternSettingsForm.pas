@@ -22,7 +22,8 @@ type
     FCommonPanel,FFooterPanel: TPanel;
     FColorLabel: TLabel;
     FColorButton,FOkButton,FCancelButton: TButton;
-    FUndoButton,FRedoButton: TButton;
+    FUndoButton,FRedoButton,FPsdBrowseButton: TButton;
+    FPsdOriginalPath,FPsdReplacementPath,FPsdReplacementHash: string;
     FSourceTimer: TTimer;
     FSharedKind,FSourceKey: string;
     FInstrumentAsset: string;
@@ -30,6 +31,7 @@ type
     FInstrumentBaseConfig: string;
     FInstrumentPreview: TMusicStudioInstrumentPreview;
     FCommitOnClose: Boolean;
+    procedure BrowsePsd(Sender: TObject);
     procedure SetCommitOnClose(Value: Boolean);
     procedure EditorCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure EditorWheel(Sender: TObject; Shift: TShiftState; Delta: Integer; MousePos: TPoint; var Handled: Boolean);
@@ -64,6 +66,9 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure LoadSharedPattern(const Pattern: TMusicStudioPattern; const Path,BaseConfig: string);
+    procedure EnablePsdReplacement(const OriginalPath: string);
+    property PsdReplacementPath: string read FPsdReplacementPath;
+    property PsdReplacementHash: string read FPsdReplacementHash;
     procedure ReadSharedPattern(var Pattern: TMusicStudioPattern);
     procedure LoadPattern(const Pattern: TMusicStudioPattern);
     procedure LoadPerformanceSteps(const Pattern: TMusicStudioPattern; const AssetID,Path,BaseConfig: string; TempoBPM: Double; const TimingJSON: string = '');
@@ -76,7 +81,7 @@ type
 
 implementation
 
-uses
+uses System.Hash, System.IOUtils,
   System.SysUtils, System.UITypes, System.Math, Winapi.Windows, Winapi.Messages, Vcl.Graphics,
   SYNC_MusicStudio_DarkTheme, SYNC_MusicStudio_Controls, SYNC_MusicStudio_SingingData, SYNC_MusicStudio_DrumData, SYNC_MusicStudio_InstrumentData;
 
@@ -207,9 +212,12 @@ begin
     FUndoButton.SetBounds(ClientWidth-236,78,104,28); FRedoButton.SetBounds(ClientWidth-120,78,104,28);
     if FUndoButton.Visible then FAttributeLabel.Width := Max(1,ClientWidth-268);
   end;
-  if ((LayerStepFrame=nil) and (DrumFrame=nil) and (InstrumentFrame=nil)) or (FFooterPanel=nil) then Exit;
+  if (FFooterPanel=nil) or (FCancelButton=nil) then Exit;
+  if (FSharedKind<>'psd') and (LayerStepFrame=nil) and (DrumFrame=nil) and (InstrumentFrame=nil) then Exit;
   PPI := Max(CurrentPPI,MulDiv(Abs(Font.Height),96,13)); Margin := MulDiv(16,PPI,96);
-  Constraints.MinWidth := MulDiv(860,PPI,96); Constraints.MinHeight := MulDiv(560,PPI,96);
+  if FSharedKind<>'psd' then begin
+    Constraints.MinWidth := MulDiv(860,PPI,96); Constraints.MinHeight := MulDiv(560,PPI,96);
+  end;
   DisableAlign;
   try
     FCommonPanel.Height := MulDiv(112,PPI,96); FFooterPanel.Height := MulDiv(56,PPI,96);
@@ -257,7 +265,39 @@ begin
     LayersFrame.LoadPSD(Path,Pattern.ConfigJSON,Pattern.Kind<>'psd');
     FSourceTimer.Enabled := False;
   end;
+  if Pattern.Kind='psd' then Resize;
 end;
+procedure TMusicStudioPatternSettings.EnablePsdReplacement(const OriginalPath: string);
+begin
+  FPsdOriginalPath := OriginalPath;
+  FAttributeLabel.Caption := '共有PSDを参照して差し替えできます。';
+  FPsdBrowseButton := TMusicStudioButton.Create(LayersFrame);
+  FPsdBrowseButton.Name := 'PsdBrowseButton';
+  FPsdBrowseButton.Caption := 'PSDファイルを参照…'; FPsdBrowseButton.OnClick := BrowsePsd;
+  LayersFrame.PlaceSourceBrowseButton(FPsdBrowseButton);
+  ApplySyncMusicStudioDarkButton(FPsdBrowseButton);
+end;
+
+procedure TMusicStudioPatternSettings.BrowsePsd(Sender: TObject);
+var D: TOpenDialog; Path, Hash, Config: string;
+begin
+  D := TOpenDialog.Create(Self);
+  try
+    D.Title := '差し替えるPSDを選択'; D.Filter := 'PSDファイル (*.psd)|*.psd';
+    D.Options := [ofFileMustExist,ofPathMustExist,ofEnableSizing];
+    if FPsdReplacementPath<>'' then D.FileName := FPsdReplacementPath else D.FileName := FPsdOriginalPath;
+    D.InitialDir := ExtractFileDir(D.FileName);
+    if not D.Execute then Exit;
+    try
+      Path := TPath.GetFullPath(D.FileName); Hash := THashSHA2.GetHashStringFromFile(Path);
+      Config := LayersFrame.ConfigJSON;
+      LayersFrame.LoadPSD(Path,Config,False);
+      FPsdReplacementPath := Path; FPsdReplacementHash := Hash;
+      FAttributeLabel.Caption := '差し替え候補を表示します。OKで共有PSDを更新します。';
+    except on E: Exception do FAttributeLabel.Caption := E.Message; end;
+  finally D.Free; end;
+end;
+
 procedure TMusicStudioPatternSettings.SourceTimer(Sender: TObject);
 var Key: string;
 begin

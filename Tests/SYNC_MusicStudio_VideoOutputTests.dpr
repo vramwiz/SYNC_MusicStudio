@@ -57,6 +57,7 @@ uses
   SYNC_MusicStudio_ArrangementView in '..\Source\Plugin\Filter\Timeline\SYNC_MusicStudio_ArrangementView.pas',
   SYNC_MusicStudio_PatternSettingsForm in '..\Source\Plugin\Filter\Patterns\SYNC_MusicStudio_PatternSettingsForm.pas',
   SYNC_MusicStudio_SettingsForm in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsForm.pas' {FormMusicStudioSettings},
+  SYNC_MusicStudio_AutoDrums in '..\Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas',
   SYNC_MusicStudio_SettingsDialogs in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsDialogs.pas',
   SYNC_MusicStudio_SettingsSlotMenus in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsSlotMenus.pas',
   SYNC_MusicStudio_SharedPsdLibrary in '..\Source\Common\Project\Library\SYNC_MusicStudio_SharedPsdLibrary.pas',

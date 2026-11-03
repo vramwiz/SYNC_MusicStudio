@@ -19,6 +19,7 @@ type
     FLastWarning: string;
     function AssetDirectory(const ID: string): string;
     function MetadataPath(const ID: string): string;
+    function ManagedPath(const ID: string; Metadata: TJSONObject): string;
     function ReadMetadata(const ID: string): TJSONObject;
     function LockLibrary: NativeUInt;
     procedure UnlockLibrary(Handle: NativeUInt);
@@ -37,7 +38,9 @@ type
     function TryImport(const SourcePath, Name, Color: string; out Asset: TMusicStudioPsdAsset;
       out Duplicate: Boolean; out ErrorText: string; const ExpectedRevision: string = ''): Boolean;
     // 同一フォルダーの排他書込ロックと楽観的版照合。競合時は上書きせずFalse。
-    function TrySave(var Asset: TMusicStudioPsdAsset; out ErrorText: string): Boolean;
+    // Optional replacement was previewed at ExpectedHash; publish it with the settings under the same ID.
+    function TrySave(var Asset: TMusicStudioPsdAsset; out ErrorText: string;
+      const SourcePath: string = ''; const ExpectedHash: string = ''): Boolean;
     // 一覧からの削除。作品の固定ID/管理コピーは保持し、同内容の再登録で復帰する。
     function TryHide(const ID, ExpectedRevision: string; out ErrorText: string): Boolean;
     // 管理コピー欠損の復旧。同一hashのPSDだけを同じIDへコピーする。
@@ -127,7 +130,7 @@ var Source: TFileStream; Target: THandleStream; TempPath: string;
     Handle: THandle; ExpectedSize: Int64; CreatedTemp: Boolean;
 begin
   // 一時ファイルは公開先と同じディレクトリ。部分コピーをsource.psdへ露出しない。
-  TempPath := TargetPath+'.'+NewID+'.tmp'; Source := nil; Target := nil; Handle := INVALID_HANDLE_VALUE; CreatedTemp := False;
+  TempPath := TPath.Combine(ExtractFileDir(TargetPath),'copy-'+NewID+'.tmp'); Source := nil; Target := nil; Handle := INVALID_HANDLE_VALUE; CreatedTemp := False;
   try
     Source := TFileStream.Create(SourcePath,fmOpenRead or fmShareDenyWrite);
     ExpectedSize := Source.Size;
@@ -203,7 +206,7 @@ begin
       Asset.ID := CheckedID(Text(O,'id')); Asset.Name := Text(O,'name'); Asset.Color := Text(O,'color');
       CheckNameColor(Asset.Name,Asset.Color);
       Asset.OriginalPath := Text(O,'originalPath'); Asset.ContentHash := Text(O,'contentHash');
-      Asset.Revision := Text(O,'revision'); Asset.FilePath := TPath.Combine(AssetDirectory(Key),'source.psd');
+      Asset.Revision := Text(O,'revision'); Asset.FilePath := ManagedPath(Key,O);
       Asset.HiddenFromLibrary := O.GetValue<Boolean>('hiddenFromLibrary',False);
       Asset.Missing := not TFile.Exists(Asset.FilePath);
       if not (O.GetValue('config') is TJSONObject) then raise Exception.Create('共有PSD configが不正です。');
@@ -240,10 +243,23 @@ begin
     Result := L.ToArray;
   finally L.Free; end;
 end;
+function TMusicStudioSharedPsdLibrary.ManagedPath(const ID: string; Metadata: TJSONObject): string;
+var Version, FileName: string;
+begin
+  Version := ''; FileName := 'source.psd';
+  if Metadata.GetValue('sourceRevision')<>nil then Version := Text(Metadata,'sourceRevision');
+  if Version<>'' then FileName := 'source-'+CheckedID(Version)+'.psd';
+  Result := TPath.Combine(AssetDirectory(ID),FileName);
+end;
+
 function TMusicStudioSharedPsdLibrary.ResolvePath(const ID: string): string;
+var O: TJSONObject;
 begin
   Result := '';
-  try Result := TPath.Combine(AssetDirectory(ID),'source.psd'); except on E: Exception do Result := ''; end;
+  try
+    O := ReadMetadata(ID);
+    try Result := ManagedPath(ID,O); finally O.Free; end;
+  except on E: Exception do Result := ''; end;
 end;
 function TMusicStudioSharedPsdLibrary.TryImport(const SourcePath,Name,Color: string; out Asset: TMusicStudioPsdAsset;
   out Duplicate: Boolean; out ErrorText: string; const ExpectedRevision: string): Boolean;
@@ -311,9 +327,10 @@ begin
     finally UnlockLibrary(H); end;
   except on E: Exception do ErrorText := E.Message; end;
 end;
-function TMusicStudioSharedPsdLibrary.TrySave(var Asset: TMusicStudioPsdAsset; out ErrorText: string): Boolean;
+function TMusicStudioSharedPsdLibrary.TrySave(var Asset: TMusicStudioPsdAsset; out ErrorText: string;
+  const SourcePath, ExpectedHash: string): Boolean;
 var O,P,OldPattern: TJSONObject; A,OldPatterns: TJSONArray; SP: TMusicStudioSharedPattern;
-  H: NativeUInt; Revision,ID: string; V: TJSONValue; IDs: TDictionary<string,Boolean>;
+  H: NativeUInt; Revision,ID,CopyPath,OriginalPath: string; V: TJSONValue; IDs: TDictionary<string,Boolean>;
 begin
   Result := False; ErrorText := '';
   try
@@ -345,8 +362,26 @@ begin
           Put(O,'patterns',A); A := nil;
         finally IDs.Free; A.Free; end;
         Revision := NewID; Put(O,'revision',TJSONString.Create(Revision));
-        if Length(O.ToJSON)>1024*1024 then raise Exception.Create('共有PSD設定が1MiBを超えています。');
-        AtomicSave(MetadataPath(Asset.ID),O.ToJSON); Asset.Revision := Revision; Result := True;
+        if SourcePath<>'' then begin
+          CheckPSD(SourcePath); OriginalPath := TPath.GetFullPath(SourcePath);
+          Put(O,'originalPath',TJSONString.Create(OriginalPath));
+          Put(O,'contentHash',TJSONString.Create(ExpectedHash));
+          Put(O,'sourceRevision',TJSONString.Create(Revision));
+          CopyPath := ManagedPath(Asset.ID,O);
+          // The metadata switch publishes the settings and PSD together. Existing readers can finish with the previous copy.
+          PublishPsdCopy(OriginalPath,CopyPath,ExpectedHash);
+        end;
+        try
+          if Length(O.ToJSON)>1024*1024 then raise Exception.Create('共有PSD設定が1MiBを超えています。');
+          AtomicSave(MetadataPath(Asset.ID),O.ToJSON);
+        except
+          if CopyPath<>'' then TFile.Delete(CopyPath);
+          raise;
+        end;
+        if CopyPath<>'' then begin
+          Asset.FilePath := CopyPath; Asset.OriginalPath := OriginalPath; Asset.ContentHash := ExpectedHash; Asset.Missing := False;
+        end;
+        Asset.Revision := Revision; Result := True;
       finally O.Free; end;
     finally UnlockLibrary(H); end;
   except on E: Exception do ErrorText := E.Message; end;

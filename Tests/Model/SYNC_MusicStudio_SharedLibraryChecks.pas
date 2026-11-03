@@ -9,7 +9,7 @@ procedure Check(B: Boolean; const M: string);
 begin if not B then raise Exception.Create(M); end;
 procedure RunSharedLibraryChecks(const Root: string);
 var L,L2: TMusicStudioSharedPsdLibrary; A,B,Stale: TMusicStudioPsdAsset;
-  Error,Source,Hash,Dir,SameName,Metadata,MetadataHash,Revision,CopyHash: string;
+  Error,Source,Hash,Dir,SameName,Metadata,MetadataHash,Revision,CopyHash,Replacement,ReplacementHash: string;
   G: TGUID; Dup: Boolean; ChangedByte: Byte; Config,O,P: TJSONObject; Lock: TFileStream;
 begin
   CreateGUID(G); Dir := TPath.Combine(Root,GUIDToString(G)); ForceDirectories(Dir);
@@ -69,7 +69,26 @@ begin
       O.AddPair('futureAsset','keep'); P := TJSONObject(TJSONArray(O.GetValue('patterns')).Items[0]);
       P.AddPair('futurePattern','keep'); TFile.WriteAllText(Metadata,O.ToJSON,TEncoding.UTF8);
     finally O.Free; end;
-    Check(L.TryRead(A.ID,B,Error),Error); Check(L.TrySave(B,Error),Error);
+    Replacement := TPath.Combine(Dir,'replacement.psd'); TFile.Copy(Source,Replacement,False);
+    ChangedByte := 63;
+    with TFileStream.Create(Replacement,fmOpenReadWrite) do
+      try Position := Size-1; WriteBuffer(ChangedByte,1); finally Free; end;
+    ReplacementHash := THashSHA2.GetHashStringFromFile(Replacement);
+    MetadataHash := THashSHA2.GetHashStringFromFile(Metadata);
+    Check(L.TryRead(A.ID,B,Error),Error); Stale := B;
+    Check(not L.TrySave(B,Error,Replacement,Hash),'changed candidate was accepted');
+    Check((L.ResolvePath(A.ID)=A.FilePath) and (THashSHA2.GetHashStringFromFile(Metadata)=MetadataHash),'failed replacement was published');
+    Lock := TFileStream.Create(Metadata,fmOpenRead or fmShareDenyWrite);
+    try Check(not L.TrySave(B,Error,Replacement,ReplacementHash),'locked metadata replacement succeeded'); finally Lock.Free; end;
+    Check(Length(TDirectory.GetFiles(ExtractFileDir(Metadata),'source-*.psd'))=0,'failed replacement leaked a version');
+    Check(L.TrySave(B,Error,Replacement,ReplacementHash),Error);
+    Check((B.ID=A.ID) and (B.Revision<>A.Revision) and (B.Patterns[0].ID=A.Patterns[0].ID),'replacement changed fixed IDs or kept old revision');
+    Check((B.FilePath<>A.FilePath) and (L.ResolvePath(A.ID)=B.FilePath) and
+      (THashSHA2.GetHashStringFromFile(B.FilePath)=ReplacementHash),'replacement not readable by stable ID');
+    Check(not L.TrySave(Stale,Error,Source,Hash),'stale replacement succeeded');
+    Check(L.TryRead(A.ID,B,Error) and (B.ContentHash=ReplacementHash) and (B.OriginalPath=Replacement),'replacement metadata not persisted');
+    Check(THashSHA2.GetHashStringFromFile(Replacement)=ReplacementHash,'replacement original was modified');
+    Writeln('SHARED_PSD_REPLACEMENT_SAME_ID_HASH_AND_ATOMIC_METADATA_OK');
     O := TJSONObject.ParseJSONValue(TFile.ReadAllText(Metadata,TEncoding.UTF8)) as TJSONObject;
     try
       Check(O.GetValue('futureAsset').Value='keep','unknown asset metadata retained');

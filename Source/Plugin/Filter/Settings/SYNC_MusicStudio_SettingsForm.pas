@@ -43,8 +43,8 @@ type
     FOnConfirmDelete: TMusicStudioConfirmDeleteEvent;
     FOnApplyJSON: TMusicStudioApplyJSONEvent;
     FTrackSettingsItem, FTrackDeleteItem, FClipEditItem, FClipDeleteItem: TMenuItem;
-    FSlotAddItem, FSlotSettingsItem, FSlotDeleteItem, FSlotUpItem, FSlotDownItem: TMenuItem;
-    FTransportSpaceDown: Boolean;
+    FAutoDrumItem, FSlotAddItem, FSlotSettingsItem, FSlotDeleteItem, FSlotUpItem, FSlotDownItem: TMenuItem;
+    FTransportSpaceDown,FTransportDeleteDown: Boolean;
     procedure LibraryTabClick(Sender: TObject);
     procedure HistoryButtonClick(Sender: TObject);
     function ApplyPerformanceHistory(Index: Integer; Undo: Boolean): Boolean;
@@ -96,6 +96,7 @@ type
     procedure AddTrack(const Kind: string);
     procedure SlotMenuClick(Sender: TObject);
     procedure SlotAddMenuPopup(Sender: TObject);
+    procedure AutoDrumsClick(Sender: TObject);
     procedure AddSlotClick(Sender: TObject);
     procedure SlotSettingsClick(Sender: TObject);
     procedure SlotDeleteClick(Sender: TObject);
@@ -193,8 +194,6 @@ uses
   SYNC_MusicStudio_SmallSlotData, SYNC_MusicStudio_FileDropList, SYNC_MusicStudio_PsdImport;
 
 {$R *.dfm}
-
-
 procedure TFormMusicStudioSettings.BuildUI;
 var
   Header, Footer, Overview, TrackHeader: TPanel;
@@ -327,9 +326,9 @@ begin
   FSlotDeleteItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'このスロットを削除…', SlotDeleteClick);
   FSlotUpItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'スロットを上へ', SlotUpClick);
   FSlotDownItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, 'スロットを下へ', SlotDownClick);
+  FAutoDrumItem := AddMusicStudioSettingsMenu(ArrangementMenu.Items, '曲からおまかせドラムを作成', AutoDrumsClick);
   TimelineBox.PopupMenu := ArrangementMenu;
 end;
-
 procedure TFormMusicStudioSettings.FormCreate(Sender: TObject);
 begin
   FDocument := TMusicStudioDocument.Create;
@@ -353,7 +352,6 @@ begin
   FPreview.PlacementEditor.OnCommit := PlacementCommit;
   OnResize := FitPreview; FitPreview(nil);
 end;
-
 procedure TFormMusicStudioSettings.FitPreview(Sender: TObject);
 begin
   if not Assigned(FOverview) then Exit;
@@ -388,7 +386,6 @@ begin
   FDocument.AssetResolver := nil; FDocument.Free; FSharedLibrary.Free;
   inherited;
 end;
-
 procedure TFormMusicStudioSettings.LoadDocument(const JSONText: string);
 begin
   FEditHistory.Clear;
@@ -400,7 +397,6 @@ begin
   try JSONMemo.Text := FInitialText; finally FSyncing := False; end;
   JSONMemoChange(nil);
 end;
-
 procedure TFormMusicStudioSettings.JSONMemoChange(Sender: TObject);
 var
   ErrorText: string;
@@ -425,7 +421,6 @@ begin
   if (PatternList.ItemIndex >= 0) and (PatternList.ItemIndex < Length(FVisiblePatterns)) then
     Result := FVisiblePatterns[PatternList.ItemIndex];
 end;
-
 procedure TFormMusicStudioSettings.SelectPatternIndex(Index: Integer);
 var I: Integer;
 begin
@@ -438,11 +433,14 @@ begin UpdateLibrary; end;
 procedure TFormMusicStudioSettings.TransportKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if FPreview.HandleTempoKey(Key,Shift) then Exit;
+  if (Key=VK_DELETE) and FTransportDeleteDown then begin Key := 0; Exit; end;
   if (Key=VK_ESCAPE) and FPreview.PlacementEditor.Cancel then begin Key := 0; Exit; end;
   if (Key=VK_ESCAPE) and TimelineBox.CancelInteraction then begin Key := 0; Exit; end;
   if (ActiveControl=FPreview.TempoEdit) or not ((ActiveControl is TCustomEdit) or (ActiveControl is TCustomComboBox)) then begin
+    if (Key=VK_DELETE) and (Shift=[]) and (ActiveControl<>FPreview.TempoEdit) and (ActiveControl<>PatternList) and
+      (TimelineBox.SelectionScope=mssClip) then begin FTransportDeleteDown := True; ClipDeleteClick(nil); Key := 0; Exit; end;
     if ActiveControl=TimelineBox then begin
-      if Key=VK_DELETE then begin TimelineDelete(TimelineBox); Key := 0; Exit; end;
+      if (Key=VK_DELETE) and (Shift=[]) then begin TimelineDelete(TimelineBox); Key := 0; Exit; end;
       if (Key=Ord('C')) and (Shift=[ssCtrl]) then begin CopyTrackClick(nil); Key := 0; Exit; end;
       if (Key=Ord('V')) and (Shift=[ssCtrl]) then begin PasteTrackClick(nil); Key := 0; Exit; end;
     end;
@@ -452,14 +450,17 @@ begin
     if (Key=Ord('Y')) and (Shift=[ssCtrl]) then begin RedoEdit; Key := 0; Exit; end;
   end;
   if (Key<>VK_SPACE) or (Shift<>[]) or (ActiveControl is TCustomEdit) or
-    (ActiveControl is TCustomComboBox) or (ActiveControl is TButton) then Exit;
+    (ActiveControl is TCustomComboBox) then Exit;
   Key := 0;
   if not FTransportSpaceDown then begin FTransportSpaceDown := True; FPreview.TogglePlayback; end;
 end;
 procedure TFormMusicStudioSettings.TransportKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
-begin if Key=VK_SPACE then FTransportSpaceDown := False; end;
+begin
+  if Key=VK_SPACE then FTransportSpaceDown := False;
+  if Key=VK_DELETE then FTransportDeleteDown := False;
+end;
 procedure TFormMusicStudioSettings.TransportDeactivate(Sender: TObject);
-begin FTransportSpaceDown := False; TimelineBox.CancelInteraction; FPreview.PlacementEditor.Cancel; end;
+begin FTransportSpaceDown := False; FTransportDeleteDown := False; TimelineBox.CancelInteraction; FPreview.PlacementEditor.Cancel; end;
 
 function TFormMusicStudioSettings.VisiblePattern(Index: Integer): TMusicStudioPattern;
 begin
@@ -644,14 +645,12 @@ begin
 end;
 function TFormMusicStudioSettings.DropSelectedLibraryAt(TrackIndex,SlotIndex: Integer; StartSeconds: Double; out Reason: string): Boolean;
 begin Result := DropLibraryItemAt(PatternList.ItemIndex,TrackIndex,SlotIndex,StartSeconds,Reason); end;
-
 procedure TFormMusicStudioSettings.SetSilentVisualMode(Value: Boolean);
 begin
   FSilentVisualMode := Value;
   FPreview.SilentVisualMode := Value;
   TimelineBox.SilentVisualMode := Value;
 end;
-
 procedure TFormMusicStudioSettings.RefreshPatterns;
 begin
   FTempoButton.Enabled := FValid;
@@ -664,7 +663,6 @@ begin
   TimelineBox.Refresh;
   TimelineSelectionChange(nil);
 end;
-
 procedure TFormMusicStudioSettings.SyncMemo;
 var
   Text, ErrorText: string;
@@ -1209,6 +1207,7 @@ begin
   FSlotSettingsItem.Visible := SlotMenu; FSlotDeleteItem.Visible := SlotMenu;
   FSlotUpItem.Visible := SlotMenu; FSlotDownItem.Visible := SlotMenu;
   FSlotAddItem.Visible := TrackMenu or SlotMenu; FClipEditItem.Visible := ClipMenu; FClipDeleteItem.Visible := ClipMenu;
+  FAutoDrumItem.Visible := Selected and (TrackMenu or SlotMenu) and (T.PerformanceAttribute='drums');
   FTrackSettingsItem.Enabled := Selected; FTrackDeleteItem.Enabled := Selected;
   FClipEditItem.Enabled := Selected and (TimelineBox.SelectedClip >= 0);
   FClipDeleteItem.Enabled := FClipEditItem.Enabled;
@@ -1227,6 +1226,13 @@ begin
     EditMusicStudioTrack(Self,FDocument,TimelineBox.SelectedTrack,CommitMutation);
 end;
 
+procedure TFormMusicStudioSettings.AutoDrumsClick(Sender: TObject);
+var Error: string;
+begin
+  if GenerateMusicStudioDrumPlacement(FDocument,FSharedLibrary,TimelineBox.WaveCache,TimelineBox.SelectedTrack,
+    TimelineBox.SelectedSlot,FPreview.Position,CommitMutation,Error) then Error := 'おまかせドラムを配置しました。';
+  StatusLabel.Caption := Error;
+end;
 procedure TFormMusicStudioSettings.SlotAddMenuPopup(Sender: TObject);
 var T: TMusicStudioTrack;
 begin
@@ -1292,9 +1298,12 @@ begin
 end;
 
 procedure TFormMusicStudioSettings.ClipDeleteClick(Sender: TObject);
+var Track,Slot: Integer;
 begin
   if not FValid or (TimelineBox.SelectedTrack < 0) or (TimelineBox.SelectedClip < 0) then Exit;
-  FDocument.RemovePlacement(TimelineBox.SelectedTrack,TimelineBox.SelectedSlot,TimelineBox.SelectedClip); CommitMutation;
+  Track := TimelineBox.SelectedTrack; Slot := TimelineBox.SelectedSlot;
+  FDocument.RemovePlacement(Track,Slot,TimelineBox.SelectedClip);
+  if CommitMutation then TimelineBox.SelectSlot(Track,Slot);
 end;
 
 procedure TFormMusicStudioSettings.TimelineClipMove(TrackIndex, SlotIndex, ClipIndex: Integer; StartSeconds: Double);

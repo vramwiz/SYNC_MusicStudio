@@ -29,6 +29,7 @@ uses
   SYNC_MusicStudio_AnimationCostChecks in 'Scene\SYNC_MusicStudio_AnimationCostChecks.pas',
   SYNC_MusicStudio_InstrumentRules in '..\Source\Common\Render\Layers\Rules\SYNC_MusicStudio_InstrumentRules.pas',
   SYNC_MusicStudio_InstrumentData in '..\Source\Common\Project\Performance\SYNC_MusicStudio_InstrumentData.pas',
+  SYNC_MusicStudio_AutoDrums in '..\Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas',
   SYNC_MusicStudio_InstrumentPlayback in '..\Source\Common\Project\Performance\SYNC_MusicStudio_InstrumentPlayback.pas',
   SYNC_MusicStudio_InstrumentFrame in '..\Source\Plugin\Filter\Patterns\Performance\SYNC_MusicStudio_InstrumentFrame.pas',
   SYNC_MusicStudio_DrumPsdChecks in 'Model\SYNC_MusicStudio_DrumPsdChecks.pas',
@@ -138,6 +139,7 @@ begin
     if ParamStr(2)='--singing-formats' then begin RunSingingFormatChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--lyric-timeline' then begin RunLyricTimelineChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--animation-cost' then begin RunAnimationCostChecks(ParamStr(1),ParamStr(3),ParamStr(4),ParamStr(5)); Exit; end;
+    if ParamStr(2)='--auto-drums' then begin RunAutoDrumChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--animation-slots' then begin RunAnimationSlotChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--mouth-size' then begin RunStageChecks(ParamStr(1),ParamStr(3),True); Exit; end;
     if ParamStr(2)='--mouth-list' then begin RunPsdMouthListChecks(ParamStr(1)); Exit; end;
@@ -154,6 +156,7 @@ begin
     if ParamStr(2)='--psd-render-cost' then begin RunPsdRenderCostChecks(ParamStr(1),ParamStr(3),ParamStr(4)); Exit; end;
     if ParamStr(2)='--instrument-effects' then begin RunInstrumentEffectChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--instrument-repeat' then begin RunInstrumentRepeatChecks(ParamStr(1),ParamStr(3),ParamStr(4)='all'); Exit; end;
+    if ParamStr(2)='--shared-psd-replacement' then begin CheckPsdReplacementButton; RunSharedLibraryChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--psd-render-core' then begin RunMusicStudioPsdLayerChecks(ParamStr(1),False); RunMusicStudioPsdSceneChecks(ParamStr(1)); Exit; end;
     if ParamStr(2)='--psd-sampled' then begin RunPsdSampledChecks(ParamStr(1),ParamStr(3)); Exit; end;
     if ParamStr(2)='--bass-pedal-candidate' then begin BuildBassPedalCandidate(ParamStr(1),ParamStr(3)); Exit; end;

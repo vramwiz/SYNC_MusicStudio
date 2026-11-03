@@ -216,8 +216,8 @@ begin
         Inc(Count); Inc(Total,Duration); MaxMS := Max(MaxMS,UInt64(Duration)); Cycle := Trunc(Seconds/2);
         if Cycle<2 then for I := 0 to Model.Blocks.Count-1 do begin
           if (Model.Blocks[I].Row<>'右手') or not Model.Blocks[I].Choice.Contains('スネア') then Continue;
-          if (Seconds*2>=Cycle*4+Model.Blocks[I].StartBeat+(Model.Blocks[I].EndBeat-Model.Blocks[I].StartBeat)*0.25) and
-            (Seconds*2<Cycle*4+Model.Blocks[I].StartBeat+(Model.Blocks[I].EndBeat-Model.Blocks[I].StartBeat)*0.75) then begin
+          if (Seconds*2>=Cycle*4+Model.Blocks[I].StartBeat) and
+            (Seconds*2<Cycle*4+Model.Blocks[I].StartBeat+(Model.Blocks[I].EndBeat-Model.Blocks[I].StartBeat)*0.5) then begin
             J := -1; if Model.Blocks[I].Choice='スネア中央（エフェクト付き）' then J := 0 else if Model.Blocks[I].Choice='スネア右側' then J := 1 else if Model.Blocks[I].Choice='スネア中央' then J := 2;
             if J>=0 then begin Seen[Cycle,J] := True; Lines.Add(Format('request %.4fs cycle%d snare%d render=%dms',[Seconds,Cycle,J,Duration])); end;
           end;

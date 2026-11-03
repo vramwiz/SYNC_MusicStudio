@@ -71,12 +71,12 @@ begin
 end;
 function EditMusicStudioSharedItem(Owner: TComponent; Store: TMusicStudioSharedPsdLibrary;
   var Pattern: TMusicStudioPattern; out ErrorText: string): Boolean;
-var A: TMusicStudioPsdAsset; I: Integer; Found: Boolean; D: TOpenDialog;
+var A: TMusicStudioPsdAsset; I: Integer; Found: Boolean; D: TOpenDialog; Editor: TMusicStudioPatternSettings;
 begin
   Result := False; ErrorText := '';
   try
     if not Store.TryRead(Pattern.AssetID,A,ErrorText) then Exit;
-    if A.Missing then begin
+    if A.Missing and (Pattern.Kind<>'psd') then begin
       D := TOpenDialog.Create(Owner);
       try
         D.Filter := 'PSDファイル (*.psd)|*.psd'; D.Options := [ofFileMustExist,ofPathMustExist,ofEnableSizing];
@@ -91,9 +91,21 @@ begin
       Pattern.Name := A.Patterns[I].Name; Pattern.Color := A.Patterns[I].Color; Pattern.ConfigJSON := A.Patterns[I].ConfigJSON; Found := True; Break;
     end;
     if not Found then raise Exception.Create('共有パターンが見つかりません。');
+    if Pattern.Kind='psd' then begin
+      Editor := TMusicStudioPatternSettings.Create(Owner);
+      try
+        Editor.LoadSharedPattern(Pattern,A.FilePath,A.ConfigJSON);
+        Editor.EnablePsdReplacement(A.OriginalPath);
+        if Editor.ShowModal<>mrOK then Exit;
+        Editor.ReadSharedPattern(Pattern);
+        A.Name := Pattern.Name; A.Color := Pattern.Color; A.ConfigJSON := Pattern.ConfigJSON;
+        Result := Store.TrySave(A,ErrorText,Editor.PsdReplacementPath,Editor.PsdReplacementHash);
+        if Result then Pattern.FilePath := A.FilePath;
+      finally Editor.Free; end;
+      Exit;
+    end;
     if not ShowEditor(Owner,Pattern,A.FilePath,A.ConfigJSON) then Exit;
-    if Pattern.Kind='psd' then begin A.Name := Pattern.Name; A.Color := Pattern.Color; A.ConfigJSON := Pattern.ConfigJSON; end
-    else for I := 0 to High(A.Patterns) do if A.Patterns[I].ID=Pattern.SharedPatternID then begin A.Patterns[I] := SharedPattern(Pattern); Break; end;
+    for I := 0 to High(A.Patterns) do if A.Patterns[I].ID=Pattern.SharedPatternID then begin A.Patterns[I] := SharedPattern(Pattern); Break; end;
     Result := Store.TrySave(A,ErrorText);
   except on E: Exception do ErrorText := E.Message; end;
 end;

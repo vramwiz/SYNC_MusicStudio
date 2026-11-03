@@ -184,7 +184,7 @@ begin
   Stage.OnCaptureLost := StageCaptureLost;
   Stage.OnMouseWheel := StageWheel; Stage.OnDblClick := StageFit;
   Stage.ShowHint := True; FStatus.ShowHint := True;
-  FTimer := TTimer.Create(Self); FTimer.Interval := 30; FTimer.OnTimer := Tick;
+  FTimer := TTimer.Create(Self); FTimer.Interval := 16; FTimer.OnTimer := Tick;
   UpdatePosition;
 end;
 destructor TMusicStudioPreviewFrame.Destroy;
@@ -468,7 +468,6 @@ var S: TMusicStudioPlaybackSnapshot; I,MidiDone: Integer; PerfTick: Int64;
 begin
   MusicStudioPerfFlush; PerfTick := MusicStudioPerfStamp;
   RefreshHostBackground;
-  if FSceneCache.PollResults then Stage.Invalidate;
   if FVisualRunning then begin
     FPosition := Min(FEnd,FVisualOrigin+(GetTickCount64-FVisualStart)/1000);
     if FPosition>=FEnd then FVisualRunning := False;
@@ -491,6 +490,8 @@ begin
     end;
     UpdatePosition;
   end;
+  // Queue the latest clock position in this tick, before waiting for the next timer.
+  if FSceneCache.PollResults then Stage.Invalidate;
   MusicStudioPerfAdd('ui.tick',MusicStudioPerfElapsed(PerfTick));
   FStatus.Hint := FStatus.Caption+sLineBreak+'ホイール: 拡縮 / 左ドラッグ: 表示移動 / ダブルクリック: 全体表示 / Ctrl+ドラッグ: PSD配置編集'+sLineBreak+Stage.Hint;
 end;

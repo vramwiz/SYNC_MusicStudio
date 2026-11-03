@@ -81,6 +81,7 @@ uses
   SYNC_MusicStudio_PerformanceCache in '..\Source\Plugin\Filter\Library\SYNC_MusicStudio_PerformanceCache.pas',
   SYNC_MusicStudio_TimingFrame in '..\Source\Plugin\Filter\Patterns\Timing\SYNC_MusicStudio_TimingFrame.pas',
   SYNC_MusicStudio_SettingsForm in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsForm.pas',
+  SYNC_MusicStudio_AutoDrums in '..\Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas',
   SYNC_MusicStudio_SettingsDialogs in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsDialogs.pas',
   SYNC_MusicStudio_SettingsSlotMenus in '..\Source\Plugin\Filter\Settings\SYNC_MusicStudio_SettingsSlotMenus.pas';
 

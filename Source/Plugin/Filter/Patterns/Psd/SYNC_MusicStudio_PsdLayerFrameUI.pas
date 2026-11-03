@@ -52,6 +52,7 @@ type
     LayerList: TMusicStudioPsdLayerList;
     MouthCombo: TComboBox;
     AnimateMouthSize: TCheckBox;
+    AnimateMouthLabel: TLabel;
     AssignButton, ClearButton, ReloadButton, CancelButton: TButton;
     MouthMenu: TPopupMenu;
     PreviewPane, PreviewToolbar: TPanel;
@@ -150,10 +151,18 @@ begin
   UI.StateLabel := LabelOn(Frame,UI.Header,12,31,Frame.Width-24,34);
   UI.AnimateMouthSize := TCheckBox.Create(Frame); UI.AnimateMouthSize.Parent := UI.Header;
   UI.AnimateMouthSize.Name := 'PsdAnimateMouthSize';
-  UI.AnimateMouthSize.Caption := '口のサイズを滑らかに変化';
-  UI.AnimateMouthSize.Font.Color := SYNC_MUSIC_STUDIO_DARK_TEXT_COLOR;
+  // The native themed check box may paint its text black. Use a VCL label for the caption.
+  UI.AnimateMouthSize.Caption := '';
+  UI.AnimateMouthLabel := LabelOn(Frame,UI.Header,0,0,1,1);
+  UI.AnimateMouthLabel.Name := 'PsdAnimateMouthLabel';
+  UI.AnimateMouthLabel.Caption := '口のサイズを滑らかに変化';
+  UI.AnimateMouthLabel.Font.Color := SYNC_MUSIC_STUDIO_DARK_TEXT_COLOR;
+  UI.AnimateMouthLabel.FocusControl := UI.AnimateMouthSize;
+  UI.AnimateMouthLabel.Layout := tlCenter;
+  UI.AnimateMouthLabel.WordWrap := False;
   UI.AnimateMouthSize.Hint := '各発音の開始で等倍、終了に向けて1/2まで口だけを縮めます。同じ母音も発音ごとに動きます。';
   UI.AnimateMouthSize.ShowHint := True;
+  UI.AnimateMouthLabel.Hint := UI.AnimateMouthSize.Hint; UI.AnimateMouthLabel.ShowHint := True;
   UI.Toolbar := Panel(Frame,Frame,alTop,38); UI.Toolbar.Top := 70;
   UI.Toolbar.Name := 'PsdToolbar';
   UI.MouthCombo := TComboBox.Create(Frame); UI.MouthCombo.Parent := UI.Toolbar;
@@ -202,6 +211,7 @@ procedure SetMusicStudioPsdLayerMode(var UI: TMusicStudioPsdLayerControls; Expre
 begin
   UI.LayerList.CheckMode := ExpressionMode;
   UI.AnimateMouthSize.Visible := not ExpressionMode;
+  UI.AnimateMouthLabel.Visible := not ExpressionMode;
   UI.Toolbar.Visible := False;
   UI.MouthCombo.Visible := False; UI.AssignButton.Visible := False;
   UI.ClearButton.Visible := False; UI.ReloadButton.Visible := False; UI.CancelButton.Visible := False;

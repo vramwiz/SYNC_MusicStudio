@@ -19,6 +19,7 @@ uses
   SYNC_MusicStudio_PerformanceEditor in 'Source\Plugin\Filter\Performance\SYNC_MusicStudio_PerformanceEditor.pas',
   SYNC_MusicStudio_InstrumentRules in 'Source\Common\Render\Layers\Rules\SYNC_MusicStudio_InstrumentRules.pas',
   SYNC_MusicStudio_InstrumentData in 'Source\Common\Project\Performance\SYNC_MusicStudio_InstrumentData.pas',
+  SYNC_MusicStudio_AutoDrums in 'Source\Common\Project\Performance\SYNC_MusicStudio_AutoDrums.pas',
   SYNC_MusicStudio_InstrumentPlayback in 'Source\Common\Project\Performance\SYNC_MusicStudio_InstrumentPlayback.pas',
   SYNC_MusicStudio_InstrumentFrame in 'Source\Plugin\Filter\Patterns\Performance\SYNC_MusicStudio_InstrumentFrame.pas',
   SYNC_MusicStudio_DrumPsdRules in 'Source\Common\Render\Layers\Rules\SYNC_MusicStudio_DrumPsdRules.pas',
